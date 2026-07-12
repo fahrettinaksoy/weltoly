@@ -23,10 +23,13 @@ async function onComplete(pin: string) {
 </script>
 
 <template>
-  <div class="lock-screen">
-    <v-icon icon="mdi-lock-outline" size="40" color="primary" class="mb-4" />
-    <PinPad ref="pad" :title="t('lock.title')" :subtitle="t('lock.subtitle')" :error="error" @complete="onComplete" />
-  </div>
+  <!-- theme-provider: kilit ekranı uygulama teması ne olursa olsun her zaman koyu. -->
+  <v-theme-provider theme="dark">
+    <div class="lock-screen">
+      <v-icon icon="$lock" size="40" color="primary" class="mb-4" />
+      <PinPad ref="pad" :title="t('lock.title')" :subtitle="t('lock.subtitle')" :error="error" @complete="onComplete" />
+    </div>
+  </v-theme-provider>
 </template>
 
 <style scoped>

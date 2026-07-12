@@ -7,3 +7,34 @@
 .v-card {
   border-radius: var(--app-radius) !important;
 }
+
+/* --- Accessibility ------------------------------------------------------- */
+
+/* Klavye kullanıcıları için "içeriğe atla" bağlantısı (yalnız odaklanınca görünür). */
+.skip-link {
+  position: fixed;
+  top: -100px;
+  left: 8px;
+  z-index: 4000;
+  padding: 8px 16px;
+  background: rgb(var(--v-theme-primary));
+  color: #fff;
+  border-radius: 8px;
+  transition: top 0.2s;
+}
+.skip-link:focus {
+  top: 8px;
+}
+
+/* Hareket azaltma tercihi: animasyon/geçişleri kapat. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

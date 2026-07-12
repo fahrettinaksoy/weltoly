@@ -14,8 +14,12 @@ const host = process.env.TAURI_DEV_HOST
 export default defineConfig(async () => ({
   plugins: [
     vue(),
-    // Vuetify bileşenlerini/stillerini otomatik içeri al (treeshaking + tema)
-    vuetify({ autoImport: true }),
+    // Vuetify: otomatik import (component treeshaking) + configFile ile stil treeshaking.
+    // Yalnız kullanılan bileşenlerin stilleri, settings.scss değişkenleriyle derlenir.
+    vuetify({
+      autoImport: true,
+      styles: { configFile: 'src/styles/settings.scss' },
+    }),
     // ref/computed/watch/store/router gibi API'ler için otomatik import
     AutoImport({
       imports: ['vue', 'vue-router', 'pinia', '@vueuse/core'],

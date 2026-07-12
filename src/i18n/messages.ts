@@ -17,6 +17,8 @@ export const messages = {
       removePin: 'PIN kaldır', pinRemoved: 'PIN kaldırıldı',
     },
     lock: { title: 'Kilitli', subtitle: 'PIN gir', enterNew: 'Yeni PIN gir', confirmNew: 'PIN tekrar gir', pinSet: 'PIN ayarlandı' },
+    a11y: { skipToContent: 'İçeriğe atla' },
+    hotkeys: { title: 'Klavye kısayolları', newTrn: 'Yeni işlem', help: 'Kısayol yardımı' },
     common: {
       soon: 'Bu bölüm yakında (geliştirme aşamasında).',
       save: 'Kaydet', cancel: 'Vazgeç', delete: 'Sil', edit: 'Düzenle', add: 'Ekle', close: 'Kapat', required: 'Zorunlu alan',
@@ -68,6 +70,8 @@ export const messages = {
       removePin: 'Remove PIN', pinRemoved: 'PIN removed',
     },
     lock: { title: 'Locked', subtitle: 'Enter PIN', enterNew: 'Enter new PIN', confirmNew: 'Re-enter PIN', pinSet: 'PIN set' },
+    a11y: { skipToContent: 'Skip to content' },
+    hotkeys: { title: 'Keyboard shortcuts', newTrn: 'New transaction', help: 'Shortcut help' },
     common: {
       soon: 'This section is coming soon (under development).',
       save: 'Save', cancel: 'Cancel', delete: 'Delete', edit: 'Edit', add: 'Add', close: 'Close', required: 'Required',
@@ -119,6 +123,8 @@ export const messages = {
       removePin: 'Удалить PIN', pinRemoved: 'PIN удалён',
     },
     lock: { title: 'Заблокировано', subtitle: 'Введите PIN', enterNew: 'Новый PIN', confirmNew: 'Повторите PIN', pinSet: 'PIN задан' },
+    a11y: { skipToContent: 'Перейти к содержимому' },
+    hotkeys: { title: 'Горячие клавиши', newTrn: 'Новая операция', help: 'Справка по клавишам' },
     common: {
       soon: 'Этот раздел скоро появится (в разработке).',
       save: 'Сохранить', cancel: 'Отмена', delete: 'Удалить', edit: 'Изменить', add: 'Добавить', close: 'Закрыть', required: 'Обязательное поле',

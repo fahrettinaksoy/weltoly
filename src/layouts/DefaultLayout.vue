@@ -11,14 +11,14 @@ const { mobile } = useDisplay()
 const route = useRoute()
 const trnForm = useTrnsFormStore()
 
+// icon-fonts: semantik ikon alias'ları ($navX) — tek kaynaktan yönetilir.
 type NavItem = { key: string, to: string, icon: string, labelKey: string }
-
 const navItems: NavItem[] = [
-  { key: 'dashboard', to: '/dashboard', icon: 'mdi-view-dashboard-outline', labelKey: 'nav.dashboard' },
-  { key: 'wallets', to: '/wallets', icon: 'mdi-wallet-outline', labelKey: 'nav.wallets' },
-  { key: 'categories', to: '/categories', icon: 'mdi-shape-outline', labelKey: 'nav.categories' },
-  { key: 'stat', to: '/stat', icon: 'mdi-chart-box-outline', labelKey: 'nav.stat' },
-  { key: 'settings', to: '/settings', icon: 'mdi-cog-outline', labelKey: 'nav.settings' },
+  { key: 'dashboard', to: '/dashboard', icon: '$navDashboard', labelKey: 'nav.dashboard' },
+  { key: 'wallets', to: '/wallets', icon: '$navWallets', labelKey: 'nav.wallets' },
+  { key: 'categories', to: '/categories', icon: '$navCategories', labelKey: 'nav.categories' },
+  { key: 'stat', to: '/stat', icon: '$navStat', labelKey: 'nav.stat' },
+  { key: 'settings', to: '/settings', icon: '$navSettings', labelKey: 'nav.settings' },
 ]
 
 const activeKey = computed(() => (route.meta.navKey as string) ?? 'dashboard')
@@ -31,7 +31,7 @@ function onAdd() {
 <template>
   <!-- Masaüstü: yan gezinme rayı -->
   <v-navigation-drawer v-if="!mobile" rail permanent>
-    <v-list nav>
+    <v-list nav aria-label="Ana menü">
       <v-list-item
         v-for="item in navItems"
         :key="item.key"
@@ -43,7 +43,7 @@ function onAdd() {
     </v-list>
     <template #append>
       <div class="pa-2">
-        <v-btn icon="mdi-plus" color="primary" size="small" @click="onAdd" />
+        <v-btn icon="$add" color="primary" size="small" :aria-label="t('nav.add')" @click="onAdd" />
       </div>
     </template>
   </v-navigation-drawer>
@@ -53,7 +53,7 @@ function onAdd() {
   </v-app-bar>
 
   <v-main>
-    <v-container class="pa-0" :class="{ 'pb-16': mobile }" fluid>
+    <v-container id="main-content" tabindex="-1" class="pa-0" :class="{ 'pb-16': mobile }" fluid>
       <slot />
     </v-container>
   </v-main>
@@ -61,23 +61,23 @@ function onAdd() {
   <!-- Mobil: alt gezinme + orta ekle butonu -->
   <v-bottom-navigation v-if="mobile" grow>
     <v-btn to="/dashboard" :active="activeKey === 'dashboard'">
-      <v-icon icon="mdi-view-dashboard-outline" />
+      <v-icon icon="$navDashboard" />
       <span>{{ t('nav.dashboard') }}</span>
     </v-btn>
     <v-btn to="/wallets" :active="activeKey === 'wallets'">
-      <v-icon icon="mdi-wallet-outline" />
+      <v-icon icon="$navWallets" />
       <span>{{ t('nav.wallets') }}</span>
     </v-btn>
-    <v-btn color="primary" @click="onAdd">
-      <v-icon icon="mdi-plus-circle" size="28" />
+    <v-btn color="primary" :aria-label="t('nav.add')" @click="onAdd">
+      <v-icon icon="$addCircle" size="28" />
       <span>{{ t('nav.add') }}</span>
     </v-btn>
     <v-btn to="/stat" :active="activeKey === 'stat'">
-      <v-icon icon="mdi-chart-box-outline" />
+      <v-icon icon="$navStat" />
       <span>{{ t('nav.stat') }}</span>
     </v-btn>
     <v-btn to="/settings" :active="activeKey === 'settings'">
-      <v-icon icon="mdi-cog-outline" />
+      <v-icon icon="$navSettings" />
       <span>{{ t('nav.settings') }}</span>
     </v-btn>
   </v-bottom-navigation>

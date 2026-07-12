@@ -87,9 +87,9 @@ const total = computed(() => {
       <v-icon icon="mdi-wallet-plus-outline" size="56" class="mb-4 text-medium-emphasis" />
       <div class="text-body-1 mb-1">{{ t('wallets.empty') }}</div>
       <div class="text-body-2 text-medium-emphasis mb-4">{{ t('wallets.emptyHint') }}</div>
-      <v-btn color="primary" variant="flat" prepend-icon="mdi-plus" @click="openNew">
+      <v-btn-primary prepend-icon="mdi-plus" @click="openNew">
         {{ t('wallets.add') }}
-      </v-btn>
+      </v-btn-primary>
     </v-card>
 
     <WalletFormDialog v-model="showDialog" :wallet-id="editId" />
