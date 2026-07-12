@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { useLocalStorage } from '@vueuse/core'
 
 import { resolveWriteUid, upsertRow, watchTable, type Row, type WatchHandle } from '@/services/db'
 
@@ -9,7 +10,12 @@ import type { CurrencyCode } from '@/features/currencies/types'
 export const useUserStore = defineStore('user', () => {
   const baseCurrency = ref<CurrencyCode>('USD')
   const locale = ref<string>('tr')
+  const displayName = useLocalStorage<string>('weltoly.displayName', '')
   const uid = computed(() => resolveWriteUid(null))
+
+  function setDisplayName(name: string) {
+    displayName.value = name.trim()
+  }
 
   let watchController: WatchHandle | null = null
 
@@ -42,8 +48,10 @@ export const useUserStore = defineStore('user', () => {
   return {
     baseCurrency,
     locale,
+    displayName,
     uid,
     initUserSettings,
+    setDisplayName,
     setUserBaseCurrency,
     saveUserBaseCurrency,
   }

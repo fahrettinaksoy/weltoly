@@ -1,18 +1,29 @@
 <script setup lang="ts">
 import { useTheme } from 'vuetify'
-import { usePreferredDark } from '@vueuse/core'
+import { useDocumentVisibility, usePreferredDark } from '@vueuse/core'
 
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import { useSettingsStore } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui'
+import { neutralPalettes } from '@/features/theme/palette'
+import { useLockStore } from '@/features/auth/useLockStore'
+import LockScreen from '@/features/auth/LockScreen.vue'
 import { useInitApp } from '@/composables/useInitApp'
 import { setLocale } from '@/plugins/i18n'
 
 const theme = useTheme()
 const settings = useSettingsStore()
 const ui = useUiStore()
+const lock = useLockStore()
 const prefersDark = usePreferredDark()
 const { init } = useInitApp()
+
+// Uygulama arka plana alınınca PIN varsa kilitle.
+const visibility = useDocumentVisibility()
+watch(visibility, (v) => {
+  if (v === 'hidden')
+    lock.lock()
+})
 
 // Etkin tema: 'system' ise OS tercihine göre, aksi halde seçilen mod.
 const effectiveTheme = computed(() =>
@@ -33,6 +44,27 @@ watchEffect(() => {
     themes.light.colors.primary = c
   if (themes.dark?.colors)
     themes.dark.colors.primary = c
+})
+
+// Nötr palet (arka plan/yüzey tonları) — her iki temaya uygula.
+watchEffect(() => {
+  const p = neutralPalettes[settings.neutral]
+  const themes = theme.themes.value
+  if (p && themes.light?.colors) {
+    themes.light.colors.background = p.light.background
+    themes.light.colors.surface = p.light.surface
+    themes.light.colors['surface-variant'] = p.light.variant
+  }
+  if (p && themes.dark?.colors) {
+    themes.dark.colors.background = p.dark.background
+    themes.dark.colors.surface = p.dark.surface
+    themes.dark.colors['surface-variant'] = p.dark.variant
+  }
+})
+
+// Köşe yuvarlaklığı — CSS değişkeni (global app.css kartlara uygular).
+watchEffect(() => {
+  document.documentElement.style.setProperty('--app-radius', `${settings.radius}px`)
 })
 
 onMounted(() => {
@@ -57,5 +89,7 @@ onMounted(() => {
     >
       {{ ui.snackbar.message }}
     </v-snackbar>
+
+    <LockScreen v-if="lock.isLocked" />
   </v-app>
 </template>

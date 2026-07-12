@@ -1,0 +1,9 @@
+/* Köşe yuvarlaklığı ayarı — App.vue --app-radius'u günceller. Kartlara uygulanır
+   (butonlara DEĞİL; ikon butonlarının daire biçimi bozulmasın). */
+:root {
+  --app-radius: 12px;
+}
+
+.v-card {
+  border-radius: var(--app-radius) !important;
+}

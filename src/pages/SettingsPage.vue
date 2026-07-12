@@ -3,14 +3,26 @@ import { useI18n } from 'vue-i18n'
 
 import { useSettingsStore, type ThemeMode } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui'
-import { primaryPalette } from '@/features/theme/palette'
+import { MAX_RADIUS, MIN_RADIUS, neutralKeys, neutralPalettes, primaryPalette, type NeutralKey } from '@/features/theme/palette'
 import { exportBackup, importBackup } from '@/services/backup'
 import { clearAllData, seedDemoData } from '@/features/demo/seed'
+import { useUserStore } from '@/features/user/store'
+import { useLockStore } from '@/features/auth/useLockStore'
+import SetPinDialog from '@/features/auth/SetPinDialog.vue'
 import type { LocaleCode } from '@/i18n/messages'
 
 const { t } = useI18n()
 const settings = useSettingsStore()
 const ui = useUiStore()
+const userStore = useUserStore()
+const lock = useLockStore()
+
+const showSetPin = ref(false)
+
+function onRemovePin() {
+  lock.removePin()
+  ui.showToast(t('settings.pinRemoved'), 'success')
+}
 
 const themeOptions = computed<{ value: ThemeMode, label: string, icon: string }[]>(() => [
   { value: 'system', label: t('settings.themeSystem'), icon: 'mdi-theme-light-dark' },
@@ -101,12 +113,57 @@ async function onClearData() {
         </v-btn-toggle>
 
         <div class="text-body-2 text-medium-emphasis mb-2">{{ t('settings.primaryColor') }}</div>
-        <div class="d-flex flex-wrap ga-2">
+        <div class="d-flex flex-wrap ga-2 mb-4">
           <button
             v-for="c in primaryPalette" :key="c" type="button" class="color-dot"
             :style="{ background: c, outline: settings.primaryColor === c ? '2px solid white' : 'none' }"
             @click="settings.setPrimaryColor(c)"
           />
+        </div>
+
+        <div class="text-body-2 text-medium-emphasis mb-2">{{ t('settings.neutral') }}</div>
+        <div class="d-flex flex-wrap ga-2 mb-4">
+          <button
+            v-for="n in neutralKeys" :key="n" type="button" class="color-dot"
+            :style="{ background: neutralPalettes[n].dark.surface, outline: settings.neutral === n ? '2px solid rgb(var(--v-theme-primary))' : '1px solid rgba(127,127,127,0.4)' }"
+            :title="n"
+            @click="settings.setNeutral(n as NeutralKey)"
+          />
+        </div>
+
+        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('settings.radius') }} ({{ settings.radius }}px)</div>
+        <v-slider
+          :model-value="settings.radius"
+          :min="MIN_RADIUS" :max="MAX_RADIUS" :step="1"
+          color="primary" hide-details density="compact"
+          @update:model-value="settings.setRadius($event)"
+        />
+      </v-card-text>
+    </v-card>
+
+    <!-- Profil ve güvenlik -->
+    <v-card variant="tonal" class="mb-4">
+      <v-card-title class="text-subtitle-1">{{ t('settings.profile') }}</v-card-title>
+      <v-card-text>
+        <v-text-field
+          :model-value="userStore.displayName"
+          :label="t('settings.displayName')"
+          prepend-inner-icon="mdi-account-outline"
+          class="mb-2"
+          @update:model-value="userStore.setDisplayName($event)"
+        />
+        <div class="d-flex ga-2 flex-wrap">
+          <v-btn v-if="!lock.hasPin" variant="tonal" prepend-icon="mdi-lock-outline" @click="showSetPin = true">
+            {{ t('settings.setPin') }}
+          </v-btn>
+          <template v-else>
+            <v-btn variant="tonal" prepend-icon="mdi-lock-reset" @click="showSetPin = true">
+              {{ t('settings.changePin') }}
+            </v-btn>
+            <v-btn variant="tonal" color="error" prepend-icon="mdi-lock-open-variant-outline" @click="onRemovePin">
+              {{ t('settings.removePin') }}
+            </v-btn>
+          </template>
         </div>
       </v-card-text>
     </v-card>
@@ -152,6 +209,8 @@ async function onClearData() {
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <SetPinDialog v-model="showSetPin" />
 
     <div class="text-caption text-medium-emphasis mt-6 text-center">
       Weltoly · v0.1.0

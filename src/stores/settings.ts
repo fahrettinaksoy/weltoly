@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { useLocalStorage } from '@vueuse/core'
 
 import { setLocale } from '@/plugins/i18n'
-import { defaultPrimary } from '@/features/theme/palette'
+import { DEFAULT_RADIUS, defaultNeutral, defaultPrimary, type NeutralKey } from '@/features/theme/palette'
 import type { LocaleCode } from '@/i18n/messages'
 
 export type ThemeMode = 'system' | 'light' | 'dark'
@@ -14,6 +14,8 @@ export type ThemeMode = 'system' | 'light' | 'dark'
 export const useSettingsStore = defineStore('settings', () => {
   const themeMode = useLocalStorage<ThemeMode>('weltoly.themeMode', 'system')
   const primaryColor = useLocalStorage<string>('weltoly.primaryColor', defaultPrimary)
+  const neutral = useLocalStorage<NeutralKey>('weltoly.neutral', defaultNeutral)
+  const radius = useLocalStorage<number>('weltoly.radius', DEFAULT_RADIUS)
   const locale = useLocalStorage<LocaleCode>('weltoly.locale', 'tr')
 
   function setThemeMode(mode: ThemeMode) {
@@ -24,6 +26,14 @@ export const useSettingsStore = defineStore('settings', () => {
     primaryColor.value = color
   }
 
+  function setNeutral(key: NeutralKey) {
+    neutral.value = key
+  }
+
+  function setRadius(px: number) {
+    radius.value = px
+  }
+
   function setAppLocale(value: LocaleCode) {
     locale.value = value
     setLocale(value)
@@ -32,9 +42,13 @@ export const useSettingsStore = defineStore('settings', () => {
   return {
     themeMode,
     primaryColor,
+    neutral,
+    radius,
     locale,
     setThemeMode,
     setPrimaryColor,
+    setNeutral,
+    setRadius,
     setAppLocale,
   }
 })
