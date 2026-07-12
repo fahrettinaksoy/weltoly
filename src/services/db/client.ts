@@ -22,3 +22,8 @@ const LOCAL_UID = 'local'
 export function resolveWriteUid(uid?: string | null): string {
   return uid || LOCAL_UID
 }
+
+/** Tauri native runtime içinde miyiz? (Saf tarayıcıda SQLite plugin'i yoktur.) */
+export function isTauriRuntime(): boolean {
+  return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
+}

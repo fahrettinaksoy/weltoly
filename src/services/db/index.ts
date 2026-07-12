@@ -1,5 +1,5 @@
 // Veri katmanı genel API'si (Faz 2 store'ları buradan import eder).
-export { getDb, resolveWriteUid } from './client'
+export { getDb, resolveWriteUid, isTauriRuntime } from './client'
 export { onTableChange, emitTableChange } from './bus'
 export { watchTable, type WatchHandle } from './watch'
 export {
