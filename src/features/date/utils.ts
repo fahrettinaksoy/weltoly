@@ -1,11 +1,11 @@
+import type { Duration } from 'date-fns'
 import {
+  add,
   endOfDay, endOfMonth, endOfWeek, endOfYear,
   startOfDay, startOfMonth, startOfWeek, startOfYear,
 } from 'date-fns'
 
-import type { Period } from '@/features/date/types'
-
-// Faz 2 için gereken minimal set (trns store getRange). Faz 3'te aralık/interval mantığı eklenecek.
+import type { Period, Range } from '@/features/date/types'
 
 export function getStartOf(date: Date, intervalType: Period): Date {
   switch (intervalType) {
@@ -22,5 +22,23 @@ export function getEndOf(date: Date, intervalType: Period): Date {
     case 'month': return endOfMonth(date)
     case 'week': return endOfWeek(date, { weekStartsOn: 1 })
     case 'day': return endOfDay(date)
+  }
+}
+
+export function toDuration(period: Period, value: number): Duration {
+  switch (period) {
+    case 'day': return { days: value }
+    case 'week': return { weeks: value }
+    case 'month': return { months: value }
+    case 'year': return { years: value }
+  }
+}
+
+/** offset periyot kadar kaydırılmış tarihin, o periyottaki [başlangıç, bitiş] aralığı. offset<0 = geçmiş. */
+export function rangeForPeriod(period: Period, offset: number): Range {
+  const d = add(new Date(), toDuration(period, offset))
+  return {
+    start: getStartOf(d, period).getTime(),
+    end: getEndOf(d, period).getTime(),
   }
 }

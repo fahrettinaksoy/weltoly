@@ -15,6 +15,7 @@ export const messages = {
       save: 'Kaydet', cancel: 'Vazgeç', delete: 'Sil', edit: 'Düzenle', add: 'Ekle', close: 'Kapat', required: 'Zorunlu alan',
     },
     dashboard: { title: 'Panel', totalBalance: 'Toplam bakiye', recentTrns: 'Son işlemler', noTrns: 'Henüz işlem yok' },
+    stat: { day: 'Gün', week: 'Hafta', month: 'Ay', year: 'Yıl', balance: 'Bakiye', breakdown: 'Kategori kırılımı', noData: 'Bu aralıkta veri yok' },
     wallets: {
       title: 'Cüzdanlar', add: 'Cüzdan ekle', edit: 'Cüzdanı düzenle', empty: 'Henüz cüzdan yok', emptyHint: 'İlk cüzdanını ekleyerek başla.',
       name: 'Ad', type: 'Tür', currency: 'Para birimi', color: 'Renk', creditLimit: 'Kredi limiti', description: 'Açıklama',
@@ -58,6 +59,7 @@ export const messages = {
       save: 'Save', cancel: 'Cancel', delete: 'Delete', edit: 'Edit', add: 'Add', close: 'Close', required: 'Required',
     },
     dashboard: { title: 'Dashboard', totalBalance: 'Total balance', recentTrns: 'Recent transactions', noTrns: 'No transactions yet' },
+    stat: { day: 'Day', week: 'Week', month: 'Month', year: 'Year', balance: 'Balance', breakdown: 'Breakdown', noData: 'No data for this range' },
     wallets: {
       title: 'Wallets', add: 'Add wallet', edit: 'Edit wallet', empty: 'No wallets yet', emptyHint: 'Start by adding your first wallet.',
       name: 'Name', type: 'Type', currency: 'Currency', color: 'Color', creditLimit: 'Credit limit', description: 'Description',
@@ -101,6 +103,7 @@ export const messages = {
       save: 'Сохранить', cancel: 'Отмена', delete: 'Удалить', edit: 'Изменить', add: 'Добавить', close: 'Закрыть', required: 'Обязательное поле',
     },
     dashboard: { title: 'Панель', totalBalance: 'Общий баланс', recentTrns: 'Последние операции', noTrns: 'Пока нет операций' },
+    stat: { day: 'День', week: 'Неделя', month: 'Месяц', year: 'Год', balance: 'Баланс', breakdown: 'Разбивка', noData: 'Нет данных за период' },
     wallets: {
       title: 'Кошельки', add: 'Добавить кошелёк', edit: 'Изменить кошелёк', empty: 'Пока нет кошельков', emptyHint: 'Начните с добавления первого кошелька.',
       name: 'Название', type: 'Тип', currency: 'Валюта', color: 'Цвет', creditLimit: 'Кредитный лимит', description: 'Описание',
