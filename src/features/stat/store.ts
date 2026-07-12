@@ -28,6 +28,7 @@ export const useStatStore = defineStore('stat', () => {
   const period = ref<Period>('month')
   const offset = ref(0) // 0 = güncel, -1 = önceki
   const statType = ref<StatType>('expense')
+  const filterWalletIds = ref<string[]>([]) // boş = tüm cüzdanlar
 
   function setPeriod(p: Period) {
     period.value = p
@@ -46,14 +47,18 @@ export const useStatStore = defineStore('stat', () => {
 
   const currentRange = computed<Range>(() => rangeForPeriod(period.value, offset.value))
 
+  const activeWalletIds = computed(() => filterWalletIds.value.length ? filterWalletIds.value : undefined)
+
   function totalsForRange(range: Range) {
     const items = trnsStore.items ?? {}
-    const ids = filterTrnsIds({ trnsItems: items, dates: range })
+    const walletsIds = activeWalletIds.value
+    const ids = filterTrnsIds({ trnsItems: items, dates: range, walletsIds })
     return getTotal({
       baseCurrencyCode: currenciesStore.base,
       rates: currenciesStore.rates,
       trnsItems: items,
       trnsIds: ids,
+      walletsIds,
       walletsItems: walletsStore.items ?? {},
     })
   }
@@ -77,7 +82,7 @@ export const useStatStore = defineStore('stat', () => {
     const items = trnsStore.items ?? {}
     const range = currentRange.value
     const type = statType.value === 'income' ? TrnType.Income : TrnType.Expense
-    const ids = filterTrnsIds({ trnsItems: items, dates: range, trnsTypes: [type] })
+    const ids = filterTrnsIds({ trnsItems: items, dates: range, trnsTypes: [type], walletsIds: activeWalletIds.value })
 
     const map = new Map<string, number>()
     for (const id of ids) {
@@ -101,16 +106,22 @@ export const useStatStore = defineStore('stat', () => {
       .sort((a, b) => b.amount - a.amount)
   })
 
+  function setFilterWalletIds(ids: string[]) {
+    filterWalletIds.value = ids
+  }
+
   return {
     period,
     offset,
     statType,
+    filterWalletIds,
     currentRange,
     summary,
     series,
     breakdown,
     setPeriod,
     setStatType,
+    setFilterWalletIds,
     prev,
     next,
   }

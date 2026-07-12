@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { generateId } from '@/shared/lib/generateId'
 import { random } from '@/shared/lib/random'
 import { colorsArray } from '@/features/color/colors'
-import { commonCurrencies } from '@/features/currencies/list'
+import { allCurrencies } from '@/features/currencies/list'
 import { walletItemSchema, walletTypes, type WalletItem, type WalletType } from '@/features/wallets/types'
 import { walletTypeIcon } from '@/features/wallets/walletMeta'
 import { useWalletsStore } from '@/features/wallets/store'
@@ -26,6 +26,8 @@ const confirmDelete = ref(false)
 
 // Renk seçici için sadeleştirilmiş palet (colorsArray'den örnek).
 const palette = colorsArray.filter((_, i) => i % 6 === 0)
+
+const currencyItems = allCurrencies.map(c => ({ code: c.code, title: `${c.code} — ${c.name}` }))
 
 type FormState = {
   name: string
@@ -161,9 +163,11 @@ function remove() {
           </template>
         </v-select>
 
-        <v-combobox
+        <v-autocomplete
           v-model="form.currency"
-          :items="commonCurrencies"
+          :items="currencyItems"
+          item-title="title"
+          item-value="code"
           :label="t('wallets.currency')"
           class="mb-2"
         />

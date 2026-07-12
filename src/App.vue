@@ -25,6 +25,16 @@ watchEffect(() => {
   theme.global.name.value = effectiveTheme.value
 })
 
+// Ana rengi her iki temaya dinamik uygula.
+watchEffect(() => {
+  const c = settings.primaryColor
+  const themes = theme.themes.value
+  if (themes.light?.colors)
+    themes.light.colors.primary = c
+  if (themes.dark?.colors)
+    themes.dark.colors.primary = c
+})
+
 onMounted(() => {
   setLocale(settings.locale)
   init() // yerel SQLite watch'larını başlat (Tauri runtime'ında)

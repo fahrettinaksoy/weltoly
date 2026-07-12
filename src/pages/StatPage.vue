@@ -5,6 +5,7 @@ import { format } from 'date-fns'
 import { formatMoney } from '@/shared/lib/money'
 import { useStatStore, type StatType } from '@/features/stat/store'
 import { useCurrenciesStore } from '@/features/currencies/store'
+import { useWalletsStore } from '@/features/wallets/store'
 import { useSettingsStore } from '@/stores/settings'
 import type { Period } from '@/features/date/types'
 import StatChart from '@/features/stat/components/StatChart.vue'
@@ -13,7 +14,12 @@ import CategoryBreakdown from '@/features/stat/components/CategoryBreakdown.vue'
 const { t } = useI18n()
 const stat = useStatStore()
 const currenciesStore = useCurrenciesStore()
+const walletsStore = useWalletsStore()
 const settings = useSettingsStore()
+
+const walletFilterItems = computed(() =>
+  walletsStore.sortedIds.map(id => ({ id, name: walletsStore.items?.[id]?.name ?? id })),
+)
 
 const periods: { value: Period, label: string }[] = [
   { value: 'day', label: t('stat.day') },
@@ -48,6 +54,17 @@ const rangeLabel = computed(() => {
     >
       <v-btn v-for="p in periods" :key="p.value" :value="p.value" class="flex-grow-1">{{ p.label }}</v-btn>
     </v-btn-toggle>
+
+    <!-- Cüzdan filtresi -->
+    <v-select
+      v-if="walletFilterItems.length"
+      :model-value="stat.filterWalletIds"
+      :items="walletFilterItems"
+      item-title="name" item-value="id"
+      :label="t('stat.filterWallets')"
+      multiple chips closable-chips clearable hide-details density="comfortable" class="mb-3"
+      @update:model-value="stat.setFilterWalletIds($event)"
+    />
 
     <!-- Aralık navigasyonu -->
     <div class="d-flex align-center justify-space-between mb-3">
