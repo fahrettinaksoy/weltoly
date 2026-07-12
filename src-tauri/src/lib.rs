@@ -1,11 +1,25 @@
 // Weltoly - Tauri arka uç girişi.
-// Rust komutları (calling-rust): https://tauri.app/develop/calling-rust/
-// Faz 1'de tauri-plugin-sql (SQLite) burada init edilecek.
+// Yerel veri katmanı: tauri-plugin-sql (SQLite, bundled) + tauri-plugin-store.
+
+use tauri_plugin_sql::{Migration, MigrationKind};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let migrations = vec![Migration {
+        version: 1,
+        description: "create base tables (categories, wallets, trns, user_settings, rates, outbox)",
+        sql: include_str!("../migrations/001_init.sql"),
+        kind: MigrationKind::Up,
+    }];
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_store::Builder::default().build())
+        .plugin(
+            tauri_plugin_sql::Builder::default()
+                .add_migrations("sqlite:weltoly.db", migrations)
+                .build(),
+        )
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

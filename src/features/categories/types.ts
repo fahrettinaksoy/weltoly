@@ -1,0 +1,35 @@
+import { z } from 'zod'
+
+import { random } from '@/shared/lib/random'
+import icons from '@/shared/icons'
+import { colorsArray } from '@/features/color/colors'
+
+export type CategoryId = string
+
+export const categoryFormSchema = z.object({
+  color: z.string().default(() => random(colorsArray)),
+  icon: z.string().trim().min(1).default(() => random(random(icons))),
+  name: z.string().trim().min(1).default(''),
+  parentId: z.union([z.string(), z.literal(0)]).default(0),
+  showInLastUsed: z.boolean().default(true),
+  showInQuickSelector: z.boolean().default(false),
+})
+
+export type CategoryForm = z.infer<typeof categoryFormSchema>
+
+export type CategoryItem = CategoryForm & {
+  updatedAt?: number
+}
+
+export type CategoryItemWithId = CategoryItem & {
+  id: CategoryId
+}
+
+export type Categories = Record<CategoryId, CategoryItem> & Record<'transfer', CategoryItem>
+
+export type AddCategoryParams = {
+  id: CategoryId
+  isUpdateChildCategoriesColor: boolean
+  nextChildIds?: CategoryId[]
+  values: CategoryItem
+}
