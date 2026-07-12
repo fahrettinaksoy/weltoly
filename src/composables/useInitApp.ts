@@ -1,4 +1,5 @@
 import { isTauriRuntime } from '@/services/db'
+import { refreshRates } from '@/services/rates'
 import { useUserStore } from '@/features/user/store'
 import { useCurrenciesStore } from '@/features/currencies/store'
 import { useCategoriesStore } from '@/features/categories/store'
@@ -26,6 +27,9 @@ export function useInitApp() {
     categoriesStore.initCategories()
     walletsStore.initWallets()
     trnsStore.initTrns()
+
+    // Günlük kurları arka planda tazele (offline'da sessizce atlar).
+    refreshRates().catch(() => {})
   }
 
   return { init }

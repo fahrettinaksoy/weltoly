@@ -9,13 +9,17 @@ export const messages = {
     settings: {
       title: 'Ayarlar', appearance: 'Görünüm', theme: 'Tema',
       themeSystem: 'Sistem', themeLight: 'Açık', themeDark: 'Koyu', language: 'Dil',
+      primaryColor: 'Ana renk', data: 'Veri', exportBackup: 'Yedeği dışa aktar', importBackup: 'Yedeği içe aktar',
+      backupOk: 'Yedek kaydedildi', importOk: 'Yedek geri yüklendi', backupError: 'İşlem başarısız',
+      loadDemo: 'Örnek veri yükle', clearData: 'Tüm veriyi sil', clearConfirm: 'Tüm cüzdan, kategori ve işlemler silinecek. Emin misin?',
+      demoLoaded: 'Örnek veri yüklendi', dataCleared: 'Tüm veri silindi',
     },
     common: {
       soon: 'Bu bölüm yakında (geliştirme aşamasında).',
       save: 'Kaydet', cancel: 'Vazgeç', delete: 'Sil', edit: 'Düzenle', add: 'Ekle', close: 'Kapat', required: 'Zorunlu alan',
     },
     dashboard: { title: 'Panel', totalBalance: 'Toplam bakiye', recentTrns: 'Son işlemler', noTrns: 'Henüz işlem yok' },
-    stat: { day: 'Gün', week: 'Hafta', month: 'Ay', year: 'Yıl', balance: 'Bakiye', breakdown: 'Kategori kırılımı', noData: 'Bu aralıkta veri yok' },
+    stat: { day: 'Gün', week: 'Hafta', month: 'Ay', year: 'Yıl', balance: 'Bakiye', breakdown: 'Kategori kırılımı', noData: 'Bu aralıkta veri yok', filterWallets: 'Cüzdan filtresi' },
     wallets: {
       title: 'Cüzdanlar', add: 'Cüzdan ekle', edit: 'Cüzdanı düzenle', empty: 'Henüz cüzdan yok', emptyHint: 'İlk cüzdanını ekleyerek başla.',
       name: 'Ad', type: 'Tür', currency: 'Para birimi', color: 'Renk', creditLimit: 'Kredi limiti', description: 'Açıklama',
@@ -53,13 +57,17 @@ export const messages = {
     settings: {
       title: 'Settings', appearance: 'Appearance', theme: 'Theme',
       themeSystem: 'System', themeLight: 'Light', themeDark: 'Dark', language: 'Language',
+      primaryColor: 'Accent color', data: 'Data', exportBackup: 'Export backup', importBackup: 'Import backup',
+      backupOk: 'Backup saved', importOk: 'Backup restored', backupError: 'Operation failed',
+      loadDemo: 'Load sample data', clearData: 'Clear all data', clearConfirm: 'All wallets, categories and transactions will be deleted. Are you sure?',
+      demoLoaded: 'Sample data loaded', dataCleared: 'All data cleared',
     },
     common: {
       soon: 'This section is coming soon (under development).',
       save: 'Save', cancel: 'Cancel', delete: 'Delete', edit: 'Edit', add: 'Add', close: 'Close', required: 'Required',
     },
     dashboard: { title: 'Dashboard', totalBalance: 'Total balance', recentTrns: 'Recent transactions', noTrns: 'No transactions yet' },
-    stat: { day: 'Day', week: 'Week', month: 'Month', year: 'Year', balance: 'Balance', breakdown: 'Breakdown', noData: 'No data for this range' },
+    stat: { day: 'Day', week: 'Week', month: 'Month', year: 'Year', balance: 'Balance', breakdown: 'Breakdown', noData: 'No data for this range', filterWallets: 'Filter by wallet' },
     wallets: {
       title: 'Wallets', add: 'Add wallet', edit: 'Edit wallet', empty: 'No wallets yet', emptyHint: 'Start by adding your first wallet.',
       name: 'Name', type: 'Type', currency: 'Currency', color: 'Color', creditLimit: 'Credit limit', description: 'Description',
@@ -97,13 +105,17 @@ export const messages = {
     settings: {
       title: 'Настройки', appearance: 'Внешний вид', theme: 'Тема',
       themeSystem: 'Система', themeLight: 'Светлая', themeDark: 'Тёмная', language: 'Язык',
+      primaryColor: 'Акцентный цвет', data: 'Данные', exportBackup: 'Экспорт резервной копии', importBackup: 'Импорт резервной копии',
+      backupOk: 'Копия сохранена', importOk: 'Копия восстановлена', backupError: 'Ошибка операции',
+      loadDemo: 'Загрузить пример', clearData: 'Очистить все данные', clearConfirm: 'Все кошельки, категории и операции будут удалены. Вы уверены?',
+      demoLoaded: 'Пример загружен', dataCleared: 'Все данные удалены',
     },
     common: {
       soon: 'Этот раздел скоро появится (в разработке).',
       save: 'Сохранить', cancel: 'Отмена', delete: 'Удалить', edit: 'Изменить', add: 'Добавить', close: 'Закрыть', required: 'Обязательное поле',
     },
     dashboard: { title: 'Панель', totalBalance: 'Общий баланс', recentTrns: 'Последние операции', noTrns: 'Пока нет операций' },
-    stat: { day: 'День', week: 'Неделя', month: 'Месяц', year: 'Год', balance: 'Баланс', breakdown: 'Разбивка', noData: 'Нет данных за период' },
+    stat: { day: 'День', week: 'Неделя', month: 'Месяц', year: 'Год', balance: 'Баланс', breakdown: 'Разбивка', noData: 'Нет данных за период', filterWallets: 'Фильтр по кошельку' },
     wallets: {
       title: 'Кошельки', add: 'Добавить кошелёк', edit: 'Изменить кошелёк', empty: 'Пока нет кошельков', emptyHint: 'Начните с добавления первого кошелька.',
       name: 'Название', type: 'Тип', currency: 'Валюта', color: 'Цвет', creditLimit: 'Кредитный лимит', description: 'Описание',

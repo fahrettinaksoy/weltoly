@@ -1,4 +1,5 @@
 import Database from '@tauri-apps/plugin-sql'
+import { isTauri } from '@tauri-apps/api/core'
 
 // Migration anahtarıyla (lib.rs) AYNI olmalı.
 const DB_URL = 'sqlite:weltoly.db'
@@ -25,5 +26,10 @@ export function resolveWriteUid(uid?: string | null): string {
 
 /** Tauri native runtime içinde miyiz? (Saf tarayıcıda SQLite plugin'i yoktur.) */
 export function isTauriRuntime(): boolean {
-  return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
+  try {
+    return isTauri()
+  }
+  catch {
+    return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
+  }
 }

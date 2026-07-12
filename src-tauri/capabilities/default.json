@@ -10,6 +10,20 @@
     "sql:allow-load",
     "sql:allow-execute",
     "sql:allow-select",
-    "store:default"
+    "store:default",
+    "dialog:default",
+    "fs:default",
+    {
+      "identifier": "fs:allow-write-text-file",
+      "allow": [{ "path": "$HOME/**" }]
+    },
+    {
+      "identifier": "fs:allow-read-text-file",
+      "allow": [{ "path": "$HOME/**" }]
+    },
+    {
+      "identifier": "http:default",
+      "allow": [{ "url": "https://open.er-api.com/" }]
+    }
   ]
 }
