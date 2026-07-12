@@ -14,22 +14,24 @@ const rows: Btn[][] = [
 </script>
 
 <template>
-  <div class="calc">
-    <div v-for="(row, ri) in rows" :key="ri" class="calc-row">
-      <v-btn
-        v-for="btn in row"
-        :key="btn.k"
-        :color="btn.color"
-        variant="tonal"
-        size="large"
-        class="calc-btn"
-        @click="emit('key', btn.k)"
-      >
-        <v-icon v-if="btn.icon" :icon="btn.icon" />
-        <span v-else class="text-h6">{{ btn.label ?? btn.k }}</span>
-      </v-btn>
+  <!-- defaults-provider: hesap makinesi tuşlarına kapsam-içi ortak varsayılanlar (DRY). -->
+  <v-defaults-provider :defaults="{ VBtn: { variant: 'tonal', size: 'large', rounded: 'lg' } }">
+    <div class="calc">
+      <div v-for="(row, ri) in rows" :key="ri" class="calc-row">
+        <v-btn
+          v-for="btn in row"
+          :key="btn.k"
+          :color="btn.color"
+          class="calc-btn"
+          :aria-label="btn.k === 'c' ? 'Sil' : (btn.label ?? btn.k)"
+          @click="emit('key', btn.k)"
+        >
+          <v-icon v-if="btn.icon" :icon="btn.icon" />
+          <span v-else class="text-h6">{{ btn.label ?? btn.k }}</span>
+        </v-btn>
+      </div>
     </div>
-  </div>
+  </v-defaults-provider>
 </template>
 
 <style scoped>

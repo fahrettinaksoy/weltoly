@@ -1,4 +1,5 @@
 import { createI18n } from 'vue-i18n'
+import { en as vuetifyEn, ru as vuetifyRu, tr as vuetifyTr } from 'vuetify/locale'
 
 import { messages, type LocaleCode } from '@/i18n/messages'
 
@@ -14,12 +15,20 @@ function detectLocale(): LocaleCode {
   return 'en'
 }
 
+// internationalization: Vuetify bileşen metinlerini ($vuetify.*) vue-i18n'e göm →
+// tek locale kaynağı, dil değişince Vuetify bileşenleri de çevrilir.
+const mergedMessages = {
+  tr: { ...messages.tr, $vuetify: vuetifyTr },
+  en: { ...messages.en, $vuetify: vuetifyEn },
+  ru: { ...messages.ru, $vuetify: vuetifyRu },
+}
+
 export const i18n = createI18n({
   legacy: false,
   globalInjection: true, // şablonlarda $t kullanımı için
   locale: detectLocale(),
   fallbackLocale: 'en',
-  messages,
+  messages: mergedMessages,
 })
 
 export function setLocale(locale: LocaleCode) {

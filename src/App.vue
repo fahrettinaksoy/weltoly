@@ -1,22 +1,31 @@
 <script setup lang="ts">
 import { useTheme } from 'vuetify'
+import { useI18n } from 'vue-i18n'
 import { useDocumentVisibility, usePreferredDark } from '@vueuse/core'
 
 import DefaultLayout from '@/layouts/DefaultLayout.vue'
+import HotkeysHelp from '@/components/HotkeysHelp.vue'
 import { useSettingsStore } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui'
 import { neutralPalettes } from '@/features/theme/palette'
 import { useLockStore } from '@/features/auth/useLockStore'
 import LockScreen from '@/features/auth/LockScreen.vue'
 import { useInitApp } from '@/composables/useInitApp'
+import { useAppHotkeys } from '@/composables/useAppHotkeys'
 import { setLocale } from '@/plugins/i18n'
 
+const { t } = useI18n()
 const theme = useTheme()
 const settings = useSettingsStore()
 const ui = useUiStore()
 const lock = useLockStore()
 const prefersDark = usePreferredDark()
 const { init } = useInitApp()
+const { showHelp } = useAppHotkeys()
+
+// internationalization: RTL-hazır. Şu an tr/en/ru LTR; RTL locale eklenirse otomatik döner.
+const RTL_LOCALES = new Set<string>([/* 'ar', 'he', 'fa' */])
+const isRtl = computed(() => RTL_LOCALES.has(settings.locale))
 
 // Uygulama arka plana alınınca PIN varsa kilitle.
 const visibility = useDocumentVisibility()
@@ -25,7 +34,7 @@ watch(visibility, (v) => {
     lock.lock()
 })
 
-// Etkin tema: 'system' ise OS tercihine göre, aksi halde seçilen mod.
+// theme feature — etkin tema (system/light/dark).
 const effectiveTheme = computed(() =>
   settings.themeMode === 'system'
     ? (prefersDark.value ? 'dark' : 'light')
@@ -46,7 +55,7 @@ watchEffect(() => {
     themes.dark.colors.primary = c
 })
 
-// Nötr palet (arka plan/yüzey tonları) — her iki temaya uygula.
+// Nötr palet (arka plan/yüzey tonları).
 watchEffect(() => {
   const p = neutralPalettes[settings.neutral]
   const themes = theme.themes.value
@@ -62,24 +71,30 @@ watchEffect(() => {
   }
 })
 
-// Köşe yuvarlaklığı — CSS değişkeni (global app.css kartlara uygular).
+// Köşe yuvarlaklığı (radius) — CSS değişkeni.
 watchEffect(() => {
   document.documentElement.style.setProperty('--app-radius', `${settings.radius}px`)
 })
 
 onMounted(() => {
   setLocale(settings.locale)
-  init() // yerel SQLite watch'larını başlat (Tauri runtime'ında)
+  init()
 })
 </script>
 
 <template>
   <v-app>
-    <DefaultLayout>
-      <router-view v-slot="{ Component }">
-        <component :is="Component" />
-      </router-view>
-    </DefaultLayout>
+    <!-- Accessibility: içeriğe atla bağlantısı -->
+    <a href="#main-content" class="skip-link">{{ t('a11y.skipToContent') }}</a>
+
+    <!-- locale-provider: alt ağaç için locale + RTL (uygulama RTL-hazır) -->
+    <v-locale-provider :locale="settings.locale" :rtl="isRtl">
+      <DefaultLayout>
+        <router-view v-slot="{ Component }">
+          <component :is="Component" />
+        </router-view>
+      </DefaultLayout>
+    </v-locale-provider>
 
     <v-snackbar
       v-model="ui.snackbar.show"
@@ -90,6 +105,7 @@ onMounted(() => {
       {{ ui.snackbar.message }}
     </v-snackbar>
 
+    <HotkeysHelp v-model="showHelp" />
     <LockScreen v-if="lock.isLocked" />
   </v-app>
 </template>

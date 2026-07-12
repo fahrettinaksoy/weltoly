@@ -1,0 +1,7 @@
+// treeshaking + SASS özelleştirme giriş noktası.
+// vite-plugin-vuetify `styles.configFile` bunu her Vuetify bileşeninin stiline enjekte eder;
+// böylece yalnız KULLANILAN bileşenlerin stilleri, bu değişkenlerle derlenir (küçük bundle).
+@use 'vuetify/settings' with (
+  // Enterprise özelleştirme buraya (ör. $border-radius-root, $font-size-root...).
+  $color-pack: true
+);

@@ -65,7 +65,7 @@ function openEdit(id: string) {
       <v-icon icon="mdi-shape-plus-outline" size="56" class="mb-4 text-medium-emphasis" />
       <div class="text-body-1 mb-1">{{ t('categories.empty') }}</div>
       <div class="text-body-2 text-medium-emphasis mb-4">{{ t('categories.emptyHint') }}</div>
-      <v-btn color="primary" variant="flat" prepend-icon="mdi-plus" @click="openNew">{{ t('categories.add') }}</v-btn>
+      <v-btn-primary prepend-icon="mdi-plus" @click="openNew">{{ t('categories.add') }}</v-btn-primary>
     </v-card>
 
     <CategoryFormDialog v-model="showDialog" :category-id="editId" />
