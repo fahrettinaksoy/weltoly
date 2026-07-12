@@ -141,3 +141,11 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Tauri / Rust
+src-tauri/target/
+src-tauri/gen/
+
+# Vuetify/unplugin üretilen tip dosyaları
+src/auto-imports.d.ts
+src/components.d.ts
