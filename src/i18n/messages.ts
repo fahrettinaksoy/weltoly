@@ -9,11 +9,14 @@ export const messages = {
     settings: {
       title: 'Ayarlar', appearance: 'Görünüm', theme: 'Tema',
       themeSystem: 'Sistem', themeLight: 'Açık', themeDark: 'Koyu', language: 'Dil',
-      primaryColor: 'Ana renk', data: 'Veri', exportBackup: 'Yedeği dışa aktar', importBackup: 'Yedeği içe aktar',
+      primaryColor: 'Ana renk', neutral: 'Nötr palet', radius: 'Köşe yuvarlaklığı', data: 'Veri', exportBackup: 'Yedeği dışa aktar', importBackup: 'Yedeği içe aktar',
       backupOk: 'Yedek kaydedildi', importOk: 'Yedek geri yüklendi', backupError: 'İşlem başarısız',
       loadDemo: 'Örnek veri yükle', clearData: 'Tüm veriyi sil', clearConfirm: 'Tüm cüzdan, kategori ve işlemler silinecek. Emin misin?',
       demoLoaded: 'Örnek veri yüklendi', dataCleared: 'Tüm veri silindi',
+      profile: 'Profil ve güvenlik', displayName: 'Görünen ad', setPin: 'PIN belirle', changePin: 'PIN değiştir',
+      removePin: 'PIN kaldır', pinRemoved: 'PIN kaldırıldı',
     },
+    lock: { title: 'Kilitli', subtitle: 'PIN gir', enterNew: 'Yeni PIN gir', confirmNew: 'PIN tekrar gir', pinSet: 'PIN ayarlandı' },
     common: {
       soon: 'Bu bölüm yakında (geliştirme aşamasında).',
       save: 'Kaydet', cancel: 'Vazgeç', delete: 'Sil', edit: 'Düzenle', add: 'Ekle', close: 'Kapat', required: 'Zorunlu alan',
@@ -57,11 +60,14 @@ export const messages = {
     settings: {
       title: 'Settings', appearance: 'Appearance', theme: 'Theme',
       themeSystem: 'System', themeLight: 'Light', themeDark: 'Dark', language: 'Language',
-      primaryColor: 'Accent color', data: 'Data', exportBackup: 'Export backup', importBackup: 'Import backup',
+      primaryColor: 'Accent color', neutral: 'Neutral palette', radius: 'Corner radius', data: 'Data', exportBackup: 'Export backup', importBackup: 'Import backup',
       backupOk: 'Backup saved', importOk: 'Backup restored', backupError: 'Operation failed',
       loadDemo: 'Load sample data', clearData: 'Clear all data', clearConfirm: 'All wallets, categories and transactions will be deleted. Are you sure?',
       demoLoaded: 'Sample data loaded', dataCleared: 'All data cleared',
+      profile: 'Profile & security', displayName: 'Display name', setPin: 'Set PIN', changePin: 'Change PIN',
+      removePin: 'Remove PIN', pinRemoved: 'PIN removed',
     },
+    lock: { title: 'Locked', subtitle: 'Enter PIN', enterNew: 'Enter new PIN', confirmNew: 'Re-enter PIN', pinSet: 'PIN set' },
     common: {
       soon: 'This section is coming soon (under development).',
       save: 'Save', cancel: 'Cancel', delete: 'Delete', edit: 'Edit', add: 'Add', close: 'Close', required: 'Required',
@@ -105,11 +111,14 @@ export const messages = {
     settings: {
       title: 'Настройки', appearance: 'Внешний вид', theme: 'Тема',
       themeSystem: 'Система', themeLight: 'Светлая', themeDark: 'Тёмная', language: 'Язык',
-      primaryColor: 'Акцентный цвет', data: 'Данные', exportBackup: 'Экспорт резервной копии', importBackup: 'Импорт резервной копии',
+      primaryColor: 'Акцентный цвет', neutral: 'Нейтральная палитра', radius: 'Скругление углов', data: 'Данные', exportBackup: 'Экспорт резервной копии', importBackup: 'Импорт резервной копии',
       backupOk: 'Копия сохранена', importOk: 'Копия восстановлена', backupError: 'Ошибка операции',
       loadDemo: 'Загрузить пример', clearData: 'Очистить все данные', clearConfirm: 'Все кошельки, категории и операции будут удалены. Вы уверены?',
       demoLoaded: 'Пример загружен', dataCleared: 'Все данные удалены',
+      profile: 'Профиль и безопасность', displayName: 'Отображаемое имя', setPin: 'Задать PIN', changePin: 'Изменить PIN',
+      removePin: 'Удалить PIN', pinRemoved: 'PIN удалён',
     },
+    lock: { title: 'Заблокировано', subtitle: 'Введите PIN', enterNew: 'Новый PIN', confirmNew: 'Повторите PIN', pinSet: 'PIN задан' },
     common: {
       soon: 'Этот раздел скоро появится (в разработке).',
       save: 'Сохранить', cancel: 'Отмена', delete: 'Удалить', edit: 'Изменить', add: 'Добавить', close: 'Закрыть', required: 'Обязательное поле',
