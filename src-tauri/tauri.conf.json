@@ -26,12 +26,30 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "category": "Finance",
+    "publisher": "stackvo",
+    "copyright": "© 2026 stackvo",
+    "shortDescription": "Kişisel finans yöneticisi",
+    "longDescription": "Weltoly - offline çalışan kişisel finans uygulaması. Cüzdanlar, işlemler, kategoriler ve çoklu para birimiyle harcamalarını takip et.",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "macOS": {
+      "minimumSystemVersion": "10.15"
+    },
+    "windows": {
+      "nsis": {
+        "installMode": "perMachine"
+      }
+    },
+    "linux": {
+      "deb": {
+        "depends": ["libwebkit2gtk-4.1-0", "libgtk-3-0"]
+      }
+    }
   }
 }
