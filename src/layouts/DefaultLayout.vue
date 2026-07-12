@@ -3,25 +3,28 @@ import { useI18n } from 'vue-i18n'
 import { useDisplay } from 'vuetify'
 import { useRoute } from 'vue-router'
 
+import { useTrnsFormStore } from '@/features/trnForm/store'
+import TrnFormDialog from '@/features/trnForm/components/TrnFormDialog.vue'
+
 const { t } = useI18n()
 const { mobile } = useDisplay()
 const route = useRoute()
+const trnForm = useTrnsFormStore()
 
 type NavItem = { key: string, to: string, icon: string, labelKey: string }
 
 const navItems: NavItem[] = [
   { key: 'dashboard', to: '/dashboard', icon: 'mdi-view-dashboard-outline', labelKey: 'nav.dashboard' },
   { key: 'wallets', to: '/wallets', icon: 'mdi-wallet-outline', labelKey: 'nav.wallets' },
+  { key: 'categories', to: '/categories', icon: 'mdi-shape-outline', labelKey: 'nav.categories' },
   { key: 'stat', to: '/stat', icon: 'mdi-chart-box-outline', labelKey: 'nav.stat' },
   { key: 'settings', to: '/settings', icon: 'mdi-cog-outline', labelKey: 'nav.settings' },
 ]
 
 const activeKey = computed(() => (route.meta.navKey as string) ?? 'dashboard')
 
-const addSnackbar = ref(false)
 function onAdd() {
-  // Faz 2'de işlem formu (trnForm) buradan açılacak.
-  addSnackbar.value = true
+  trnForm.openFormForCreate()
 }
 </script>
 
@@ -46,9 +49,7 @@ function onAdd() {
   </v-navigation-drawer>
 
   <v-app-bar flat density="comfortable">
-    <v-app-bar-title class="font-weight-bold">
-      {{ t(`nav.${activeKey}`) }}
-    </v-app-bar-title>
+    <v-app-bar-title class="font-weight-bold">{{ t(`nav.${activeKey}`) }}</v-app-bar-title>
   </v-app-bar>
 
   <v-main>
@@ -81,7 +82,6 @@ function onAdd() {
     </v-btn>
   </v-bottom-navigation>
 
-  <v-snackbar v-model="addSnackbar" timeout="2000">
-    {{ t('common.soon') }}
-  </v-snackbar>
+  <!-- İşlem formu (global) -->
+  <TrnFormDialog />
 </template>
