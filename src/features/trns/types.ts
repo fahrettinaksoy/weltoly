@@ -22,6 +22,7 @@ export type TransferSide = 'expense' | 'income'
 const baseTrnSchema = z.object({
   date: z.number(),
   desc: z.string().optional(),
+  tagIds: z.array(z.string()).optional(),
   updatedAt: z.number(),
 })
 
@@ -79,6 +80,7 @@ export type TrnsGetterProps = {
     start: number
   }
   sort?: boolean
+  tagsIds?: string[]
   trnsIds?: TrnId[]
   trnsItems?: Trns
   trnsTypes?: TrnType[]
@@ -96,6 +98,7 @@ export type TrnFormValues = {
   desc?: string
   expenseWalletId: WalletId | null
   incomeWalletId: WalletId | null
+  tagIds: string[]
   transferType: TransferSide
   trnId: null | TrnId
 

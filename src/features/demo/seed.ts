@@ -1,10 +1,11 @@
 import {
   categoryToRow, emitTableChange, getDb, isTauriRuntime,
-  resolveWriteUid, trnToRow, upsertRow, walletToRow,
+  resolveWriteUid, tagToRow, trnToRow, upsertRow, walletToRow,
 } from '@/services/db'
 import { TrnType } from '@/features/trns/types'
 import type { WalletItem } from '@/features/wallets/types'
 import type { CategoryItem } from '@/features/categories/types'
+import type { TagItem } from '@/features/tags/types'
 import type { TrnItem } from '@/features/trns/types'
 
 const uid = resolveWriteUid(null)
@@ -12,10 +13,10 @@ const DAY = 86_400_000
 
 // Sabit id'ler → yeniden yükleme çoğaltmaz, üzerine yazar.
 const wallets: { id: string, item: WalletItem }[] = [
-  { id: 'demo-w-cash', item: base({ name: 'Cash', type: 'cash', currency: 'USD', color: '#22c55e', order: 0 }) },
-  { id: 'demo-w-bank', item: base({ name: 'Bank', type: 'cashless', currency: 'USD', color: '#2563eb', order: 1 }) },
-  { id: 'demo-w-card', item: { ...base({ name: 'Card', type: 'credit', currency: 'USD', color: '#a855f7', order: 2 }), type: 'credit', creditLimit: 5000 } },
-  { id: 'demo-w-savings', item: base({ name: 'Savings', type: 'deposit', currency: 'EUR', color: '#14b8a6', order: 3 }) },
+  { id: 'demo-w-cash', item: base({ name: 'Nakit', type: 'cash', currency: 'USD', color: '#22c55e', order: 0 }) },
+  { id: 'demo-w-bank', item: base({ name: 'Banka Hesabı', type: 'cashless', currency: 'USD', color: '#2563eb', order: 1 }) },
+  { id: 'demo-w-card', item: { ...base({ name: 'Kredi Kartı', type: 'credit', currency: 'USD', color: '#a855f7', order: 2 }), type: 'credit', creditLimit: 5000 } },
+  { id: 'demo-w-savings', item: base({ name: 'Birikim', type: 'deposit', currency: 'EUR', color: '#14b8a6', order: 3 }) },
 ]
 
 function base(p: { name: string, type: WalletItem['type'], currency: string, color: string, order: number }): WalletItem {
@@ -30,19 +31,35 @@ function cat(name: string, icon: string, color: string, parentId: string | 0 = 0
 }
 
 const categories: { id: string, item: CategoryItem }[] = [
-  { id: 'demo-c-food', item: cat('Food', 'mdi:food', '#f97316', 0, true) },
-  { id: 'demo-c-groceries', item: cat('Groceries', 'mdi:cart', '#f97316', 'demo-c-food') },
-  { id: 'demo-c-restaurant', item: cat('Restaurants', 'mdi:silverware-fork-knife', '#f97316', 'demo-c-food') },
-  { id: 'demo-c-transport', item: cat('Transport', 'mdi:car', '#0ea5e9', 0, true) },
-  { id: 'demo-c-fuel', item: cat('Fuel', 'mdi:gas-station', '#0ea5e9', 'demo-c-transport') },
-  { id: 'demo-c-taxi', item: cat('Taxi', 'mdi:taxi', '#0ea5e9', 'demo-c-transport') },
-  { id: 'demo-c-shopping', item: cat('Shopping', 'mdi:shopping', '#ec4899', 0) },
-  { id: 'demo-c-bills', item: cat('Bills', 'mdi:file-document', '#64748b', 0) },
-  { id: 'demo-c-rent', item: cat('Rent', 'mdi:home', '#64748b', 'demo-c-bills') },
-  { id: 'demo-c-utilities', item: cat('Utilities', 'mdi:flash', '#eab308', 'demo-c-bills') },
-  { id: 'demo-c-fun', item: cat('Entertainment', 'mdi:movie', '#8b5cf6', 0) },
-  { id: 'demo-c-salary', item: cat('Salary', 'mdi:cash-multiple', '#22c55e', 0, true) },
+  { id: 'demo-c-food', item: cat('Yemek', 'mdi-food', '#f97316', 0, true) },
+  { id: 'demo-c-groceries', item: cat('Market', 'mdi-cart', '#f97316', 'demo-c-food') },
+  { id: 'demo-c-restaurant', item: cat('Restoran', 'mdi-silverware-fork-knife', '#f97316', 'demo-c-food') },
+  { id: 'demo-c-transport', item: cat('Ulaşım', 'mdi-car', '#0ea5e9', 0, true) },
+  { id: 'demo-c-fuel', item: cat('Yakıt', 'mdi-gas-station', '#0ea5e9', 'demo-c-transport') },
+  { id: 'demo-c-taxi', item: cat('Taksi', 'mdi-taxi', '#0ea5e9', 'demo-c-transport') },
+  { id: 'demo-c-shopping', item: cat('Alışveriş', 'mdi-shopping', '#ec4899', 0) },
+  { id: 'demo-c-bills', item: cat('Faturalar', 'mdi-file-document', '#64748b', 0) },
+  { id: 'demo-c-rent', item: cat('Kira', 'mdi-home', '#64748b', 'demo-c-bills') },
+  { id: 'demo-c-utilities', item: cat('Elektrik & Su', 'mdi-flash', '#eab308', 'demo-c-bills') },
+  { id: 'demo-c-fun', item: cat('Eğlence', 'mdi-movie', '#8b5cf6', 0) },
+  { id: 'demo-c-salary', item: cat('Maaş', 'mdi-cash-multiple', '#22c55e', 0, true) },
 ]
+
+// Örnek etiketler (Türkçe) — sabit id'ler.
+const tags: { id: string, item: TagItem }[] = [
+  { id: 'demo-tag-tatil', item: { name: 'Tatil', color: '#0ea5e9' } },
+  { id: 'demo-tag-is', item: { name: 'İş', color: '#6366f1' } },
+  { id: 'demo-tag-abonelik', item: { name: 'Abonelik', color: '#f59e0b' } },
+  { id: 'demo-tag-hediye', item: { name: 'Hediye', color: '#ec4899' } },
+]
+
+// Kategoriye göre otomatik etiket ataması (demo veriye çeşni).
+const tagByCategory: Record<string, string[]> = {
+  'demo-c-fun': ['demo-tag-tatil'],
+  'demo-c-restaurant': ['demo-tag-tatil'],
+  'demo-c-utilities': ['demo-tag-abonelik'],
+  'demo-c-shopping': ['demo-tag-hediye'],
+}
 
 // [gün önce, kategori, cüzdan, tutar]
 const expenseRows: [number, string, string, number][] = [
@@ -66,19 +83,20 @@ const expenseRows: [number, string, string, number][] = [
 function buildTrns(now: number): { id: string, item: TrnItem }[] {
   const list: { id: string, item: TrnItem }[] = []
 
-  // Maaş (gelir)
+  // Maaş (gelir) — 'İş' etiketiyle
   ;[2, 32, 62].forEach((d, i) => {
     list.push({
       id: `demo-t-inc-${i}`,
-      item: { type: TrnType.Income, amount: 4000, categoryId: 'demo-c-salary', walletId: 'demo-w-bank', date: now - d * DAY, updatedAt: now },
+      item: { type: TrnType.Income, amount: 4000, categoryId: 'demo-c-salary', walletId: 'demo-w-bank', date: now - d * DAY, updatedAt: now, tagIds: ['demo-tag-is'] },
     })
   })
 
-  // Giderler
+  // Giderler — kategoriye göre etiketli
   expenseRows.forEach(([d, categoryId, walletId, amount], i) => {
+    const tagIds = tagByCategory[categoryId]
     list.push({
       id: `demo-t-exp-${i}`,
-      item: { type: TrnType.Expense, amount, categoryId, walletId, date: now - d * DAY, updatedAt: now },
+      item: { type: TrnType.Expense, amount, categoryId, walletId, date: now - d * DAY, updatedAt: now, ...(tagIds ? { tagIds } : {}) },
     })
   })
 
@@ -110,9 +128,11 @@ export async function seedDemoData(): Promise<void> {
     await upsertRow('wallets', w.id, walletToRow(w.item, uid))
   for (const c of categories)
     await upsertRow('categories', c.id, categoryToRow(c.item, uid))
+  for (const tag of tags)
+    await upsertRow('tags', tag.id, tagToRow(tag.item, uid))
   for (const t of buildTrns(Date.now()))
     await upsertRow('trns', t.id, trnToRow(t.item, uid))
-  emitTableChange('wallets', 'categories', 'trns')
+  emitTableChange('wallets', 'categories', 'tags', 'trns')
 }
 
 export async function clearAllData(): Promise<void> {
@@ -120,7 +140,7 @@ export async function clearAllData(): Promise<void> {
     throw new Error('Tauri runtime gerekli (npm run tauri:dev)')
 
   const db = await getDb()
-  for (const t of ['trns', 'wallets', 'categories'])
+  for (const t of ['trns', 'wallets', 'categories', 'tags'])
     await db.execute(`DELETE FROM ${t}`)
-  emitTableChange('trns', 'wallets', 'categories')
+  emitTableChange('trns', 'wallets', 'categories', 'tags')
 }

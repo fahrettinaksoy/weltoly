@@ -1,5 +1,6 @@
 import type { CategoryId, CategoryItem } from '@/features/categories/types'
 import type { Rates } from '@/features/currencies/types'
+import type { TagItem } from '@/features/tags/types'
 import type { TrnItem } from '@/features/trns/types'
 import type { WalletItem, WalletType } from '@/features/wallets/types'
 
@@ -12,14 +13,29 @@ export type Row = Record<string, any> & { id: string }
 // reconcile değişiklik-tespiti doğru çalışsın.
 const ts = (v: unknown): number => (v == null ? 0 : Number(v))
 
+// tagIds JSON kolonu -> string[] (bozuk/boşsa []).
+function parseTagIds(v: unknown): string[] {
+  if (!v || typeof v !== 'string')
+    return []
+  try {
+    const arr = JSON.parse(v)
+    return Array.isArray(arr) ? arr.filter((x): x is string => typeof x === 'string') : []
+  }
+  catch {
+    return []
+  }
+}
+
 // --- okuma: SQLite satırı -> Pinia item şekli ---------------------------------
 
 export function rowToTrn(row: Row): TrnItem {
   const type = Number(row.type) as TrnType
+  const tagIds = parseTagIds(row.tagIds)
   const base = {
     date: Number(row.date),
     updatedAt: ts(row.updatedAt),
     ...(row.desc ? { desc: row.desc as string } : {}),
+    ...(tagIds.length ? { tagIds } : {}),
   }
 
   if (type === TrnType.Transfer) {
@@ -62,10 +78,17 @@ export function rowToWallet(row: Row): WalletItem {
   return { ...base, type: row.type as Exclude<WalletType, 'credit'> }
 }
 
+// Ikon adı normalizasyonu: kaynak veri Iconify formatında ('mdi:food') olabilir,
+// ama Vuetify MDI font seti tire bekler ('mdi-food'). Uyumsuzluğu okuma anında düzelt.
+export function normalizeMdi(icon: unknown): string {
+  const s = typeof icon === 'string' ? icon : ''
+  return s.startsWith('mdi:') ? `mdi-${s.slice(4)}` : s
+}
+
 export function rowToCategory(row: Row): CategoryItem {
   return {
     color: row.color,
-    icon: row.icon,
+    icon: normalizeMdi(row.icon),
     name: row.name,
     parentId: (row.parentId ?? 0) as CategoryId | 0, // null -> 0 (kök işareti)
     showInLastUsed: !!row.showInLastUsed,
@@ -98,6 +121,7 @@ export function trnToRow(item: TrnItem, userId: string): Record<string, unknown>
     expenseWalletId: null as string | null,
     incomeAmount: null as number | null,
     incomeWalletId: null as string | null,
+    tagIds: item.tagIds?.length ? JSON.stringify(item.tagIds) : null,
     type: item.type,
     updatedAt: item.updatedAt ?? Date.now(),
     userId,
@@ -130,6 +154,23 @@ export function walletToRow(item: WalletItem, userId: string): Record<string, un
     name: item.name,
     order: Math.round(item.order ?? 0), // tamsayı sütun - yuvarla, sessizce kırpma
     type: item.type,
+    updatedAt: item.updatedAt ?? Date.now(),
+    userId,
+  }
+}
+
+export function rowToTag(row: Row): TagItem {
+  return {
+    name: row.name,
+    color: row.color,
+    ...(row.updatedAt != null ? { updatedAt: Number(row.updatedAt) } : {}),
+  }
+}
+
+export function tagToRow(item: TagItem, userId: string): Record<string, unknown> {
+  return {
+    name: item.name,
+    color: item.color,
     updatedAt: item.updatedAt ?? Date.now(),
     userId,
   }

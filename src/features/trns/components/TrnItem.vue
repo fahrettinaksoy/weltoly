@@ -1,17 +1,23 @@
 <script setup lang="ts">
-import { formatMoney } from '@/shared/lib/money'
 import { useTrnsStore } from '@/features/trns/store'
 import { useTrnsFormStore } from '@/features/trnForm/store'
-import { useSettingsStore } from '@/stores/settings'
+import { useTagsStore } from '@/features/tags/store'
+import { useFormat } from '@/composables/useFormat'
 import { TrnType } from '@/features/trns/types'
 
 const props = defineProps<{ id: string }>()
 
 const trnsStore = useTrnsStore()
 const trnForm = useTrnsFormStore()
-const settings = useSettingsStore()
+const tagsStore = useTagsStore()
+const fmt = useFormat()
 
 const full = computed(() => trnsStore.computeTrnItem(props.id))
+
+// Etiketler: yalnız hâlâ var olan etiket id'lerini çipe dönüştür.
+const tags = computed(() =>
+  tagsStore.resolveIds(full.value?.tagIds).map(id => ({ id, ...tagsStore.items[id]! })),
+)
 
 const amountColor = computed(() => {
   const f = full.value
@@ -29,9 +35,9 @@ const amountText = computed(() => {
   if (!f)
     return ''
   if (f.type === TrnType.Transfer)
-    return formatMoney(f.expenseAmount, f.expenseWallet.currency, settings.locale)
+    return fmt.money(f.expenseAmount, f.expenseWallet.currency)
   const sign = f.type === TrnType.Income ? '+' : '-'
-  return `${sign}${formatMoney(f.amount, f.wallet.currency, settings.locale)}`
+  return `${sign}${fmt.money(f.amount, f.wallet.currency)}`
 })
 
 const subtitle = computed(() => {
@@ -60,6 +66,14 @@ const title = computed(() => {
     </template>
     <v-list-item-title class="font-weight-medium">{{ title }}</v-list-item-title>
     <v-list-item-subtitle>{{ subtitle }}</v-list-item-subtitle>
+    <div v-if="tags.length" class="d-flex flex-wrap ga-1 mt-1">
+      <v-chip
+        v-for="tag in tags" :key="tag.id"
+        :color="tag.color" size="x-small" variant="flat" label
+      >
+        {{ tag.name }}
+      </v-chip>
+    </div>
     <template #append>
       <div class="text-body-1 font-weight-medium" :class="`text-${amountColor}`">{{ amountText }}</div>
     </template>

@@ -6,7 +6,7 @@ import { recordOutbox } from './outbox'
 // tek-ifadelik atomik `INSERT ... ON CONFLICT(id) DO UPDATE` kullanabiliriz.
 
 // Her mutasyon güvenilir sabit tablolardan birini hedefler (çağıran kullanıcı girdisi geçmez).
-const WRITABLE_TABLES = new Set(['categories', 'trns', 'user_settings', 'wallets', 'rates'])
+const WRITABLE_TABLES = new Set(['categories', 'tags', 'trns', 'user_settings', 'wallets', 'rates'])
 
 function assertTable(table: string): void {
   if (!WRITABLE_TABLES.has(table))

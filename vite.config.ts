@@ -14,12 +14,12 @@ const host = process.env.TAURI_DEV_HOST
 export default defineConfig(async () => ({
   plugins: [
     vue(),
-    // Vuetify: otomatik import (component treeshaking) + configFile ile stil treeshaking.
-    // Yalnız kullanılan bileşenlerin stilleri, settings.scss değişkenleriyle derlenir.
-    vuetify({
-      autoImport: true,
-      styles: { configFile: 'src/styles/settings.scss' },
-    }),
+    // Vuetify: bileşen otomatik import (JS treeshaking). Stiller ÖNCEDEN DERLENMİŞ CSS
+    // olarak `import 'vuetify/styles'` ile yüklenir (plugins/vuetify/index.ts).
+    // NOT: `styles: { configFile }` (SASS treeshaking) BİLİNÇLİ kullanılmıyor — o mod
+    // `import 'vuetify/styles'` ile birleşince kullanılmayan bileşenlerin .sass'ını
+    // anlık derlemeye çalışıp 404 veriyor ve VApp.sass 404'ü beyaz ekrana yol açıyordu.
+    vuetify({ autoImport: true }),
     // ref/computed/watch/store/router gibi API'ler için otomatik import
     AutoImport({
       imports: ['vue', 'vue-router', 'pinia', '@vueuse/core'],

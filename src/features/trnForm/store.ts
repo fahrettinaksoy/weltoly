@@ -42,11 +42,20 @@ export const useTrnsFormStore = defineStore('trnForm', () => {
     desc: undefined,
     expenseWalletId: null,
     incomeWalletId: null,
+    tagIds: [],
     transferType: 'expense',
     trnId: null,
     trnType: TrnType.Expense,
     walletId: null,
   })
+
+  function toggleTag(id: string) {
+    const idx = values.tagIds.indexOf(id)
+    if (idx === -1)
+      values.tagIds = [...values.tagIds, id]
+    else
+      values.tagIds = values.tagIds.filter(t => t !== id)
+  }
 
   const ui = ref<TrnFormUi>({ isShow: false })
   const modal = ref({ description: false })
@@ -181,6 +190,7 @@ export const useTrnsFormStore = defineStore('trnForm', () => {
     values.amount = [0, 0, 0]
     values.amountRaw = ['', '', '']
     values.desc = undefined
+    values.tagIds = []
     values.trnId = null
   }
 
@@ -192,6 +202,7 @@ export const useTrnsFormStore = defineStore('trnForm', () => {
     values.desc = undefined
     values.expenseWalletId = null
     values.incomeWalletId = null
+    values.tagIds = []
     values.transferType = 'expense'
     values.trnId = null
     values.trnType = TrnType.Expense
@@ -218,6 +229,7 @@ export const useTrnsFormStore = defineStore('trnForm', () => {
 
       values.incomeWalletId = props.walletsIds[0] ?? null
       values.expenseWalletId = props.walletsIds[1] ?? props.walletsIds[0] ?? null
+      values.tagIds = []
     }
 
     if (props.action === 'edit')
@@ -240,6 +252,7 @@ export const useTrnsFormStore = defineStore('trnForm', () => {
       values.trnType = props.trn.type
       values.desc = props.trn.desc
       values.date = props.trn.date
+      values.tagIds = props.trn.tagIds ? [...props.trn.tagIds] : []
 
       if (props.trn.type === TrnType.Transfer && isSameCurrencyTransfer.value && values.amount[1] !== values.amount[2]) {
         values.amount[2] = values.amount[1]
@@ -361,6 +374,7 @@ export const useTrnsFormStore = defineStore('trnForm', () => {
     shouldShowSum,
     submitAndSave,
     switchTransferWallets,
+    toggleTag,
     transferExpenseWalletId,
     transferIncomeWalletId,
     ui,

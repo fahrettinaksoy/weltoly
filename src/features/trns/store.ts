@@ -149,8 +149,8 @@ export const useTrnsStore = defineStore('trns', () => {
     if (!category) {
       if (trn.categoryId === 'transfer' || trn.categoryId === 'adjustment') {
         category = trn.categoryId === 'transfer'
-          ? { color: '', icon: 'mdi:swap-horizontal', name: 'Transfer', parentId: 0, showInLastUsed: false, showInQuickSelector: false }
-          : { color: '', icon: 'mdi:scale-balance', name: 'Adjustment', parentId: 0, showInLastUsed: false, showInQuickSelector: false }
+          ? { color: '', icon: 'mdi-swap-horizontal', name: 'Transfer', parentId: 0, showInLastUsed: false, showInQuickSelector: false }
+          : { color: '', icon: 'mdi-scale-balance', name: 'Adjustment', parentId: 0, showInLastUsed: false, showInQuickSelector: false }
       }
       else {
         return null

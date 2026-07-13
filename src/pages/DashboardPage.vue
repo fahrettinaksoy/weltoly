@@ -1,18 +1,27 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
-import { formatMoney } from '@/shared/lib/money'
 import { useWalletsStore } from '@/features/wallets/store'
 import { useTrnsStore } from '@/features/trns/store'
 import { useCurrenciesStore } from '@/features/currencies/store'
-import { useSettingsStore } from '@/stores/settings'
+import { useTagsStore } from '@/features/tags/store'
+import { useFormat } from '@/composables/useFormat'
 import TrnList from '@/features/trns/components/TrnList.vue'
 
 const { t } = useI18n()
 const walletsStore = useWalletsStore()
 const trnsStore = useTrnsStore()
 const currenciesStore = useCurrenciesStore()
-const settings = useSettingsStore()
+const tagsStore = useTagsStore()
+const fmt = useFormat()
+
+// Panel etiket filtresi (boş = tümü).
+const filterTagIds = ref<string[]>([])
+function toggleFilterTag(id: string) {
+  filterTagIds.value = filterTagIds.value.includes(id)
+    ? filterTagIds.value.filter(t => t !== id)
+    : [...filterTagIds.value, id]
+}
 
 const totalBalance = computed(() => {
   let sum = 0
@@ -24,7 +33,12 @@ const totalBalance = computed(() => {
   return sum
 })
 
-const recentIds = computed(() => trnsStore.getStoreTrnsIds({ sort: true }).slice(0, 50))
+const recentIds = computed(() =>
+  trnsStore.getStoreTrnsIds({
+    sort: true,
+    tagsIds: filterTagIds.value.length ? filterTagIds.value : undefined,
+  }).slice(0, 50),
+)
 </script>
 
 <template>
@@ -36,10 +50,25 @@ const recentIds = computed(() => trnsStore.getStoreTrnsIds({ sort: true }).slice
 
     <v-card color="primary" variant="flat" class="mb-4 pa-5">
       <div class="text-caption" style="opacity: 0.8;">{{ t('dashboard.totalBalance') }}</div>
-      <div class="text-h4 font-weight-bold">{{ formatMoney(totalBalance, currenciesStore.base, settings.locale) }}</div>
+      <div class="text-h4 font-weight-bold">{{ fmt.money(totalBalance, currenciesStore.base) }}</div>
     </v-card>
 
     <div class="text-subtitle-1 font-weight-medium mb-2">{{ t('dashboard.recentTrns') }}</div>
+
+    <!-- Etiket filtresi -->
+    <div v-if="tagsStore.hasItems" class="d-flex flex-wrap ga-2 mb-3">
+      <v-chip
+        v-for="id in tagsStore.sortedIds"
+        :key="id"
+        :color="tagsStore.items[id]?.color"
+        :variant="filterTagIds.includes(id) ? 'flat' : 'outlined'"
+        size="small"
+        @click="toggleFilterTag(id)"
+      >
+        <v-icon v-if="filterTagIds.includes(id)" icon="mdi-check" start size="14" />
+        {{ tagsStore.items[id]?.name }}
+      </v-chip>
+    </div>
 
     <TrnList v-if="recentIds.length" :ids="recentIds" />
 

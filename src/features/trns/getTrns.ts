@@ -10,11 +10,12 @@ export function filterTrnsIds(props: TrnsGetterProps) {
 
   const walletsSet = props.walletsIds?.length ? new Set(props.walletsIds) : null
   const categoriesSet = props.categoriesIds?.length ? new Set(props.categoriesIds) : null
+  const tagsSet = props.tagsIds?.length ? new Set(props.tagsIds) : null
   const typesSet = Array.isArray(props.trnsTypes) ? new Set(props.trnsTypes) : null
   const start = props.dates?.start
   const end = props.dates?.end
 
-  const hasFilters = typesSet || start !== undefined || end !== undefined || walletsSet || categoriesSet
+  const hasFilters = typesSet || start !== undefined || end !== undefined || walletsSet || categoriesSet || tagsSet
 
   const result = hasFilters
     ? trnsIds.filter((id) => {
@@ -36,6 +37,11 @@ export function filterTrnsIds(props: TrnsGetterProps) {
         }
         if (categoriesSet && !categoriesSet.has(trn.categoryId))
           return false
+        if (tagsSet) {
+          // Herhangi bir seçili etiketi taşıyan işlemler (OR eşleşmesi).
+          if (!trn.tagIds?.some(id => tagsSet.has(id)))
+            return false
+        }
         return true
       })
     : trnsIds

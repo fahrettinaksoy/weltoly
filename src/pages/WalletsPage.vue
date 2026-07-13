@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
-import { formatMoney } from '@/shared/lib/money'
 import { walletTypeIcon } from '@/features/wallets/walletMeta'
 import { useWalletsStore } from '@/features/wallets/store'
 import { useCurrenciesStore } from '@/features/currencies/store'
-import { useSettingsStore } from '@/stores/settings'
+import { useFormat } from '@/composables/useFormat'
 import WalletFormDialog from '@/features/wallets/components/WalletFormDialog.vue'
 
 const { t } = useI18n()
 const walletsStore = useWalletsStore()
 const currenciesStore = useCurrenciesStore()
-const settings = useSettingsStore()
+const fmt = useFormat()
 
 const showDialog = ref(false)
 const editId = ref<string | null>(null)
@@ -48,7 +47,7 @@ const total = computed(() => {
     <!-- Toplam -->
     <v-card v-if="walletsStore.hasItems" variant="tonal" class="mb-4 pa-4">
       <div class="text-caption text-medium-emphasis">{{ t('wallets.total') }}</div>
-      <div class="text-h5 font-weight-bold">{{ formatMoney(total, currenciesStore.base, settings.locale) }}</div>
+      <div class="text-h5 font-weight-bold">{{ fmt.money(total, currenciesStore.base) }}</div>
     </v-card>
 
     <!-- Liste -->
@@ -76,7 +75,7 @@ const total = computed(() => {
 
         <template #append>
           <div class="text-body-1 font-weight-medium">
-            {{ formatMoney(walletsStore.itemsComputed[id]?.amount ?? 0, walletsStore.itemsComputed[id]!.currency, settings.locale) }}
+            {{ fmt.money(walletsStore.itemsComputed[id]?.amount ?? 0, walletsStore.itemsComputed[id]!.currency) }}
           </div>
         </template>
       </v-list-item>

@@ -14,11 +14,11 @@ import { useTrnsStore } from '@/features/trns/store'
 import { showErrorToast } from '@/stores/ui'
 
 const adjustment: CategoryItem = {
-  color: '', icon: 'mdi:plus-minus', name: 'Adjustment', parentId: 0,
+  color: '', icon: 'mdi-plus-minus', name: 'Adjustment', parentId: 0,
   showInLastUsed: false, showInQuickSelector: false,
 }
 const transfer: CategoryItem = {
-  color: '', icon: 'mdi:swap-horizontal', name: 'Transfer', parentId: 0,
+  color: '', icon: 'mdi-swap-horizontal', name: 'Transfer', parentId: 0,
   showInLastUsed: false, showInQuickSelector: false,
 }
 

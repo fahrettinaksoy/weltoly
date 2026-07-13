@@ -5,16 +5,19 @@ export type LocaleCode = 'tr' | 'en' | 'ru'
 export const messages = {
   tr: {
     app: { name: 'Weltoly' },
-    nav: { dashboard: 'Panel', wallets: 'Cüzdanlar', categories: 'Kategoriler', stat: 'İstatistik', settings: 'Ayarlar', add: 'Ekle' },
+    nav: { dashboard: 'Panel', wallets: 'Cüzdanlar', categories: 'Kategoriler', tags: 'Etiketler', stat: 'İstatistik', settings: 'Ayarlar', add: 'Ekle', more: 'Daha' },
     settings: {
       title: 'Ayarlar', appearance: 'Görünüm', theme: 'Tema',
-      themeSystem: 'Sistem', themeLight: 'Açık', themeDark: 'Koyu', language: 'Dil',
+      themeSystem: 'Sistem', themeLight: 'Açık', themeDark: 'Koyu', language: 'Dil', currency: 'Para birimi',
       primaryColor: 'Ana renk', neutral: 'Nötr palet', radius: 'Köşe yuvarlaklığı', data: 'Veri', exportBackup: 'Yedeği dışa aktar', importBackup: 'Yedeği içe aktar',
       backupOk: 'Yedek kaydedildi', importOk: 'Yedek geri yüklendi', backupError: 'İşlem başarısız',
       loadDemo: 'Örnek veri yükle', clearData: 'Tüm veriyi sil', clearConfirm: 'Tüm cüzdan, kategori ve işlemler silinecek. Emin misin?',
       demoLoaded: 'Örnek veri yüklendi', dataCleared: 'Tüm veri silindi',
       profile: 'Profil ve güvenlik', displayName: 'Görünen ad', setPin: 'PIN belirle', changePin: 'PIN değiştir',
       removePin: 'PIN kaldır', pinRemoved: 'PIN kaldırıldı',
+      formatting: 'Biçimlendirme', formattingHint: 'Biçimlendirme, verilerin nasıl saklandığını etkilemez; istediğin zaman değiştirebilirsin.',
+      numbers: 'Sayılar', dates: 'Tarihler', firstDayOfWeek: 'Haftanın ilk günü', hideDecimals: 'Ondalıkları gizle',
+      formatAuto: 'Otomatik (dile göre)', sunday: 'Pazar', monday: 'Pazartesi',
     },
     lock: { title: 'Kilitli', subtitle: 'PIN gir', enterNew: 'Yeni PIN gir', confirmNew: 'PIN tekrar gir', pinSet: 'PIN ayarlandı' },
     a11y: { skipToContent: 'İçeriğe atla' },
@@ -24,7 +27,7 @@ export const messages = {
       save: 'Kaydet', cancel: 'Vazgeç', delete: 'Sil', edit: 'Düzenle', add: 'Ekle', close: 'Kapat', required: 'Zorunlu alan',
     },
     dashboard: { title: 'Panel', totalBalance: 'Toplam bakiye', recentTrns: 'Son işlemler', noTrns: 'Henüz işlem yok' },
-    stat: { day: 'Gün', week: 'Hafta', month: 'Ay', year: 'Yıl', balance: 'Bakiye', breakdown: 'Kategori kırılımı', noData: 'Bu aralıkta veri yok', filterWallets: 'Cüzdan filtresi' },
+    stat: { day: 'Gün', week: 'Hafta', month: 'Ay', year: 'Yıl', balance: 'Bakiye', breakdown: 'Kategori kırılımı', noData: 'Bu aralıkta veri yok', filterWallets: 'Cüzdan filtresi', filterTags: 'Etiket filtresi' },
     wallets: {
       title: 'Cüzdanlar', add: 'Cüzdan ekle', edit: 'Cüzdanı düzenle', empty: 'Henüz cüzdan yok', emptyHint: 'İlk cüzdanını ekleyerek başla.',
       name: 'Ad', type: 'Tür', currency: 'Para birimi', color: 'Renk', creditLimit: 'Kredi limiti', description: 'Açıklama',
@@ -39,6 +42,13 @@ export const messages = {
       showInLastUsed: 'Son kullanılanlarda göster', showInQuickSelector: 'Hızlı seçicide göster (favori)',
       pickIcon: 'İkon seç', deleteConfirm: 'Bu kategoriyi ve işlemlerini silmek istediğine emin misin?',
       errors: { saveFailed: 'Kategori kaydedilemedi', deleteFailed: 'Kategori silinemedi' },
+    },
+    tags: {
+      title: 'Etiketler', add: 'Etiket ekle', name: 'Ad', color: 'Renk',
+      newTitle: 'Yeni etiket', editTitle: 'Etiketi düzenle',
+      empty: 'Henüz etiket yok', emptyHint: 'İşlemleri sınıflandırmak için ilk etiketini ekle.',
+      deleteConfirm: 'Bu etiket silinsin mi? İşlemlerden de kaldırılır.',
+      errors: { saveFailed: 'Etiket kaydedilemedi', deleteFailed: 'Etiket silinemedi' },
     },
     trns: {
       empty: 'Henüz işlem yok', today: 'Bugün', yesterday: 'Dün',
@@ -58,16 +68,19 @@ export const messages = {
 
   en: {
     app: { name: 'Weltoly' },
-    nav: { dashboard: 'Dashboard', wallets: 'Wallets', categories: 'Categories', stat: 'Stats', settings: 'Settings', add: 'Add' },
+    nav: { dashboard: 'Dashboard', wallets: 'Wallets', categories: 'Categories', tags: 'Tags', stat: 'Stats', settings: 'Settings', add: 'Add', more: 'More' },
     settings: {
       title: 'Settings', appearance: 'Appearance', theme: 'Theme',
-      themeSystem: 'System', themeLight: 'Light', themeDark: 'Dark', language: 'Language',
+      themeSystem: 'System', themeLight: 'Light', themeDark: 'Dark', language: 'Language', currency: 'Currency',
       primaryColor: 'Accent color', neutral: 'Neutral palette', radius: 'Corner radius', data: 'Data', exportBackup: 'Export backup', importBackup: 'Import backup',
       backupOk: 'Backup saved', importOk: 'Backup restored', backupError: 'Operation failed',
       loadDemo: 'Load sample data', clearData: 'Clear all data', clearConfirm: 'All wallets, categories and transactions will be deleted. Are you sure?',
       demoLoaded: 'Sample data loaded', dataCleared: 'All data cleared',
       profile: 'Profile & security', displayName: 'Display name', setPin: 'Set PIN', changePin: 'Change PIN',
       removePin: 'Remove PIN', pinRemoved: 'PIN removed',
+      formatting: 'Formatting', formattingHint: 'Formatting does not affect how data is stored, and can be changed at any time.',
+      numbers: 'Numbers', dates: 'Dates', firstDayOfWeek: 'First day of the week', hideDecimals: 'Hide decimal places',
+      formatAuto: 'Automatic (by language)', sunday: 'Sunday', monday: 'Monday',
     },
     lock: { title: 'Locked', subtitle: 'Enter PIN', enterNew: 'Enter new PIN', confirmNew: 'Re-enter PIN', pinSet: 'PIN set' },
     a11y: { skipToContent: 'Skip to content' },
@@ -77,7 +90,7 @@ export const messages = {
       save: 'Save', cancel: 'Cancel', delete: 'Delete', edit: 'Edit', add: 'Add', close: 'Close', required: 'Required',
     },
     dashboard: { title: 'Dashboard', totalBalance: 'Total balance', recentTrns: 'Recent transactions', noTrns: 'No transactions yet' },
-    stat: { day: 'Day', week: 'Week', month: 'Month', year: 'Year', balance: 'Balance', breakdown: 'Breakdown', noData: 'No data for this range', filterWallets: 'Filter by wallet' },
+    stat: { day: 'Day', week: 'Week', month: 'Month', year: 'Year', balance: 'Balance', breakdown: 'Breakdown', noData: 'No data for this range', filterWallets: 'Filter by wallet', filterTags: 'Filter by tag' },
     wallets: {
       title: 'Wallets', add: 'Add wallet', edit: 'Edit wallet', empty: 'No wallets yet', emptyHint: 'Start by adding your first wallet.',
       name: 'Name', type: 'Type', currency: 'Currency', color: 'Color', creditLimit: 'Credit limit', description: 'Description',
@@ -92,6 +105,13 @@ export const messages = {
       showInLastUsed: 'Show in recently used', showInQuickSelector: 'Show in quick selector (favorite)',
       pickIcon: 'Pick icon', deleteConfirm: 'Delete this category and its transactions?',
       errors: { saveFailed: 'Failed to save category', deleteFailed: 'Failed to delete category' },
+    },
+    tags: {
+      title: 'Tags', add: 'Add tag', name: 'Name', color: 'Color',
+      newTitle: 'New tag', editTitle: 'Edit tag',
+      empty: 'No tags yet', emptyHint: 'Add your first tag to label transactions.',
+      deleteConfirm: 'Delete this tag? It will be removed from transactions too.',
+      errors: { saveFailed: 'Failed to save tag', deleteFailed: 'Failed to delete tag' },
     },
     trns: {
       empty: 'No transactions yet', today: 'Today', yesterday: 'Yesterday',
@@ -111,16 +131,19 @@ export const messages = {
 
   ru: {
     app: { name: 'Weltoly' },
-    nav: { dashboard: 'Панель', wallets: 'Кошельки', categories: 'Категории', stat: 'Статистика', settings: 'Настройки', add: 'Добавить' },
+    nav: { dashboard: 'Панель', wallets: 'Кошельки', categories: 'Категории', tags: 'Метки', stat: 'Статистика', settings: 'Настройки', add: 'Добавить', more: 'Ещё' },
     settings: {
       title: 'Настройки', appearance: 'Внешний вид', theme: 'Тема',
-      themeSystem: 'Система', themeLight: 'Светлая', themeDark: 'Тёмная', language: 'Язык',
+      themeSystem: 'Система', themeLight: 'Светлая', themeDark: 'Тёмная', language: 'Язык', currency: 'Валюта',
       primaryColor: 'Акцентный цвет', neutral: 'Нейтральная палитра', radius: 'Скругление углов', data: 'Данные', exportBackup: 'Экспорт резервной копии', importBackup: 'Импорт резервной копии',
       backupOk: 'Копия сохранена', importOk: 'Копия восстановлена', backupError: 'Ошибка операции',
       loadDemo: 'Загрузить пример', clearData: 'Очистить все данные', clearConfirm: 'Все кошельки, категории и операции будут удалены. Вы уверены?',
       demoLoaded: 'Пример загружен', dataCleared: 'Все данные удалены',
       profile: 'Профиль и безопасность', displayName: 'Отображаемое имя', setPin: 'Задать PIN', changePin: 'Изменить PIN',
       removePin: 'Удалить PIN', pinRemoved: 'PIN удалён',
+      formatting: 'Форматирование', formattingHint: 'Форматирование не влияет на то, как хранятся данные, и его можно изменить в любое время.',
+      numbers: 'Числа', dates: 'Даты', firstDayOfWeek: 'Первый день недели', hideDecimals: 'Скрыть десятичные',
+      formatAuto: 'Авто (по языку)', sunday: 'Воскресенье', monday: 'Понедельник',
     },
     lock: { title: 'Заблокировано', subtitle: 'Введите PIN', enterNew: 'Новый PIN', confirmNew: 'Повторите PIN', pinSet: 'PIN задан' },
     a11y: { skipToContent: 'Перейти к содержимому' },
@@ -130,7 +153,7 @@ export const messages = {
       save: 'Сохранить', cancel: 'Отмена', delete: 'Удалить', edit: 'Изменить', add: 'Добавить', close: 'Закрыть', required: 'Обязательное поле',
     },
     dashboard: { title: 'Панель', totalBalance: 'Общий баланс', recentTrns: 'Последние операции', noTrns: 'Пока нет операций' },
-    stat: { day: 'День', week: 'Неделя', month: 'Месяц', year: 'Год', balance: 'Баланс', breakdown: 'Разбивка', noData: 'Нет данных за период', filterWallets: 'Фильтр по кошельку' },
+    stat: { day: 'День', week: 'Неделя', month: 'Месяц', year: 'Год', balance: 'Баланс', breakdown: 'Разбивка', noData: 'Нет данных за период', filterWallets: 'Фильтр по кошельку', filterTags: 'Фильтр по метке' },
     wallets: {
       title: 'Кошельки', add: 'Добавить кошелёк', edit: 'Изменить кошелёк', empty: 'Пока нет кошельков', emptyHint: 'Начните с добавления первого кошелька.',
       name: 'Название', type: 'Тип', currency: 'Валюта', color: 'Цвет', creditLimit: 'Кредитный лимит', description: 'Описание',
@@ -145,6 +168,13 @@ export const messages = {
       showInLastUsed: 'Показывать в недавних', showInQuickSelector: 'Показывать в быстром выборе (избранное)',
       pickIcon: 'Выбрать иконку', deleteConfirm: 'Удалить эту категорию и её операции?',
       errors: { saveFailed: 'Не удалось сохранить категорию', deleteFailed: 'Не удалось удалить категорию' },
+    },
+    tags: {
+      title: 'Метки', add: 'Добавить метку', name: 'Название', color: 'Цвет',
+      newTitle: 'Новая метка', editTitle: 'Изменить метку',
+      empty: 'Меток пока нет', emptyHint: 'Добавьте первую метку для операций.',
+      deleteConfirm: 'Удалить эту метку? Она также будет снята с операций.',
+      errors: { saveFailed: 'Не удалось сохранить метку', deleteFailed: 'Не удалось удалить метку' },
     },
     trns: {
       empty: 'Пока нет операций', today: 'Сегодня', yesterday: 'Вчера',

@@ -10,6 +10,7 @@ import { walletTypeIcon } from '@/features/wallets/walletMeta'
 import { useWalletsStore } from '@/features/wallets/store'
 import { useTrnsStore } from '@/features/trns/store'
 import { TrnType } from '@/features/trns/types'
+import FormDrawer from '@/components/FormDrawer.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -127,26 +128,22 @@ function remove() {
 </script>
 
 <template>
-  <v-dialog
+  <FormDrawer
     :model-value="modelValue"
-    max-width="480"
-    scrollable
+    :title="isEdit ? t('wallets.edit') : t('wallets.add')"
+    :deletable="isEdit"
+    :save-disabled="!isValid"
+    :width="480"
     @update:model-value="emit('update:modelValue', $event)"
+    @save="save"
+    @delete="confirmDelete = true"
   >
-    <v-card>
-      <v-card-title class="d-flex align-center">
-        {{ isEdit ? t('wallets.edit') : t('wallets.add') }}
-        <v-spacer />
-        <v-btn icon="mdi-close" variant="text" size="small" @click="close" />
-      </v-card-title>
-
-      <v-card-text>
-        <v-text-field
-          v-model="form.name"
-          :label="t('wallets.name')"
-          autofocus
-          class="mb-2"
-        />
+    <v-text-field
+      v-model="form.name"
+      :label="t('wallets.name')"
+      autofocus
+      class="mb-2"
+    />
 
         <v-select
           v-model="form.type"
@@ -200,31 +197,20 @@ function remove() {
           class="mb-2"
         />
 
-        <v-switch v-model="form.isWithdrawal" :label="t('wallets.withdrawal')" color="primary" density="compact" hide-details />
-        <v-switch v-model="form.isExcludeInTotal" :label="t('wallets.excludeInTotal')" color="primary" density="compact" hide-details />
-        <v-switch v-model="form.isArchived" :label="t('wallets.archived')" color="primary" density="compact" hide-details />
-      </v-card-text>
+    <v-switch v-model="form.isWithdrawal" :label="t('wallets.withdrawal')" color="primary" density="compact" hide-details />
+    <v-switch v-model="form.isExcludeInTotal" :label="t('wallets.excludeInTotal')" color="primary" density="compact" hide-details />
+    <v-switch v-model="form.isArchived" :label="t('wallets.archived')" color="primary" density="compact" hide-details />
+  </FormDrawer>
 
+  <v-dialog v-model="confirmDelete" max-width="360">
+    <v-card>
+      <v-card-text>{{ t('wallets.deleteConfirm') }}</v-card-text>
       <v-card-actions>
-        <v-btn v-if="isEdit" color="error" variant="text" @click="confirmDelete = true">
-          {{ t('common.delete') }}
-        </v-btn>
         <v-spacer />
-        <v-btn variant="text" @click="close">{{ t('common.cancel') }}</v-btn>
-        <v-btn color="primary" variant="flat" :disabled="!isValid" @click="save">{{ t('common.save') }}</v-btn>
+        <v-btn variant="text" @click="confirmDelete = false">{{ t('common.cancel') }}</v-btn>
+        <v-btn color="error" variant="flat" @click="remove">{{ t('common.delete') }}</v-btn>
       </v-card-actions>
     </v-card>
-
-    <v-dialog v-model="confirmDelete" max-width="360">
-      <v-card>
-        <v-card-text>{{ t('wallets.deleteConfirm') }}</v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="confirmDelete = false">{{ t('common.cancel') }}</v-btn>
-          <v-btn color="error" variant="flat" @click="remove">{{ t('common.delete') }}</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </v-dialog>
 </template>
 

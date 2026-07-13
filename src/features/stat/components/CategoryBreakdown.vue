@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { formatMoney } from '@/shared/lib/money'
 import { useCategoriesStore } from '@/features/categories/store'
 import { useCurrenciesStore } from '@/features/currencies/store'
-import { useSettingsStore } from '@/stores/settings'
+import { useFormat } from '@/composables/useFormat'
 import type { BreakdownItem } from '@/features/stat/store'
 
 defineProps<{ items: BreakdownItem[] }>()
 
 const categoriesStore = useCategoriesStore()
 const currenciesStore = useCurrenciesStore()
-const settings = useSettingsStore()
+const fmt = useFormat()
 </script>
 
 <template>
@@ -22,7 +21,7 @@ const settings = useSettingsStore()
         <span class="text-body-2">{{ categoriesStore.items[it.categoryId]?.name ?? it.categoryId }}</span>
         <v-spacer />
         <span class="text-body-2 font-weight-medium">
-          {{ formatMoney(it.amount, currenciesStore.base, settings.locale) }}
+          {{ fmt.money(it.amount, currenciesStore.base) }}
         </span>
         <span class="text-caption text-medium-emphasis ms-2" style="min-width: 40px; text-align: right;">
           {{ Math.round(it.percent) }}%

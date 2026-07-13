@@ -9,6 +9,7 @@ import { useTrnsStore } from '@/features/trns/store'
 import { useWalletsStore } from '@/features/wallets/store'
 import { useCategoriesStore } from '@/features/categories/store'
 import { useCurrenciesStore } from '@/features/currencies/store'
+import { useSettingsStore } from '@/stores/settings'
 import type { Period, Range } from '@/features/date/types'
 
 // Grafikte gösterilecek aralık sayısı (periyoda göre).
@@ -24,11 +25,13 @@ export const useStatStore = defineStore('stat', () => {
   const walletsStore = useWalletsStore()
   const categoriesStore = useCategoriesStore()
   const currenciesStore = useCurrenciesStore()
+  const settings = useSettingsStore()
 
   const period = ref<Period>('month')
   const offset = ref(0) // 0 = güncel, -1 = önceki
   const statType = ref<StatType>('expense')
   const filterWalletIds = ref<string[]>([]) // boş = tüm cüzdanlar
+  const filterTagIds = ref<string[]>([]) // boş = tüm etiketler
 
   function setPeriod(p: Period) {
     period.value = p
@@ -45,14 +48,15 @@ export const useStatStore = defineStore('stat', () => {
       offset.value += 1
   }
 
-  const currentRange = computed<Range>(() => rangeForPeriod(period.value, offset.value))
+  const currentRange = computed<Range>(() => rangeForPeriod(period.value, offset.value, settings.weekStart))
 
   const activeWalletIds = computed(() => filterWalletIds.value.length ? filterWalletIds.value : undefined)
+  const activeTagIds = computed(() => filterTagIds.value.length ? filterTagIds.value : undefined)
 
   function totalsForRange(range: Range) {
     const items = trnsStore.items ?? {}
     const walletsIds = activeWalletIds.value
-    const ids = filterTrnsIds({ trnsItems: items, dates: range, walletsIds })
+    const ids = filterTrnsIds({ trnsItems: items, dates: range, walletsIds, tagsIds: activeTagIds.value })
     return getTotal({
       baseCurrencyCode: currenciesStore.base,
       rates: currenciesStore.rates,
@@ -70,7 +74,7 @@ export const useStatStore = defineStore('stat', () => {
     const n = INTERVAL_COUNT[period.value]
     const list: ChartInterval[] = []
     for (let i = offset.value - (n - 1); i <= offset.value; i++) {
-      const range = rangeForPeriod(period.value, i)
+      const range = rangeForPeriod(period.value, i, settings.weekStart)
       const totals = totalsForRange(range)
       list.push({ range, income: totals.income, expense: totals.expense })
     }
@@ -82,7 +86,7 @@ export const useStatStore = defineStore('stat', () => {
     const items = trnsStore.items ?? {}
     const range = currentRange.value
     const type = statType.value === 'income' ? TrnType.Income : TrnType.Expense
-    const ids = filterTrnsIds({ trnsItems: items, dates: range, trnsTypes: [type], walletsIds: activeWalletIds.value })
+    const ids = filterTrnsIds({ trnsItems: items, dates: range, trnsTypes: [type], walletsIds: activeWalletIds.value, tagsIds: activeTagIds.value })
 
     const map = new Map<string, number>()
     for (const id of ids) {
@@ -109,12 +113,16 @@ export const useStatStore = defineStore('stat', () => {
   function setFilterWalletIds(ids: string[]) {
     filterWalletIds.value = ids
   }
+  function setFilterTagIds(ids: string[]) {
+    filterTagIds.value = ids
+  }
 
   return {
     period,
     offset,
     statType,
     filterWalletIds,
+    filterTagIds,
     currentRange,
     summary,
     series,
@@ -122,6 +130,7 @@ export const useStatStore = defineStore('stat', () => {
     setPeriod,
     setStatType,
     setFilterWalletIds,
+    setFilterTagIds,
     prev,
     next,
   }
