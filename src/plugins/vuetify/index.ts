@@ -1,3 +1,7 @@
+// Vuetify'ın TAM önceden-derlenmiş stil dosyası (reset + utility'ler + tüm bileşen stilleri).
+// vite.config'te `styles: { configFile }` KULLANILMADIĞI için bu import düz CSS yükler —
+// SASS anlık derleme yok, dolayısıyla .sass 404 / beyaz ekran sorunu da yok.
+import 'vuetify/styles'
 import '@mdi/font/css/materialdesignicons.css'
 
 import { createVuetify } from 'vuetify'

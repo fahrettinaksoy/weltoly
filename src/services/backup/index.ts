@@ -3,7 +3,7 @@ import { readTextFile, writeTextFile } from '@tauri-apps/plugin-fs'
 
 import { emitTableChange, getDb, isTauriRuntime, type Row } from '@/services/db'
 
-const TABLES = ['wallets', 'categories', 'trns', 'user_settings', 'rates'] as const
+const TABLES = ['wallets', 'categories', 'tags', 'trns', 'user_settings', 'rates'] as const
 
 export type BackupResult = 'ok' | 'cancel' | 'error'
 

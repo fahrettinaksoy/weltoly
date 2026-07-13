@@ -5,6 +5,7 @@ import { useCurrenciesStore } from '@/features/currencies/store'
 import { useCategoriesStore } from '@/features/categories/store'
 import { useWalletsStore } from '@/features/wallets/store'
 import { useTrnsStore } from '@/features/trns/store'
+import { useTagsStore } from '@/features/tags/store'
 
 /**
  * Uygulama açılışında tüm store watch'larını (yerel SQLite abonelikleri) başlatır.
@@ -16,6 +17,7 @@ export function useInitApp() {
   const categoriesStore = useCategoriesStore()
   const walletsStore = useWalletsStore()
   const trnsStore = useTrnsStore()
+  const tagsStore = useTagsStore()
 
   function init() {
     if (!isTauriRuntime()) {
@@ -27,6 +29,7 @@ export function useInitApp() {
     categoriesStore.initCategories()
     walletsStore.initWallets()
     trnsStore.initTrns()
+    tagsStore.initTags()
 
     // Günlük kurları arka planda tazele (offline'da sessizce atlar).
     refreshRates().catch(() => {})

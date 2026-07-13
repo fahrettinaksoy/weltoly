@@ -2,11 +2,13 @@
 import { format, isToday, isYesterday } from 'date-fns'
 
 import { useTrnsStore } from '@/features/trns/store'
+import { useFormat } from '@/composables/useFormat'
 import TrnItem from '@/features/trns/components/TrnItem.vue'
 
 const props = defineProps<{ ids: string[] }>()
 
 const trnsStore = useTrnsStore()
+const fmt = useFormat()
 
 // Günlere göre grupla (tarih azalan).
 const groups = computed(() => {
@@ -18,7 +20,7 @@ const groups = computed(() => {
     const d = new Date(trn.date)
     const key = format(d, 'yyyy-MM-dd')
     if (!map.has(key)) {
-      const label = isToday(d) ? 'today' : isYesterday(d) ? 'yesterday' : format(d, 'd MMM yyyy')
+      const label = isToday(d) ? 'today' : isYesterday(d) ? 'yesterday' : fmt.date(d)
       map.set(key, { label, ts: trn.date, ids: [] })
     }
     map.get(key)!.ids.push(id)

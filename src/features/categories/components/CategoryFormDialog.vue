@@ -7,6 +7,7 @@ import { colorsArray } from '@/features/color/colors'
 import { categoryIcons } from '@/features/categories/iconList'
 import { useCategoriesStore } from '@/features/categories/store'
 import { useTrnsStore } from '@/features/trns/store'
+import FormDrawer from '@/components/FormDrawer.vue'
 import type { CategoryId } from '@/features/categories/types'
 
 const props = defineProps<{ modelValue: boolean, categoryId: string | null }>()
@@ -119,54 +120,47 @@ function remove() {
 </script>
 
 <template>
-  <v-dialog :model-value="modelValue" max-width="480" scrollable @update:model-value="emit('update:modelValue', $event)">
-    <v-card>
-      <v-card-title class="d-flex align-center">
-        {{ isEdit ? t('categories.edit') : t('categories.add') }}
-        <v-spacer />
-        <v-btn icon="mdi-close" variant="text" size="small" @click="close" />
-      </v-card-title>
+  <FormDrawer
+    :model-value="modelValue"
+    :title="isEdit ? t('categories.edit') : t('categories.add')"
+    :deletable="isEdit"
+    :save-disabled="!isValid"
+    :width="480"
+    @update:model-value="emit('update:modelValue', $event)"
+    @save="save"
+    @delete="confirmDelete = true"
+  >
+    <div class="d-flex align-center ga-3 mb-4">
+      <v-avatar :color="form.color" size="56" class="cursor-pointer" @click="iconPicker = true">
+        <v-icon :icon="form.icon" color="white" size="28" />
+      </v-avatar>
+      <v-btn variant="tonal" size="small" @click="iconPicker = true">{{ t('categories.pickIcon') }}</v-btn>
+    </div>
 
-      <v-card-text>
-        <div class="d-flex align-center ga-3 mb-4">
-          <v-avatar :color="form.color" size="56" class="cursor-pointer" @click="iconPicker = true">
-            <v-icon :icon="form.icon" color="white" size="28" />
-          </v-avatar>
-          <v-btn variant="tonal" size="small" @click="iconPicker = true">{{ t('categories.pickIcon') }}</v-btn>
-        </div>
+    <v-text-field v-model="form.name" :label="t('categories.name')" autofocus class="mb-2" />
 
-        <v-text-field v-model="form.name" :label="t('categories.name')" autofocus class="mb-2" />
+    <v-select
+      v-model="form.parentId"
+      :items="parentOptions"
+      :label="t('categories.parent')"
+      class="mb-2"
+    />
 
-        <v-select
-          v-model="form.parentId"
-          :items="parentOptions"
-          :label="t('categories.parent')"
-          class="mb-2"
-        />
+    <div class="text-body-2 text-medium-emphasis mb-1">{{ t('categories.color') }}</div>
+    <div class="d-flex flex-wrap ga-2 mb-3">
+      <button
+        v-for="c in palette" :key="c" type="button" class="color-dot"
+        :style="{ background: c, outline: form.color === c ? '2px solid white' : 'none' }"
+        @click="form.color = c"
+      />
+    </div>
 
-        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('categories.color') }}</div>
-        <div class="d-flex flex-wrap ga-2 mb-3">
-          <button
-            v-for="c in palette" :key="c" type="button" class="color-dot"
-            :style="{ background: c, outline: form.color === c ? '2px solid white' : 'none' }"
-            @click="form.color = c"
-          />
-        </div>
+    <v-switch v-model="form.showInLastUsed" :label="t('categories.showInLastUsed')" color="primary" density="compact" hide-details />
+    <v-switch v-model="form.showInQuickSelector" :label="t('categories.showInQuickSelector')" color="primary" density="compact" hide-details />
+  </FormDrawer>
 
-        <v-switch v-model="form.showInLastUsed" :label="t('categories.showInLastUsed')" color="primary" density="compact" hide-details />
-        <v-switch v-model="form.showInQuickSelector" :label="t('categories.showInQuickSelector')" color="primary" density="compact" hide-details />
-      </v-card-text>
-
-      <v-card-actions>
-        <v-btn v-if="isEdit" color="error" variant="text" @click="confirmDelete = true">{{ t('common.delete') }}</v-btn>
-        <v-spacer />
-        <v-btn variant="text" @click="close">{{ t('common.cancel') }}</v-btn>
-        <v-btn color="primary" variant="flat" :disabled="!isValid" @click="save">{{ t('common.save') }}</v-btn>
-      </v-card-actions>
-    </v-card>
-
-    <!-- İkon seçici -->
-    <v-dialog v-model="iconPicker" max-width="520" scrollable>
+  <!-- İkon seçici -->
+  <v-dialog v-model="iconPicker" max-width="520" scrollable>
       <v-card>
         <v-card-title class="d-flex align-center">
           {{ t('categories.pickIcon') }}
@@ -197,7 +191,6 @@ function remove() {
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </v-dialog>
 </template>
 
 <style scoped>

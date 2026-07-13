@@ -15,7 +15,9 @@ export {
   rowToWallet,
   rowToCategory,
   rowToRates,
+  rowToTag,
   trnToRow,
   walletToRow,
   categoryToRow,
+  tagToRow,
 } from './transforms'

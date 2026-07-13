@@ -2,23 +2,28 @@
 import { useI18n } from 'vue-i18n'
 import { format } from 'date-fns'
 
-import { formatMoney } from '@/shared/lib/money'
 import { useStatStore, type StatType } from '@/features/stat/store'
 import { useCurrenciesStore } from '@/features/currencies/store'
 import { useWalletsStore } from '@/features/wallets/store'
-import { useSettingsStore } from '@/stores/settings'
+import { useTagsStore } from '@/features/tags/store'
 import type { Period } from '@/features/date/types'
 import StatChart from '@/features/stat/components/StatChart.vue'
 import CategoryBreakdown from '@/features/stat/components/CategoryBreakdown.vue'
+import { useFormat } from '@/composables/useFormat'
 
 const { t } = useI18n()
 const stat = useStatStore()
 const currenciesStore = useCurrenciesStore()
 const walletsStore = useWalletsStore()
-const settings = useSettingsStore()
+const tagsStore = useTagsStore()
+const fmt = useFormat()
 
 const walletFilterItems = computed(() =>
   walletsStore.sortedIds.map(id => ({ id, name: walletsStore.items?.[id]?.name ?? id })),
+)
+
+const tagFilterItems = computed(() =>
+  tagsStore.sortedIds.map(id => ({ id, name: tagsStore.items[id]?.name ?? id })),
 )
 
 const periods: { value: Period, label: string }[] = [
@@ -66,6 +71,17 @@ const rangeLabel = computed(() => {
       @update:model-value="stat.setFilterWalletIds($event)"
     />
 
+    <!-- Etiket filtresi -->
+    <v-select
+      v-if="tagFilterItems.length"
+      :model-value="stat.filterTagIds"
+      :items="tagFilterItems"
+      item-title="name" item-value="id"
+      :label="t('stat.filterTags')"
+      multiple chips closable-chips clearable hide-details density="comfortable" class="mb-3"
+      @update:model-value="stat.setFilterTagIds($event)"
+    />
+
     <!-- Aralık navigasyonu -->
     <div class="d-flex align-center justify-space-between mb-3">
       <v-btn icon="mdi-chevron-left" variant="tonal" size="small" @click="stat.prev()" />
@@ -78,15 +94,15 @@ const rangeLabel = computed(() => {
       <div class="d-flex justify-space-between">
         <div>
           <div class="text-caption text-medium-emphasis">{{ t('trnForm.income') }}</div>
-          <div class="text-subtitle-1 font-weight-bold text-success">{{ formatMoney(stat.summary.income, currenciesStore.base, settings.locale) }}</div>
+          <div class="text-subtitle-1 font-weight-bold text-success">{{ fmt.money(stat.summary.income, currenciesStore.base) }}</div>
         </div>
         <div class="text-center">
           <div class="text-caption text-medium-emphasis">{{ t('trnForm.expense') }}</div>
-          <div class="text-subtitle-1 font-weight-bold text-error">{{ formatMoney(stat.summary.expense, currenciesStore.base, settings.locale) }}</div>
+          <div class="text-subtitle-1 font-weight-bold text-error">{{ fmt.money(stat.summary.expense, currenciesStore.base) }}</div>
         </div>
         <div class="text-right">
           <div class="text-caption text-medium-emphasis">{{ t('stat.balance') }}</div>
-          <div class="text-subtitle-1 font-weight-bold">{{ formatMoney(stat.summary.sum, currenciesStore.base, settings.locale) }}</div>
+          <div class="text-subtitle-1 font-weight-bold">{{ fmt.money(stat.summary.sum, currenciesStore.base) }}</div>
         </div>
       </div>
     </v-card>

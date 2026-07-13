@@ -43,21 +43,27 @@ function openEdit(id: string) {
           </template>
         </v-list-item>
 
-        <!-- Alt kategoriler -->
-        <v-list-item
-          v-for="childId in categoriesStore.getChildrenIds(rootId)"
-          :key="childId"
-          rounded="lg"
-          class="mb-1 ms-8"
-          @click="openEdit(childId)"
-        >
-          <template #prepend>
-            <v-avatar :color="categoriesStore.items[childId]?.color" size="30">
-              <v-icon :icon="categoriesStore.items[childId]?.icon" color="white" size="16" />
-            </v-avatar>
-          </template>
-          <v-list-item-title>{{ categoriesStore.items[childId]?.name }}</v-list-item-title>
-        </v-list-item>
+        <!-- Alt kategoriler: hiyerarşiyi gösteren ağaç çizgileriyle (tree lines) -->
+        <div v-if="categoriesStore.getChildrenIds(rootId).length" class="cat-tree">
+          <v-list-item
+            v-for="(childId, i) in categoriesStore.getChildrenIds(rootId)"
+            :key="childId"
+            rounded="lg"
+            class="cat-tree__item"
+            :class="{ 'cat-tree__item--last': i === categoriesStore.getChildrenIds(rootId).length - 1 }"
+            @click="openEdit(childId)"
+          >
+            <template #prepend>
+              <v-avatar :color="categoriesStore.items[childId]?.color" size="30">
+                <v-icon :icon="categoriesStore.items[childId]?.icon" color="white" size="16" />
+              </v-avatar>
+            </template>
+            <v-list-item-title>{{ categoriesStore.items[childId]?.name }}</v-list-item-title>
+            <template v-if="categoriesStore.items[childId]?.showInQuickSelector" #append>
+              <v-icon icon="mdi-star" color="amber" size="16" />
+            </template>
+          </v-list-item>
+        </div>
       </template>
     </v-list>
 
@@ -71,3 +77,44 @@ function openEdit(id: string) {
     <CategoryFormDialog v-model="showDialog" :category-id="editId" />
   </div>
 </template>
+
+<style scoped>
+/* Kategori hiyerarşisi ağaç çizgileri (tree lines). Dikey gövde + her alt öğeye dirsek. */
+.cat-tree {
+  position: relative;
+}
+
+.cat-tree__item {
+  position: relative;
+  padding-inline-start: 52px !important;
+}
+
+/* Dikey gövde çizgisi (öğeler arasında sürekli olsun diye tam yükseklik). */
+.cat-tree__item::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 26px;
+  top: 0;
+  height: 100%;
+  width: 2px;
+  background: rgba(var(--v-border-color), 0.28);
+}
+
+/* Son alt öğede gövde çizgisini dirseğe kadar (ortaya) kes. */
+.cat-tree__item--last::before {
+  height: 50%;
+}
+
+/* Yatay dirsek çizgisi. */
+.cat-tree__item::after {
+  content: '';
+  position: absolute;
+  inset-inline-start: 26px;
+  top: 50%;
+  width: 16px;
+  height: 2px;
+  background: rgba(var(--v-border-color), 0.28);
+}
+
+/* RTL'de dirsek ve gövde otomatik yansısın diye inset-inline-start kullanıldı. */
+</style>

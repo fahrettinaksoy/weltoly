@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs)",
+      "Bash(sh -s -- -y --default-toolchain stable)",
+      "Bash(lsof -nP -iTCP:1420 -sTCP:LISTEN)",
+      "Bash(npx vue-tsc *)",
+      "Bash(npx vitest *)",
+      "Bash(curl -s http://localhost:1420/ -o /dev/null -w \"root: %{http_code}\\\\n\")",
+      "Bash(curl -s \"http://localhost:1420/src/main.ts\")",
+      "Bash(curl -s \"http://localhost:1420/src/composables/useFormat.ts\" -o /dev/null -w \"useFormat: %{http_code}\\\\n\")",
+      "Bash(curl -s \"http://localhost:1420/src/shared/lib/format.ts\" -o /dev/null -w \"format.ts: %{http_code}\\\\n\")",
+      "Bash(node -p \"require\\('./package.json'\\).dependencies.vue\")",
+      "Bash(curl -s \"http://localhost:1420/src/App.vue\" -o /dev/null -w \"App.vue: %{http_code}\\\\n\")",
+      "Bash(perl -pi -e \"s/mdi:/mdi-/g\" src/features/categories/store.ts src/features/trns/store.ts)"
+    ]
+  }
+}

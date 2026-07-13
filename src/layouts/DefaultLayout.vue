@@ -17,11 +17,18 @@ const navItems: NavItem[] = [
   { key: 'dashboard', to: '/dashboard', icon: '$navDashboard', labelKey: 'nav.dashboard' },
   { key: 'wallets', to: '/wallets', icon: '$navWallets', labelKey: 'nav.wallets' },
   { key: 'categories', to: '/categories', icon: '$navCategories', labelKey: 'nav.categories' },
+  { key: 'tags', to: '/tags', icon: '$navTags', labelKey: 'nav.tags' },
   { key: 'stat', to: '/stat', icon: '$navStat', labelKey: 'nav.stat' },
   { key: 'settings', to: '/settings', icon: '$navSettings', labelKey: 'nav.settings' },
 ]
 
 const activeKey = computed(() => (route.meta.navKey as string) ?? 'dashboard')
+
+// Mobil alt bar sıkışmasın: ikincil öğeler yukarı açılan "Daha fazla" menüsünde toplanır.
+const MORE_KEYS = ['categories', 'tags', 'settings']
+const moreItems = computed(() => navItems.filter(i => MORE_KEYS.includes(i.key)))
+const isMoreActive = computed(() => MORE_KEYS.includes(activeKey.value))
+const moreMenu = ref(false)
 
 function onAdd() {
   trnForm.openFormForCreate()
@@ -76,9 +83,29 @@ function onAdd() {
       <v-icon icon="$navStat" />
       <span>{{ t('nav.stat') }}</span>
     </v-btn>
-    <v-btn to="/settings" :active="activeKey === 'settings'">
-      <v-icon icon="$navSettings" />
-      <span>{{ t('nav.settings') }}</span>
+
+    <!-- Daha fazla: yukarı açılan menü (Kategoriler · Etiketler · Ayarlar) -->
+    <v-btn :active="isMoreActive">
+      <v-icon icon="mdi-dots-horizontal" />
+      <span>{{ t('nav.more') }}</span>
+      <v-menu
+        v-model="moreMenu"
+        activator="parent"
+        location="top end"
+        :offset="12"
+      >
+        <v-list nav density="comfortable" min-width="200" class="mb-1">
+          <v-list-item
+            v-for="item in moreItems"
+            :key="item.key"
+            :to="item.to"
+            :prepend-icon="item.icon"
+            :title="t(item.labelKey)"
+            :active="activeKey === item.key"
+            rounded="lg"
+          />
+        </v-list>
+      </v-menu>
     </v-btn>
   </v-bottom-navigation>
 

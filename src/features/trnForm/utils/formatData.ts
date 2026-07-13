@@ -18,6 +18,9 @@ function formatTransaction(props: TrnFormValues): Transaction | false {
   if (props.desc)
     data.desc = props.desc
 
+  if (props.tagIds?.length)
+    data.tagIds = [...props.tagIds]
+
   return data
 }
 
@@ -38,6 +41,9 @@ function formatTransfer(props: TrnFormValues): Transfer | false {
 
   if (props.desc)
     data.desc = props.desc
+
+  if (props.tagIds?.length)
+    data.tagIds = [...props.tagIds]
 
   return data
 }

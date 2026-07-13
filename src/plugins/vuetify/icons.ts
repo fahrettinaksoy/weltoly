@@ -10,6 +10,7 @@ export const icons = {
     navDashboard: 'mdi-view-dashboard-outline',
     navWallets: 'mdi-wallet-outline',
     navCategories: 'mdi-shape-outline',
+    navTags: 'mdi-tag-multiple-outline',
     navStat: 'mdi-chart-box-outline',
     navSettings: 'mdi-cog-outline',
     add: 'mdi-plus',

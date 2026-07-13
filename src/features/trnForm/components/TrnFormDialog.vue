@@ -1,17 +1,23 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { useDisplay } from 'vuetify'
 import { format } from 'date-fns'
 
 import { useTrnsFormStore } from '@/features/trnForm/store'
 import { useWalletsStore } from '@/features/wallets/store'
 import { useCategoriesStore } from '@/features/categories/store'
+import { useTagsStore } from '@/features/tags/store'
 import { TrnType } from '@/features/trns/types'
 import Calculator from '@/features/trnForm/components/Calculator.vue'
+import TagFormDialog from '@/features/tags/components/TagFormDialog.vue'
 
 const { t } = useI18n()
 const store = useTrnsFormStore()
 const walletsStore = useWalletsStore()
 const categoriesStore = useCategoriesStore()
+const tagsStore = useTagsStore()
+
+const showTagForm = ref(false)
 
 const isShow = computed({
   get: () => store.ui.isShow,
@@ -50,19 +56,25 @@ const dateStr = computed({
 })
 
 const isTransfer = computed(() => store.values.trnType === TrnType.Transfer)
+
+// Mobilde ekranı kapla; masaüstünde geniş yan panel (hesap makinesi için).
+const { mobile, width: viewportWidth } = useDisplay()
+const drawerWidth = computed(() => (mobile.value ? viewportWidth.value : 460))
 </script>
 
 <template>
-  <v-dialog v-model="isShow" fullscreen transition="dialog-bottom-transition" scrollable>
-    <v-card>
+  <v-navigation-drawer v-model="isShow" location="right" temporary :width="drawerWidth">
+    <template #prepend>
       <v-toolbar density="comfortable" color="surface">
         <v-btn icon="mdi-close" @click="store.onClose()" />
         <v-toolbar-title>{{ store.values.trnId ? t('trnForm.editTitle') : t('trnForm.newTitle') }}</v-toolbar-title>
         <v-spacer />
         <v-btn icon="mdi-check" color="primary" @click="store.submitAndSave()" />
       </v-toolbar>
+      <v-divider />
+    </template>
 
-      <v-card-text class="pa-4">
+    <div class="pa-4">
         <!-- Tür seçimi -->
         <v-btn-toggle
           :model-value="store.values.trnType"
@@ -133,6 +145,28 @@ const isTransfer = computed(() => store.values.trnType === TrnType.Transfer)
           </v-chip-group>
         </template>
 
+        <!-- Etiketler (tags): çoklu seçim + satır içi yeni etiket -->
+        <div class="d-flex align-center mb-1">
+          <v-icon icon="$navTags" size="16" class="me-2 text-medium-emphasis" />
+          <span class="text-body-2 text-medium-emphasis">{{ t('tags.title') }}</span>
+        </div>
+        <div class="d-flex align-center flex-wrap ga-2 mb-4">
+          <v-chip
+            v-for="id in tagsStore.sortedIds"
+            :key="id"
+            :color="tagsStore.items[id]?.color"
+            :variant="store.values.tagIds.includes(id) ? 'flat' : 'outlined'"
+            size="small"
+            @click="store.toggleTag(id)"
+          >
+            <v-icon v-if="store.values.tagIds.includes(id)" icon="mdi-check" start size="14" />
+            {{ tagsStore.items[id]?.name }}
+          </v-chip>
+          <v-chip size="small" variant="tonal" prepend-icon="mdi-plus" @click="showTagForm = true">
+            {{ t('tags.add') }}
+          </v-chip>
+        </div>
+
         <!-- Tarih + açıklama -->
         <div class="d-flex ga-2 mb-4">
           <v-text-field v-model="dateStr" type="date" :label="t('trnForm.date')" hide-details density="comfortable" />
@@ -145,7 +179,9 @@ const isTransfer = computed(() => store.values.trnType === TrnType.Transfer)
         <v-btn color="primary" variant="flat" size="large" block class="mt-4" @click="store.submitAndSave()">
           {{ t('common.save') }}
         </v-btn>
-      </v-card-text>
-    </v-card>
-  </v-dialog>
+    </div>
+  </v-navigation-drawer>
+
+  <!-- Satır içi yeni etiket oluşturma (kardeş: sürükleme paneli içinde iç içe panel olmasın) -->
+  <TagFormDialog v-model="showTagForm" :tag-id="null" @created="store.toggleTag($event)" />
 </template>

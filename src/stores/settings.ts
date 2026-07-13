@@ -3,6 +3,7 @@ import { useLocalStorage } from '@vueuse/core'
 
 import { setLocale } from '@/plugins/i18n'
 import { DEFAULT_RADIUS, defaultNeutral, defaultPrimary, type NeutralKey } from '@/features/theme/palette'
+import type { DateFormatKey, NumberFormatKey, WeekStart } from '@/shared/lib/format'
 import type { LocaleCode } from '@/i18n/messages'
 
 export type ThemeMode = 'system' | 'light' | 'dark'
@@ -17,6 +18,12 @@ export const useSettingsStore = defineStore('settings', () => {
   const neutral = useLocalStorage<NeutralKey>('weltoly.neutral', defaultNeutral)
   const radius = useLocalStorage<number>('weltoly.radius', DEFAULT_RADIUS)
   const locale = useLocalStorage<LocaleCode>('weltoly.locale', 'tr')
+
+  // formatting: sayı/tarih/hafta biçimi. 'auto' = dile göre (yerel duruma göre).
+  const numberFormat = useLocalStorage<NumberFormatKey>('weltoly.numberFormat', 'auto')
+  const dateFormat = useLocalStorage<DateFormatKey>('weltoly.dateFormat', 'auto')
+  const weekStart = useLocalStorage<WeekStart>('weltoly.weekStart', 1)
+  const hideDecimals = useLocalStorage<boolean>('weltoly.hideDecimals', false)
 
   function setThemeMode(mode: ThemeMode) {
     themeMode.value = mode
@@ -39,16 +46,40 @@ export const useSettingsStore = defineStore('settings', () => {
     setLocale(value)
   }
 
+  function setNumberFormat(value: NumberFormatKey) {
+    numberFormat.value = value
+  }
+
+  function setDateFormat(value: DateFormatKey) {
+    dateFormat.value = value
+  }
+
+  function setWeekStart(value: WeekStart) {
+    weekStart.value = value
+  }
+
+  function setHideDecimals(value: boolean) {
+    hideDecimals.value = value
+  }
+
   return {
     themeMode,
     primaryColor,
     neutral,
     radius,
     locale,
+    numberFormat,
+    dateFormat,
+    weekStart,
+    hideDecimals,
     setThemeMode,
     setPrimaryColor,
     setNeutral,
     setRadius,
     setAppLocale,
+    setNumberFormat,
+    setDateFormat,
+    setWeekStart,
+    setHideDecimals,
   }
 })

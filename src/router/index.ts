@@ -22,6 +22,12 @@ const routes: RouteRecordRaw[] = [
     meta: { navKey: 'categories' },
   },
   {
+    path: '/tags',
+    name: 'tags',
+    component: () => import('@/pages/TagsPage.vue'),
+    meta: { navKey: 'tags' },
+  },
+  {
     path: '/stat',
     name: 'stat',
     component: () => import('@/pages/StatPage.vue'),

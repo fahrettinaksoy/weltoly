@@ -9,6 +9,9 @@ import { clearAllData, seedDemoData } from '@/features/demo/seed'
 import { useUserStore } from '@/features/user/store'
 import { useLockStore } from '@/features/auth/useLockStore'
 import SetPinDialog from '@/features/auth/SetPinDialog.vue'
+import { allCurrencies } from '@/features/currencies/list'
+import { DATE_FORMATS, NUMBER_FORMATS, type DateFormatKey, type NumberFormatKey, type WeekStart } from '@/shared/lib/format'
+import type { CurrencyCode } from '@/features/currencies/types'
 import type { LocaleCode } from '@/i18n/messages'
 
 const { t } = useI18n()
@@ -35,6 +38,23 @@ const localeOptions: { value: LocaleCode, label: string }[] = [
   { value: 'en', label: 'English' },
   { value: 'ru', label: 'Русский' },
 ]
+
+// Varsayılan (temel) para birimi seçenekleri — "USD — US Dollar".
+const currencyOptions = allCurrencies.map(c => ({ value: c.code, label: `${c.code} — ${c.name}` }))
+
+// Biçimlendirme seçenekleri — 'auto' dile göre; diğerleri örnek gösterimle.
+const numberFormatOptions = computed(() => NUMBER_FORMATS.map(f => ({
+  value: f.key,
+  label: f.key === 'auto' ? t('settings.formatAuto') : f.sample,
+})))
+const dateFormatOptions = computed(() => DATE_FORMATS.map(f => ({
+  value: f.key,
+  label: f.key === 'auto' ? t('settings.formatAuto') : f.sample,
+})))
+const weekStartOptions = computed(() => [
+  { value: 1 as WeekStart, label: t('settings.monday') },
+  { value: 0 as WeekStart, label: t('settings.sunday') },
+])
 
 const busy = ref(false)
 
@@ -168,14 +188,65 @@ async function onClearData() {
       </v-card-text>
     </v-card>
 
-    <!-- Dil -->
+    <!-- Dil ve para birimi -->
     <v-card variant="tonal" class="mb-4">
-      <v-card-title class="text-subtitle-1">{{ t('settings.language') }}</v-card-title>
+      <v-card-title class="text-subtitle-1">{{ t('settings.language') }} & {{ t('settings.currency') }}</v-card-title>
       <v-card-text>
+        <div class="text-body-2 text-medium-emphasis mb-2">{{ t('settings.language') }}</div>
         <v-select
           :model-value="settings.locale"
           :items="localeOptions" item-title="label" item-value="value" hide-details
+          class="mb-4"
           @update:model-value="settings.setAppLocale($event as LocaleCode)"
+        />
+
+        <div class="text-body-2 text-medium-emphasis mb-2">{{ t('settings.currency') }}</div>
+        <v-select
+          :model-value="userStore.baseCurrency"
+          :items="currencyOptions" item-title="label" item-value="value" hide-details
+          prepend-inner-icon="mdi-currency-usd"
+          @update:model-value="userStore.saveUserBaseCurrency($event as CurrencyCode)"
+        />
+      </v-card-text>
+    </v-card>
+
+    <!-- Biçimlendirme (yerel) -->
+    <v-card variant="tonal" class="mb-4">
+      <v-card-title class="text-subtitle-1">{{ t('settings.formatting') }}</v-card-title>
+      <v-card-text>
+        <div class="text-body-2 text-medium-emphasis mb-4">{{ t('settings.formattingHint') }}</div>
+
+        <v-row dense>
+          <v-col cols="12" sm="4">
+            <v-select
+              :model-value="settings.numberFormat"
+              :items="numberFormatOptions" item-title="label" item-value="value" hide-details
+              :label="t('settings.numbers')"
+              @update:model-value="settings.setNumberFormat($event as NumberFormatKey)"
+            />
+          </v-col>
+          <v-col cols="12" sm="4">
+            <v-select
+              :model-value="settings.dateFormat"
+              :items="dateFormatOptions" item-title="label" item-value="value" hide-details
+              :label="t('settings.dates')"
+              @update:model-value="settings.setDateFormat($event as DateFormatKey)"
+            />
+          </v-col>
+          <v-col cols="12" sm="4">
+            <v-select
+              :model-value="settings.weekStart"
+              :items="weekStartOptions" item-title="label" item-value="value" hide-details
+              :label="t('settings.firstDayOfWeek')"
+              @update:model-value="settings.setWeekStart($event as WeekStart)"
+            />
+          </v-col>
+        </v-row>
+
+        <v-checkbox
+          :model-value="settings.hideDecimals"
+          :label="t('settings.hideDecimals')" hide-details density="comfortable" class="mt-2"
+          @update:model-value="settings.setHideDecimals(!!$event)"
         />
       </v-card-text>
     </v-card>
