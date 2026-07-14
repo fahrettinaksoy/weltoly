@@ -43,11 +43,6 @@ const recentIds = computed(() =>
 
 <template>
   <div class="pa-4">
-    <div class="d-flex align-center mb-4">
-      <v-icon icon="mdi-view-dashboard-outline" size="28" class="me-3" color="primary" />
-      <h1 class="text-h5 font-weight-bold">{{ t('dashboard.title') }}</h1>
-    </div>
-
     <v-card color="primary" variant="flat" class="mb-4 pa-5">
       <div class="text-caption" style="opacity: 0.8;">{{ t('dashboard.totalBalance') }}</div>
       <div class="text-h4 font-weight-bold">{{ fmt.money(totalBalance, currenciesStore.base) }}</div>

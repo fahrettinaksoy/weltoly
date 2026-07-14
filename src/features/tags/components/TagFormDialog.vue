@@ -6,6 +6,7 @@ import { generateId } from '@/shared/lib/generateId'
 import { colorsArray } from '@/features/color/colors'
 import { useTagsStore } from '@/features/tags/store'
 import FormDrawer from '@/components/FormDrawer.vue'
+import ColorSwatches from '@/components/ColorSwatches.vue'
 import type { TagId } from '@/features/tags/types'
 
 const props = defineProps<{ tagId: TagId | null }>()
@@ -72,13 +73,7 @@ function remove() {
     </div>
 
     <div class="text-body-2 text-medium-emphasis mb-2">{{ t('tags.color') }}</div>
-    <div class="d-flex flex-wrap ga-2">
-      <button
-        v-for="c in palette" :key="c" type="button" class="color-dot"
-        :style="{ background: c, outline: form.color === c ? '2px solid white' : 'none' }"
-        @click="form.color = c"
-      />
-    </div>
+    <ColorSwatches v-model="form.color" :colors="palette" />
   </FormDrawer>
 
   <v-dialog v-model="confirmDelete" max-width="360">
@@ -92,7 +87,3 @@ function remove() {
     </v-card>
   </v-dialog>
 </template>
-
-<style scoped>
-.color-dot { width: 28px; height: 28px; border-radius: 50%; outline-offset: 2px; cursor: pointer; }
-</style>

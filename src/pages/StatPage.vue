@@ -46,15 +46,10 @@ const rangeLabel = computed(() => {
 
 <template>
   <div class="pa-4">
-    <div class="d-flex align-center mb-4">
-      <v-icon icon="mdi-chart-box-outline" size="28" class="me-3" color="primary" />
-      <h1 class="text-h5 font-weight-bold">{{ t('nav.stat') }}</h1>
-    </div>
-
     <!-- Periyot seçimi -->
     <v-btn-toggle
       :model-value="stat.period"
-      color="primary" mandatory divided rounded="lg" density="comfortable" class="mb-3 w-100"
+      color="primary" mandatory rounded="lg" density="comfortable" class="mb-3 w-100"
       @update:model-value="stat.setPeriod($event as Period)"
     >
       <v-btn v-for="p in periods" :key="p.value" :value="p.value" class="flex-grow-1">{{ p.label }}</v-btn>
@@ -118,7 +113,7 @@ const rangeLabel = computed(() => {
       <v-spacer />
       <v-btn-toggle
         :model-value="stat.statType"
-        color="primary" mandatory divided rounded="lg" density="compact"
+        color="primary" mandatory rounded="lg" density="compact"
         @update:model-value="stat.setStatType($event as StatType)"
       >
         <v-btn value="expense" size="small">{{ t('trnForm.expense') }}</v-btn>

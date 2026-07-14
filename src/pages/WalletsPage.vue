@@ -6,6 +6,7 @@ import { useWalletsStore } from '@/features/wallets/store'
 import { useCurrenciesStore } from '@/features/currencies/store'
 import { useFormat } from '@/composables/useFormat'
 import WalletFormDialog from '@/features/wallets/components/WalletFormDialog.vue'
+import { useAppBarAction } from '@/composables/useAppBarAction'
 
 const { t } = useI18n()
 const walletsStore = useWalletsStore()
@@ -19,6 +20,8 @@ function openNew() {
   editId.value = null
   showDialog.value = true
 }
+useAppBarAction({ icon: '$add', onClick: openNew })
+
 function openEdit(id: string) {
   editId.value = id
   showDialog.value = true
@@ -37,13 +40,6 @@ const total = computed(() => {
 
 <template>
   <div class="pa-4">
-    <div class="d-flex align-center mb-4">
-      <v-icon icon="mdi-wallet-outline" size="28" class="me-3" color="primary" />
-      <h1 class="text-h5 font-weight-bold">{{ t('wallets.title') }}</h1>
-      <v-spacer />
-      <v-btn icon="mdi-plus" color="primary" variant="flat" size="small" @click="openNew" />
-    </div>
-
     <!-- Toplam -->
     <v-card v-if="walletsStore.hasItems" variant="tonal" class="mb-4 pa-4">
       <div class="text-caption text-medium-emphasis">{{ t('wallets.total') }}</div>

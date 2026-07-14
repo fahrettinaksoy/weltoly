@@ -11,6 +11,7 @@ import { useWalletsStore } from '@/features/wallets/store'
 import { useTrnsStore } from '@/features/trns/store'
 import { TrnType } from '@/features/trns/types'
 import FormDrawer from '@/components/FormDrawer.vue'
+import ColorSwatches from '@/components/ColorSwatches.vue'
 
 const props = defineProps<{
   modelValue: boolean
@@ -178,16 +179,7 @@ function remove() {
         />
 
         <div class="text-body-2 text-medium-emphasis mb-1">{{ t('wallets.color') }}</div>
-        <div class="d-flex flex-wrap ga-2 mb-3">
-          <button
-            v-for="c in palette"
-            :key="c"
-            type="button"
-            class="color-dot"
-            :style="{ background: c, outline: form.color === c ? '2px solid white' : 'none' }"
-            @click="form.color = c"
-          />
-        </div>
+        <ColorSwatches v-model="form.color" :colors="palette" class="mb-3" />
 
         <v-textarea
           v-model="form.desc"
@@ -213,13 +205,3 @@ function remove() {
     </v-card>
   </v-dialog>
 </template>
-
-<style scoped>
-.color-dot {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  outline-offset: 2px;
-  cursor: pointer;
-}
-</style>

@@ -8,6 +8,7 @@ import { categoryIcons } from '@/features/categories/iconList'
 import { useCategoriesStore } from '@/features/categories/store'
 import { useTrnsStore } from '@/features/trns/store'
 import FormDrawer from '@/components/FormDrawer.vue'
+import ColorSwatches from '@/components/ColorSwatches.vue'
 import type { CategoryId } from '@/features/categories/types'
 
 const props = defineProps<{ modelValue: boolean, categoryId: string | null }>()
@@ -147,13 +148,7 @@ function remove() {
     />
 
     <div class="text-body-2 text-medium-emphasis mb-1">{{ t('categories.color') }}</div>
-    <div class="d-flex flex-wrap ga-2 mb-3">
-      <button
-        v-for="c in palette" :key="c" type="button" class="color-dot"
-        :style="{ background: c, outline: form.color === c ? '2px solid white' : 'none' }"
-        @click="form.color = c"
-      />
-    </div>
+    <ColorSwatches v-model="form.color" :colors="palette" class="mb-3" />
 
     <v-switch v-model="form.showInLastUsed" :label="t('categories.showInLastUsed')" color="primary" density="compact" hide-details />
     <v-switch v-model="form.showInQuickSelector" :label="t('categories.showInQuickSelector')" color="primary" density="compact" hide-details />
@@ -194,7 +189,6 @@ function remove() {
 </template>
 
 <style scoped>
-.color-dot { width: 28px; height: 28px; border-radius: 50%; outline-offset: 2px; cursor: pointer; }
 .cursor-pointer { cursor: pointer; }
 .icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 4px; }
 </style>

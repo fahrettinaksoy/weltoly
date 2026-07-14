@@ -4,12 +4,14 @@ import { useDisplay } from 'vuetify'
 import { useRoute } from 'vue-router'
 
 import { useTrnsFormStore } from '@/features/trnForm/store'
+import { appBarAction } from '@/composables/useAppBarAction'
 import TrnFormDialog from '@/features/trnForm/components/TrnFormDialog.vue'
 
 const { t } = useI18n()
 const { mobile } = useDisplay()
 const route = useRoute()
 const trnForm = useTrnsFormStore()
+const barAction = appBarAction()
 
 // icon-fonts: semantik ikon alias'ları ($navX) — tek kaynaktan yönetilir.
 type NavItem = { key: string, to: string, icon: string, labelKey: string }
@@ -36,7 +38,7 @@ function onAdd() {
 </script>
 
 <template>
-  <!-- Masaüstü: yan gezinme rayı -->
+  <!-- Masaüstü: yan gezinme rayı (ikon) -->
   <v-navigation-drawer v-if="!mobile" rail permanent>
     <v-list nav aria-label="Ana menü">
       <v-list-item
@@ -46,6 +48,8 @@ function onAdd() {
         :prepend-icon="item.icon"
         :title="t(item.labelKey)"
         :active="activeKey === item.key"
+        color="primary"
+        rounded="lg"
       />
     </v-list>
     <template #append>
@@ -55,18 +59,47 @@ function onAdd() {
     </template>
   </v-navigation-drawer>
 
-  <v-app-bar flat density="comfortable">
-    <v-app-bar-title class="font-weight-bold">{{ t(`nav.${activeKey}`) }}</v-app-bar-title>
+  <!-- Header: primary marka çubuğu (hero bandıyla sürekli primary alan). -->
+  <v-app-bar elevation="5" color="primary" flat :height="56">
+    <div class="d-flex align-center ga-2 ps-3">
+      <v-avatar color="white" size="32">
+        <v-icon icon="mdi-wallet-outline" color="primary" size="18" />
+      </v-avatar>
+      <span class="text-subtitle-1 font-weight-bold">Weltoly</span>
+    </div>
   </v-app-bar>
 
   <v-main>
-    <v-container id="main-content" tabindex="-1" class="pa-0" :class="{ 'pb-16': mobile }" fluid>
-      <slot />
-    </v-container>
+    <!-- Primary hero bandı -->
+    <v-sheet color="primary" height="120" tile />
+
+    <!-- Üzerine binen "floating" içerik kartı: toolbar (başlık + eylem) + divider + içerik -->
+    <div class="px-5">
+      <v-card class="page-hero-card" elevation="4" rounded="lg">
+        <div class="d-flex align-center ga-3 pa-4">
+          <div class="flex-grow-1 overflow-hidden">
+            <div class="text-h6 font-weight-bold text-truncate">{{ t(`nav.${activeKey}`) }}</div>
+            <div class="text-body-2 text-medium-emphasis text-truncate">{{ t(`pageDesc.${activeKey}`) }}</div>
+          </div>
+          <v-btn
+            v-if="barAction"
+            :icon="barAction.icon"
+            color="primary"
+            variant="tonal"
+            :aria-label="t('nav.add')"
+            @click="barAction.onClick()"
+          />
+        </div>
+        <v-divider />
+        <div id="main-content" tabindex="-1" :class="{ 'pb-16': mobile }">
+          <slot />
+        </div>
+      </v-card>
+    </div>
   </v-main>
 
   <!-- Mobil: alt gezinme + orta ekle butonu -->
-  <v-bottom-navigation v-if="mobile" grow>
+  <v-bottom-navigation v-if="mobile" grow color="primary" :elevation="3">
     <v-btn to="/dashboard" :active="activeKey === 'dashboard'">
       <v-icon icon="$navDashboard" />
       <span>{{ t('nav.dashboard') }}</span>
@@ -102,6 +135,7 @@ function onAdd() {
             :prepend-icon="item.icon"
             :title="t(item.labelKey)"
             :active="activeKey === item.key"
+            color="primary"
             rounded="lg"
           />
         </v-list>
@@ -112,3 +146,10 @@ function onAdd() {
   <!-- İşlem formu (global) -->
   <TrnFormDialog />
 </template>
+
+<style scoped>
+/* Floating kart primary bandın üzerine binsin (örnek desendeki mt-n16 etkisi). */
+.page-hero-card {
+  margin-top: -88px;
+}
+</style>
