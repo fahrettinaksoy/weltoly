@@ -16,27 +16,27 @@ export const defaults = {
     rounded: 'lg',
   },
   VTextField: {
-    variant: 'outlined',
+    variant: 'filled',
     density: 'comfortable',
     hideDetails: 'auto',
   },
   VTextarea: {
-    variant: 'outlined',
+    variant: 'filled',
     density: 'comfortable',
     hideDetails: 'auto',
   },
   VSelect: {
-    variant: 'outlined',
+    variant: 'filled',
     density: 'comfortable',
     hideDetails: 'auto',
   },
   VAutocomplete: {
-    variant: 'outlined',
+    variant: 'filled',
     density: 'comfortable',
     hideDetails: 'auto',
   },
   VCombobox: {
-    variant: 'outlined',
+    variant: 'filled',
     density: 'comfortable',
     hideDetails: 'auto',
   },

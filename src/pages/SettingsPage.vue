@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { useSettingsStore, type ThemeMode } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui'
 import { MAX_RADIUS, MIN_RADIUS, neutralKeys, neutralPalettes, primaryPalette, type NeutralKey } from '@/features/theme/palette'
+import ColorSwatches from '@/components/ColorSwatches.vue'
 import { exportBackup, importBackup } from '@/services/backup'
 import { clearAllData, seedDemoData } from '@/features/demo/seed'
 import { useUserStore } from '@/features/user/store'
@@ -112,11 +113,6 @@ async function onClearData() {
 
 <template>
   <div class="pa-4">
-    <div class="d-flex align-center mb-6">
-      <v-icon icon="mdi-cog-outline" size="28" class="me-3" color="primary" />
-      <h1 class="text-h5 font-weight-bold">{{ t('settings.title') }}</h1>
-    </div>
-
     <!-- Görünüm -->
     <v-card variant="tonal" class="mb-4">
       <v-card-title class="text-subtitle-1">{{ t('settings.appearance') }}</v-card-title>
@@ -124,7 +120,7 @@ async function onClearData() {
         <div class="text-body-2 text-medium-emphasis mb-2">{{ t('settings.theme') }}</div>
         <v-btn-toggle
           :model-value="settings.themeMode"
-          color="primary" density="comfortable" rounded="lg" mandatory divided class="mb-4"
+          color="primary" density="comfortable" rounded="lg" mandatory class="mb-4"
           @update:model-value="settings.setThemeMode($event as ThemeMode)"
         >
           <v-btn v-for="opt in themeOptions" :key="opt.value" :value="opt.value" :prepend-icon="opt.icon">
@@ -133,22 +129,24 @@ async function onClearData() {
         </v-btn-toggle>
 
         <div class="text-body-2 text-medium-emphasis mb-2">{{ t('settings.primaryColor') }}</div>
-        <div class="d-flex flex-wrap ga-2 mb-4">
-          <button
-            v-for="c in primaryPalette" :key="c" type="button" class="color-dot"
-            :style="{ background: c, outline: settings.primaryColor === c ? '2px solid white' : 'none' }"
-            @click="settings.setPrimaryColor(c)"
-          />
-        </div>
+        <ColorSwatches
+          :model-value="settings.primaryColor"
+          :colors="primaryPalette"
+          class="mb-4"
+          @update:model-value="settings.setPrimaryColor($event)"
+        />
 
         <div class="text-body-2 text-medium-emphasis mb-2">{{ t('settings.neutral') }}</div>
         <div class="d-flex flex-wrap ga-2 mb-4">
           <button
-            v-for="n in neutralKeys" :key="n" type="button" class="color-dot"
-            :style="{ background: neutralPalettes[n].dark.surface, outline: settings.neutral === n ? '2px solid rgb(var(--v-theme-primary))' : '1px solid rgba(127,127,127,0.4)' }"
+            v-for="n in neutralKeys" :key="n" type="button" class="neutral-swatch"
+            :style="{ background: neutralPalettes[n].dark.surface }"
             :title="n"
+            :aria-pressed="settings.neutral === n"
             @click="settings.setNeutral(n as NeutralKey)"
-          />
+          >
+            <v-icon v-if="settings.neutral === n" icon="mdi-check" size="18" color="white" class="neutral-check" />
+          </button>
         </div>
 
         <div class="text-body-2 text-medium-emphasis mb-1">{{ t('settings.radius') }} ({{ settings.radius }}px)</div>
@@ -290,5 +288,11 @@ async function onClearData() {
 </template>
 
 <style scoped>
-.color-dot { width: 30px; height: 30px; border-radius: 50%; outline-offset: 2px; cursor: pointer; }
+.neutral-swatch {
+  width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: transform 0.12s ease;
+}
+.neutral-swatch:hover { transform: scale(1.12); }
+.neutral-check { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6)); }
 </style>

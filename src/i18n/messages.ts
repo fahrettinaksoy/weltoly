@@ -5,7 +5,8 @@ export type LocaleCode = 'tr' | 'en' | 'ru'
 export const messages = {
   tr: {
     app: { name: 'Weltoly' },
-    nav: { dashboard: 'Panel', wallets: 'Cüzdanlar', categories: 'Kategoriler', tags: 'Etiketler', stat: 'İstatistik', settings: 'Ayarlar', add: 'Ekle', more: 'Daha' },
+    nav: { dashboard: 'Panel', wallets: 'Cüzdanlar', categories: 'Kategoriler', tags: 'Etiketler', stat: 'İstatistik', settings: 'Ayarlar', add: 'Ekle', more: 'Daha', menu: 'Menü' },
+    pageDesc: { dashboard: 'Genel bakış ve son işlemler', wallets: 'Hesaplarını yönet', categories: 'Gelir ve gider kategorileri', tags: 'İşlem etiketleri', stat: 'Harcama analizi', settings: 'Uygulama tercihleri' },
     settings: {
       title: 'Ayarlar', appearance: 'Görünüm', theme: 'Tema',
       themeSystem: 'Sistem', themeLight: 'Açık', themeDark: 'Koyu', language: 'Dil', currency: 'Para birimi',
@@ -51,7 +52,7 @@ export const messages = {
       errors: { saveFailed: 'Etiket kaydedilemedi', deleteFailed: 'Etiket silinemedi' },
     },
     trns: {
-      empty: 'Henüz işlem yok', today: 'Bugün', yesterday: 'Dün',
+      empty: 'Henüz işlem yok', today: 'Bugün', yesterday: 'Dün', deleteConfirm: 'Bu işlemi silmek istediğine emin misin?',
       errors: { saveFailed: 'İşlem kaydedilemedi', deleteFailed: 'İşlem silinemedi' },
     },
     trnForm: {
@@ -68,7 +69,8 @@ export const messages = {
 
   en: {
     app: { name: 'Weltoly' },
-    nav: { dashboard: 'Dashboard', wallets: 'Wallets', categories: 'Categories', tags: 'Tags', stat: 'Stats', settings: 'Settings', add: 'Add', more: 'More' },
+    nav: { dashboard: 'Dashboard', wallets: 'Wallets', categories: 'Categories', tags: 'Tags', stat: 'Stats', settings: 'Settings', add: 'Add', more: 'More', menu: 'Menu' },
+    pageDesc: { dashboard: 'Overview & recent activity', wallets: 'Manage your accounts', categories: 'Income & expense categories', tags: 'Transaction tags', stat: 'Spending analytics', settings: 'App preferences' },
     settings: {
       title: 'Settings', appearance: 'Appearance', theme: 'Theme',
       themeSystem: 'System', themeLight: 'Light', themeDark: 'Dark', language: 'Language', currency: 'Currency',
@@ -114,7 +116,7 @@ export const messages = {
       errors: { saveFailed: 'Failed to save tag', deleteFailed: 'Failed to delete tag' },
     },
     trns: {
-      empty: 'No transactions yet', today: 'Today', yesterday: 'Yesterday',
+      empty: 'No transactions yet', today: 'Today', yesterday: 'Yesterday', deleteConfirm: 'Delete this transaction?',
       errors: { saveFailed: 'Failed to save transaction', deleteFailed: 'Failed to delete transaction' },
     },
     trnForm: {
@@ -131,7 +133,8 @@ export const messages = {
 
   ru: {
     app: { name: 'Weltoly' },
-    nav: { dashboard: 'Панель', wallets: 'Кошельки', categories: 'Категории', tags: 'Метки', stat: 'Статистика', settings: 'Настройки', add: 'Добавить', more: 'Ещё' },
+    nav: { dashboard: 'Панель', wallets: 'Кошельки', categories: 'Категории', tags: 'Метки', stat: 'Статистика', settings: 'Настройки', add: 'Добавить', more: 'Ещё', menu: 'Меню' },
+    pageDesc: { dashboard: 'Обзор и последние операции', wallets: 'Управление счетами', categories: 'Категории доходов и расходов', tags: 'Метки операций', stat: 'Анализ расходов', settings: 'Настройки приложения' },
     settings: {
       title: 'Настройки', appearance: 'Внешний вид', theme: 'Тема',
       themeSystem: 'Система', themeLight: 'Светлая', themeDark: 'Тёмная', language: 'Язык', currency: 'Валюта',
@@ -177,7 +180,7 @@ export const messages = {
       errors: { saveFailed: 'Не удалось сохранить метку', deleteFailed: 'Не удалось удалить метку' },
     },
     trns: {
-      empty: 'Пока нет операций', today: 'Сегодня', yesterday: 'Вчера',
+      empty: 'Пока нет операций', today: 'Сегодня', yesterday: 'Вчера', deleteConfirm: 'Удалить эту операцию?',
       errors: { saveFailed: 'Не удалось сохранить операцию', deleteFailed: 'Не удалось удалить операцию' },
     },
     trnForm: {

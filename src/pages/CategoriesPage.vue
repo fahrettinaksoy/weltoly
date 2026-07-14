@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n'
 
 import { useCategoriesStore } from '@/features/categories/store'
 import CategoryFormDialog from '@/features/categories/components/CategoryFormDialog.vue'
+import { useAppBarAction } from '@/composables/useAppBarAction'
 
 const { t } = useI18n()
 const categoriesStore = useCategoriesStore()
@@ -14,6 +15,8 @@ function openNew() {
   editId.value = null
   showDialog.value = true
 }
+useAppBarAction({ icon: '$add', onClick: openNew })
+
 function openEdit(id: string) {
   editId.value = id
   showDialog.value = true
@@ -22,13 +25,6 @@ function openEdit(id: string) {
 
 <template>
   <div class="pa-4">
-    <div class="d-flex align-center mb-4">
-      <v-icon icon="mdi-shape-outline" size="28" class="me-3" color="primary" />
-      <h1 class="text-h5 font-weight-bold">{{ t('categories.title') }}</h1>
-      <v-spacer />
-      <v-btn icon="mdi-plus" color="primary" variant="flat" size="small" @click="openNew" />
-    </div>
-
     <v-list v-if="categoriesStore.hasItems" class="bg-transparent">
       <template v-for="rootId in categoriesStore.categoriesRootIds" :key="rootId">
         <v-list-item rounded="lg" class="mb-1" @click="openEdit(rootId)">
@@ -39,7 +35,7 @@ function openEdit(id: string) {
           </template>
           <v-list-item-title class="font-weight-medium">{{ categoriesStore.items[rootId]?.name }}</v-list-item-title>
           <template v-if="categoriesStore.items[rootId]?.showInQuickSelector" #append>
-            <v-icon icon="mdi-star" color="amber" size="18" />
+            <v-icon icon="mdi-star" color="warning" size="18" />
           </template>
         </v-list-item>
 
@@ -60,7 +56,7 @@ function openEdit(id: string) {
             </template>
             <v-list-item-title>{{ categoriesStore.items[childId]?.name }}</v-list-item-title>
             <template v-if="categoriesStore.items[childId]?.showInQuickSelector" #append>
-              <v-icon icon="mdi-star" color="amber" size="16" />
+              <v-icon icon="mdi-star" color="warning" size="16" />
             </template>
           </v-list-item>
         </div>

@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n'
 
 import { useTagsStore } from '@/features/tags/store'
 import TagFormDialog from '@/features/tags/components/TagFormDialog.vue'
+import { useAppBarAction } from '@/composables/useAppBarAction'
 import type { TagId } from '@/features/tags/types'
 
 const { t } = useI18n()
@@ -15,6 +16,8 @@ function openNew() {
   editId.value = null
   showDialog.value = true
 }
+useAppBarAction({ icon: '$add', onClick: openNew })
+
 function openEdit(id: TagId) {
   editId.value = id
   showDialog.value = true
@@ -23,13 +26,6 @@ function openEdit(id: TagId) {
 
 <template>
   <div class="pa-4">
-    <div class="d-flex align-center mb-4">
-      <v-icon icon="$navTags" size="28" class="me-3" color="primary" />
-      <h1 class="text-h5 font-weight-bold">{{ t('tags.title') }}</h1>
-      <v-spacer />
-      <v-btn icon="mdi-plus" color="primary" variant="flat" size="small" @click="openNew" />
-    </div>
-
     <div v-if="tagsStore.hasItems" class="d-flex flex-wrap ga-2">
       <v-chip
         v-for="id in tagsStore.sortedIds"

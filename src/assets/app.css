@@ -26,6 +26,37 @@
   top: 8px;
 }
 
+/* --- Material 3 segmented control (v-btn-toggle) ------------------------- */
+/* Çizgisiz: bölücü yerine tonal "track" zemini; seçili segment primary pill. */
+.v-btn-toggle {
+  background: rgba(var(--v-theme-on-surface), 0.06);
+  border-radius: 999px;
+  padding: 4px;
+  height: auto !important;
+}
+.v-btn-toggle > .v-btn {
+  border-radius: 999px !important;
+}
+.v-btn-toggle > .v-btn:not(.v-btn--active) {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* --- Material nav yüzeyleri: çizgisiz + tonal aktif gösterge -------------- */
+/* Kenar çizgisi yok; ayrım elevation/yüzey ile (header, rail, bottom-nav, drawer). */
+.v-app-bar,
+.v-navigation-drawer,
+.v-bottom-navigation {
+  border: none !important;
+}
+
+/* MD3 bottom navigation: aktif ikon tonal "pill" göstergesi. */
+.v-bottom-navigation .v-btn--active .v-btn__content > .v-icon {
+  background: rgba(var(--v-theme-primary), 0.15);
+  border-radius: 999px;
+  padding-inline: 14px;
+}
+
 /* Hareket azaltma tercihi: animasyon/geçişleri kapat. */
 @media (prefers-reduced-motion: reduce) {
   *,
