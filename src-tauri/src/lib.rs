@@ -18,6 +18,24 @@ pub fn run() {
             sql: include_str!("../migrations/002_tags.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 3,
+            description: "add desc column to categories and tags",
+            sql: include_str!("../migrations/003_desc.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 4,
+            description: "add user_settings.defaultWalletId",
+            sql: include_str!("../migrations/004_default_wallet.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 5,
+            description: "add wallets.icon",
+            sql: include_str!("../migrations/005_wallet_icon.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()

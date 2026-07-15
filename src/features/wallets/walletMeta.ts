@@ -11,3 +11,12 @@ export const walletTypeIcon: Record<WalletType, string> = {
 }
 
 export const walletTypeList = walletTypes
+
+/**
+ * Cüzdanın gösterilecek ikonu: kullanıcı seçtiyse o, seçmediyse türün varsayılanı.
+ * Tek kaynak — çağıranlar '|| walletTypeIcon[type]' fallback'ini tekrarlamasın,
+ * yoksa biri güncellenip diğeri unutulur.
+ */
+export function walletIcon(wallet: { icon?: string, type: WalletType }): string {
+  return wallet.icon || walletTypeIcon[wallet.type]
+}

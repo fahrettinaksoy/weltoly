@@ -16,6 +16,13 @@ const routes: RouteRecordRaw[] = [
     meta: { navKey: 'wallets' },
   },
   {
+    // Detay: liste satırına tıklayınca buraya gelinir (düzenleme ayrı butonda).
+    path: '/wallets/:id',
+    name: 'wallet-detail',
+    component: () => import('@/pages/WalletDetailPage.vue'),
+    meta: { navKey: 'wallets' },
+  },
+  {
     path: '/categories',
     name: 'categories',
     component: () => import('@/pages/CategoriesPage.vue'),

@@ -1,11 +1,123 @@
-/* Köşe yuvarlaklığı ayarı — App.vue --app-radius'u günceller. Kartlara uygulanır
-   (butonlara DEĞİL; ikon butonlarının daire biçimi bozulmasın). */
+/* --- Köşe yuvarlaklığı (Ayarlar → Görünüm) -------------------------------- */
+/* Yuvarlaklık ARTIK BURADA YÖNETİLMİYOR — plugins/vuetify/defaults.ts'te
+   `rounded: 'var(--app-radius, 12px)'` ile bileşen bazında veriliyor
+   (global-configuration). App.vue bu değişkeni ayardan günceller.
+
+   Aşağıda yalnız `rounded` prop'uyla İFADE EDİLEMEYEN iki istisna kaldı. */
 :root {
   --app-radius: 12px;
 }
 
-.v-card {
-  border-radius: var(--app-radius) !important;
+/* İstisna 1 — alt çizgili input variant'ları.
+   filled/underlined'da MD3 gereği yalnız ÜST köşeler yuvarlanır; alt köşe
+   yuvarlanırsa çizgi kavise binip kırılır. `rounded` prop'u variant'a göre
+   dallanamadığı için CSS. (Varsayılan variant outlined — bu kural savunma amaçlı.)
+   !important şart: defaults'tan gelen inline style'ı ezmesi gerekiyor. */
+.v-field--variant-filled:not(.rounded-0, .rounded-pill, .rounded-circle),
+.v-field--variant-underlined:not(.rounded-0, .rounded-pill, .rounded-circle) {
+  border-radius: var(--app-radius) var(--app-radius) 0 0 !important;
+}
+
+/* İstisna 2 — outlined çerçevenin SOL parçası.
+   Çerçeve tek kutu değil: __start (sabit 12px) + __notch (etiket boşluğu) +
+   __end (flex:1). Yarıçap 12px'i aşınca CSS spec gereği tarayıcı yarıçapı o dar
+   kutuya sığdırmak için küçültür; __end geniş olduğu için tam yarıçapı alır →
+   sol köşe sağdan daha az yuvarlak görünür. (MAX_RADIUS 24, yani 12 üstü her
+   değerde görünür.)
+   Vuetify bunu kendi telafi eder ama YALNIZ `rounded-*` class'ı varken; biz
+   yarıçapı ayardan sürdüğümüz için inline STYLE üretiyoruz ve o seçici tutmuyor.
+   Bu yüzden aynı telafiyi değişkene bağlı yapıyoruz: sol parça en az yarıçap
+   kadar geniş olmalı. Notch da buna göre daralır, yoksa etiket köşeye taşar. */
+.v-field--variant-outlined .v-field__outline__start {
+  flex-basis: max(12px, var(--app-radius));
+}
+.v-field--variant-outlined .v-field__outline__notch {
+  max-width: calc(100% - 2 * max(12px, var(--app-radius)));
+}
+
+/* --- Anahtar (switch): kapalı durumun teması ------------------------------ */
+/* Vuetify'ın inset-material track'i tema DEĞİŞKENİ ile SABİT rengi karıştırıyor:
+     background: color-mix(in srgb, rgb(var(--v-theme-on-surface-variant)) 73%, #ccc)
+     border:     color-mix(in srgb, rgb(var(--v-theme-surface-variant)) 20%, #888)
+   Koyu temada on-surface-variant zaten açık (#c4c9d2); #ccc ile karışınca göz alan
+   bir açık gri pil çıkıyor — yani bu biçim koyu temaya hiç uyum sağlamıyor.
+   Kapalı durumu tamamen temaya bağlıyoruz: saydam yüzey + outline çerçeve, thumb
+   nötr. MD3'te de kapalı track nötrdür; ayrımı çerçeve ile thumb taşır.
+
+   :not(--dirty) ŞART — yalnız KAPALI durumu hedefler.
+   Açık durumda rengi `.bg-success` gibi bir sınıf verir; o sınıfı Vuetify
+   RUNTIME'da üretir, katmansızdır ve !important TAŞIMAZ (kaynak: composables/
+   theme.js → createCssClass). Yani (0,1,0). Buradaki kural (0,2,0) olduğu için
+   durum ayrımı yapılmasaydı açık anahtarların rengini de yer, hepsi saydam olurdu. */
+.v-switch--inset-material .v-selection-control:not(.v-selection-control--dirty) .v-switch__track {
+  background-color: transparent;
+  border-color: rgba(var(--v-theme-on-surface), 0.38);
+}
+.v-switch--inset-material .v-selection-control:not(.v-selection-control--dirty) .v-switch__thumb {
+  background-color: rgba(var(--v-theme-on-surface), 0.38);
+  color: rgb(var(--v-theme-surface));
+}
+
+/* Anahtarın yuvarlaklığı da ayardan (Ayarlar → Görünüm).
+   defaults.ts mekanizması BURAYA ULAŞMAZ: VSwitch `rounded` prop'u almıyor
+   (kart/buton/avatar'ın aksine), o yüzden tek yol CSS.
+   Vuetify sabit veriyor: track 9999px (kapsül), thumb %50 (daire).
+   Kuralları @layer vuetify-components içinde; buradaki katmansız kural onları
+   özgüllükten bağımsız yener.
+   Eşmerkezli köşe: thumb, track'in çeperi kadar (2px) daha az yuvarlanır —
+   Vuetify'ın kendi inset-square oranı da 6/4 ile aynı mantıkta.
+   max(0px, ...) şart: radius 0'da negatife düşen border-radius geçersizdir ve
+   kuralın tamamı düşer.
+   Üst sınır kendiliğinden: yarıçap track yüksekliğinin yarısını aşarsa tarayıcı
+   kırpar → yüksek radius'ta yine kapsül olur. */
+.v-switch__track {
+  border-radius: var(--app-radius);
+}
+.v-switch__thumb {
+  border-radius: max(0px, calc(var(--app-radius) - 2px));
+}
+
+/* --- Menü sarmalayıcısı: yarıçap tutarlılığı ------------------------------ */
+/* Vuetify menüsü: sarmalayıcı sabit 4px, içindeki liste border-radius: inherit
+   ile onu almalı. Ama defaults.ts VList'e rounded veriyor → INLINE style üretip
+   inherit'i eziyor (ölçüldü: style="border-radius:var(--app-radius, 12px)").
+   Sonuç: sarmalayıcı 4px, liste 12px — gölge listede olduğu için köşelerde
+   yarım kalmış bir artefakt görünüyor. Sarmalayıcıyı da aynı değere bağla. */
+.v-menu > .v-overlay__content {
+  border-radius: var(--app-radius);
+}
+
+/* --- Tablolar: satır asla ikinci satıra taşmaz ---------------------------- */
+/* Uzun açıklama/ad hücreyi sardırıp satır yüksekliğini değiştiriyordu; liste
+   tırtıklı görünüyor, sanal kaydırmanın satır yüksekliği ölçümü de sapıyordu.
+   Her hücre tek satır; sığmayan metin "…" ile kesilir.
+   Vuetify'ın kolon bazlı `nowrap` prop'u aynı işi yapar ama kolonu unutan
+   olursa sessizce sarar — GARANTİ burada, tablo genelinde. */
+.v-data-table th,
+.v-data-table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* İSTİSNA — süzgeç satırı. Yukarıdaki overflow:hidden form alanlarını kırpıyor
+   (seçili çipler, açılır ok) ve nowrap yüksekliği bozuyor. Süzgeç hücresi metin
+   değil kontrol taşır; kesme kuralı ona uygulanmamalı. */
+.v-data-table tr.trn-filters td {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* Hücrede flex düzen varsa (ör. rozet + ad) kesme flex'ten geçmez: öğe
+   içeriğinden kısalabilsin diye min-width:0 gerekir, yoksa taşar.
+   Vuetify'ın nowrap'i bunu yapmaz — bu kısım yalnız burada var. */
+.v-data-table td > .d-flex {
+  min-width: 0;
+}
+.v-data-table td > .d-flex > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* --- Accessibility ------------------------------------------------------- */
@@ -19,7 +131,7 @@
   padding: 8px 16px;
   background: rgb(var(--v-theme-primary));
   color: #fff;
-  border-radius: 8px;
+  border-radius: var(--app-radius);
   transition: top 0.2s;
 }
 .skip-link:focus {
@@ -27,19 +139,33 @@
 }
 
 /* --- Material 3 segmented control (v-btn-toggle) ------------------------- */
-/* Çizgisiz: bölücü yerine tonal "track" zemini; seçili segment primary pill. */
+/* Çizgisiz: bölücü yerine tonal "track" zemini; seçili segment primary dolgulu.
+   Yuvarlaklık BURADA DEĞİL — defaults.ts'te (VBtnGroup + iç içe VBtnToggle>VBtn,
+   eşmerkezli hesabıyla). Burada yalnız zemin ve boşluk kalır. */
 .v-btn-toggle {
   background: rgba(var(--v-theme-on-surface), 0.06);
-  border-radius: 999px;
   padding: 4px;
   height: auto !important;
-}
-.v-btn-toggle > .v-btn {
-  border-radius: 999px !important;
 }
 .v-btn-toggle > .v-btn:not(.v-btn--active) {
   background-color: transparent !important;
   box-shadow: none !important;
+}
+
+/* İSTİSNA — DİKEY toggle'da şerit YOK.
+   Dikey kullandığımız tek yer kart içindeki dönem seçicileri (Cüzdan detayı ve
+   İstatistik → Dönem). Kart zaten bir yüzey veriyor; üstüne track'in 0.06 tint'i
+   binince iç içe kutu çıkıyor ve pasif butonlar zeminliymiş gibi görünüyor —
+   oysa onlar zaten saydam (yukarıdaki kural), gri olan arkalarındaki şerit.
+   Track'in görevi segmentleri bir arada göstermek; dikey listede kart bunu zaten
+   yapıyor. Seçili olan yine primary pill olarak ayrışır (renk butondan gelir).
+   padding da sıfırlanır: şerit yokken 4px ölü boşluk kalırdı.
+   Yatay segmented control'de (işlem türü, gelir/gider, tema) şerit tasarımın
+   kendisi — oraya dokunulmuyor.
+   Seçici: Vuetify yönü sınıf olarak veriyor (VBtnGroup.js → `v-btn-group--${direction}`). */
+.v-btn-toggle.v-btn-group--vertical {
+  background: transparent;
+  padding: 0;
 }
 
 /* --- Material nav yüzeyleri: çizgisiz + tonal aktif gösterge -------------- */

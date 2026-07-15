@@ -11,14 +11,14 @@ import type { TrnId } from '@/features/trns/types'
 import { compareCategoryIds, computeChildrenDiff, getTransactibleCategoriesIds } from '@/features/categories/utils'
 import { TrnType } from '@/features/trns/types'
 import { useTrnsStore } from '@/features/trns/store'
-import { showErrorToast } from '@/stores/ui'
+import { showErrorToast, showSuccessToast } from '@/stores/ui'
 
 const adjustment: CategoryItem = {
-  color: '', icon: 'mdi-plus-minus', name: 'Adjustment', parentId: 0,
+  color: '', desc: '', icon: 'mdi-plus-minus', name: 'Adjustment', parentId: 0,
   showInLastUsed: false, showInQuickSelector: false,
 }
 const transfer: CategoryItem = {
-  color: '', icon: 'mdi-swap-horizontal', name: 'Transfer', parentId: 0,
+  color: '', desc: '', icon: 'mdi-swap-horizontal', name: 'Transfer', parentId: 0,
   showInLastUsed: false, showInQuickSelector: false,
 }
 
@@ -217,6 +217,8 @@ export const useCategoriesStore = defineStore('categories', () => {
       return
 
     const prev = items.value
+    // İyimser güncellemeden ÖNCE bak: sonrası hep "var" görünürdü.
+    const isNew = !items.value[id]
     const prevChildIds = getChildrenIds(id)
     const useChildrenDiff = Array.isArray(nextChildIds)
     const diff = useChildrenDiff
@@ -244,14 +246,34 @@ export const useCategoriesStore = defineStore('categories', () => {
         rows.push({ id: cid, row: categoryToRow(item, userId) })
     }
 
-    return upsertRows('categories', rows).catch((e) => {
+    return upsertRows('categories', rows).then(() => {
+      showSuccessToast(isNew ? 'categories.added' : 'categories.updated')
+    }).catch((e) => {
       setCategories(prev)
       console.error('[categories] saveCategory failed', e)
       showErrorToast('categories.errors.saveFailed')
     })
   }
 
-  function deleteCategory(id: CategoryId, trnsIds?: TrnId[]) {
+  /**
+   * Bu kategoriye referans veren işlem id'leri. Store'da durur çünkü hem form
+   * hem tablo silme yolunda gerekiyor — kopyalanırsa biri güncellenip diğeri
+   * unutulur.
+   */
+  function referencingTrnIds(categoryId: CategoryId): TrnId[] {
+    const trns = trnsStore.items
+    if (!trns)
+      return []
+    const ids: TrnId[] = []
+    for (const trnId in trns) {
+      if (trns[trnId]?.categoryId === categoryId)
+        ids.push(trnId)
+    }
+    return ids
+  }
+
+  /** Kategoriyi ve ona bağlı işlemleri siler; sonucu merkezî kuyrukta bildirir. */
+  function deleteCategory(id: CategoryId, trnsIds: TrnId[] = referencingTrnIds(id)) {
     if (id === 'transfer' || id === 'adjustment')
       return
 
@@ -261,15 +283,17 @@ export const useCategoriesStore = defineStore('categories', () => {
     delete categories[id]
     setCategories(categories)
 
-    if (trnsIds?.length)
+    if (trnsIds.length)
       trnsStore.removeTrnsFromStore(trnsIds)
 
     const writes: Promise<void>[] = [deleteRow('categories', id)]
-    if (trnsIds?.length) {
+    if (trnsIds.length) {
       for (const trnId of trnsIds) writes.push(deleteRow('trns', trnId))
     }
 
-    return Promise.all(writes).then(() => undefined).catch((e) => {
+    return Promise.all(writes).then(() => {
+      showSuccessToast('categories.deleted')
+    }).catch((e) => {
       setCategories(prevCategories)
       trnsStore.setTrns(prevTrns)
       console.error('[categories] deleteCategory failed', e)
@@ -282,6 +306,7 @@ export const useCategoriesStore = defineStore('categories', () => {
     categoriesIdsForTrnValues,
     categoriesRootIds,
     deleteCategory,
+    referencingTrnIds,
     favoriteCategoriesIds,
     getChildrenIds,
     getChildrenIdsOrParent,

@@ -7,7 +7,7 @@ import {
 
 import type { Tags, TagId, TagItem } from '@/features/tags/types'
 import { useTrnsStore } from '@/features/trns/store'
-import { showErrorToast } from '@/stores/ui'
+import { showErrorToast, showSuccessToast } from '@/stores/ui'
 
 export const useTagsStore = defineStore('tags', () => {
   const items = ref<Tags>({})
@@ -49,10 +49,14 @@ export const useTagsStore = defineStore('tags', () => {
 
   function saveTag({ id, values }: { id: TagId, values: TagItem }) {
     const prev = items.value
+    // İyimser güncellemeden ÖNCE bak: sonrası hep "var" görünürdü.
+    const isNew = !items.value[id]
     const next: TagItem = { ...values, name: values.name.trim(), updatedAt: Date.now() }
     setTags({ ...items.value, [id]: next })
 
-    return upsertRow('tags', id, tagToRow(next, resolveWriteUid(null))).catch((e) => {
+    return upsertRow('tags', id, tagToRow(next, resolveWriteUid(null))).then(() => {
+      showSuccessToast(isNew ? 'tags.added' : 'tags.updated')
+    }).catch((e) => {
       setTags(prev)
       console.error('[tags] saveTag failed', e)
       showErrorToast('tags.errors.saveFailed')
@@ -73,12 +77,15 @@ export const useTagsStore = defineStore('tags', () => {
         const trn = trns[trnId]
         if (trn?.tagIds?.includes(id)) {
           const tagIds = trn.tagIds.filter(t => t !== id)
-          trnsStore.saveTrn({ id: trnId, values: { ...trn, tagIds } })
+          // silent: bu kullanıcının "işlem kaydet"i değil, silinen etiketin temizliği
+          trnsStore.saveTrn({ id: trnId, values: { ...trn, tagIds }, silent: true })
         }
       }
     }
 
-    return deleteRow('tags', id).catch((e) => {
+    return deleteRow('tags', id).then(() => {
+      showSuccessToast('tags.deleted')
+    }).catch((e) => {
       setTags(prev)
       console.error('[tags] deleteTag failed', e)
       showErrorToast('tags.errors.deleteFailed')

@@ -22,10 +22,12 @@ const emit = defineEmits<{ 'update:modelValue': [string] }>()
 </template>
 
 <style scoped>
+/* Vuetify bileşeni değil (düz <button>) → defaults ulaşmaz, yuvarlaklık
+   doğrudan --app-radius'tan alınır. */
 .swatch {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: var(--app-radius);
   display: inline-flex;
   align-items: center;
   justify-content: center;

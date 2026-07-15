@@ -29,8 +29,8 @@ const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 
 <template>
   <div class="pinpad text-center">
-    <div v-if="title" class="text-h6 font-weight-medium mb-1">{{ title }}</div>
-    <div v-if="subtitle" class="text-body-2 text-medium-emphasis mb-4">{{ subtitle }}</div>
+    <div v-if="title" class="text-title-large font-weight-medium mb-1">{{ title }}</div>
+    <div v-if="subtitle" class="text-body-medium text-medium-emphasis mb-4">{{ subtitle }}</div>
 
     <div class="dots mb-6" :class="{ shake: error }">
       <span v-for="(filled, i) in dots" :key="i" class="dot" :class="{ filled }" />
@@ -38,11 +38,11 @@ const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
 
     <div class="keys">
       <v-btn v-for="k in keys" :key="k" variant="tonal" size="large" class="key" @click="push(k)">
-        <span class="text-h6">{{ k }}</span>
+        <span class="text-title-large">{{ k }}</span>
       </v-btn>
       <div />
       <v-btn variant="tonal" size="large" class="key" @click="push('0')">
-        <span class="text-h6">0</span>
+        <span class="text-title-large">0</span>
       </v-btn>
       <v-btn variant="text" size="large" class="key" icon="mdi-backspace-outline" @click="back" />
     </div>
