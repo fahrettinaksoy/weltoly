@@ -96,14 +96,34 @@ onMounted(() => {
       </DefaultLayout>
     </v-locale-provider>
 
-    <v-snackbar
-      v-model="ui.snackbar.show"
-      :color="ui.snackbar.color"
-      timeout="3000"
-      location="bottom"
+    <!-- Merkezî bildirim kuyruğu: projedeki TÜM snackbar'lar buradan geçer.
+         Kuyruk kendini tüketir (gösterileni modelden çıkarır) — stores/ui.ts ekler.
+         Biçim (ikon, zamanlayıcı, renk) mesajın kendisinde; burada yalnız
+         tüm kuyruk için ortak davranış durur. -->
+    <v-snackbar-queue
+      v-model="ui.snackbarQueue"
+      :timeout="4000"
+      :total-visible="3"
+      location="bottom right"
+      elevation="6"
+      class="app-snackbar"
     >
-      {{ ui.snackbar.message }}
-    </v-snackbar>
+      <!-- Kapatma: "Kapat" yazısı yerine ✕ ikonu.
+           `closable` prop'u yerine actions slot'u kullanılıyor — slot varsa
+           Vuetify eylem alanını zaten render eder, ayrıca closable gerekmez.
+           Slot'a VDefaultsProvider ile `text: $vuetify.dismiss` varsayılanı
+           enjekte edilir ama VBtn `icon` verildiğinde metin dalını hiç
+           çalıştırmaz, o yüzden yazı basılmaz. -->
+      <template #actions="{ props: closeProps }">
+        <v-btn
+          v-bind="closeProps"
+          icon="mdi-close"
+          variant="text"
+          size="small"
+          :aria-label="t('$vuetify.dismiss')"
+        />
+      </template>
+    </v-snackbar-queue>
 
     <HotkeysHelp v-model="showHelp" />
     <LockScreen v-if="lock.isLocked" />

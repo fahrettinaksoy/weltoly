@@ -64,6 +64,7 @@ export function rowToWallet(row: Row): WalletItem {
     color: row.color,
     currency: row.currency,
     desc: (row.desc ?? '') as string,
+    icon: (row.icon ?? '') as string, // 005 öncesi satırlarda null
     isArchived: !!row.isArchived,
     isExcludeInTotal: !!row.isExcludeInTotal,
     isWithdrawal: !!row.isWithdrawal,
@@ -88,6 +89,7 @@ export function normalizeMdi(icon: unknown): string {
 export function rowToCategory(row: Row): CategoryItem {
   return {
     color: row.color,
+    desc: (row.desc ?? '') as string, // 003 öncesi satırlarda kolon null gelir
     icon: normalizeMdi(row.icon),
     name: row.name,
     parentId: (row.parentId ?? 0) as CategoryId | 0, // null -> 0 (kök işareti)
@@ -148,6 +150,7 @@ export function walletToRow(item: WalletItem, userId: string): Record<string, un
     creditLimit: item.type === 'credit' ? (item.creditLimit ?? 0) : null,
     currency: item.currency,
     desc: item.desc || null,
+    icon: item.icon || null, // '' = seçilmedi → tür varsayılanı kullanılır
     isArchived: item.isArchived ? 1 : 0,
     isExcludeInTotal: item.isExcludeInTotal ? 1 : 0,
     isWithdrawal: item.isWithdrawal ? 1 : 0,
@@ -163,6 +166,7 @@ export function rowToTag(row: Row): TagItem {
   return {
     name: row.name,
     color: row.color,
+    desc: (row.desc ?? '') as string, // 003 öncesi satırlarda kolon null gelir
     ...(row.updatedAt != null ? { updatedAt: Number(row.updatedAt) } : {}),
   }
 }
@@ -171,6 +175,7 @@ export function tagToRow(item: TagItem, userId: string): Record<string, unknown>
   return {
     name: item.name,
     color: item.color,
+    desc: item.desc || null,
     updatedAt: item.updatedAt ?? Date.now(),
     userId,
   }
@@ -179,6 +184,7 @@ export function tagToRow(item: TagItem, userId: string): Record<string, unknown>
 export function categoryToRow(item: CategoryItem, userId: string): Record<string, unknown> {
   return {
     color: item.color,
+    desc: item.desc || null,
     icon: item.icon,
     name: item.name,
     parentId: item.parentId ? String(item.parentId) : null, // 0/'' kök işareti -> null

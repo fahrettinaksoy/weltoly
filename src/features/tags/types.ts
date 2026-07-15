@@ -8,6 +8,7 @@ export type TagId = string
 export const tagFormSchema = z.object({
   name: z.string().trim().min(1).default(''),
   color: z.string().default(() => random(colorsArray)),
+  desc: z.string().default(''),
 })
 
 export type TagForm = z.infer<typeof tagFormSchema>

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { format } from 'date-fns'
 
 import { useTrnsFormStore } from '@/features/trnForm/store'
 import { useWalletsStore } from '@/features/wallets/store'
@@ -48,14 +47,18 @@ const categoryItems = computed(() =>
   })),
 )
 
-const dateStr = computed({
-  get: () => format(store.values.date, 'yyyy-MM-dd'),
-  set: (v: string) => {
+/**
+ * VDateInput Date nesnesiyle çalışır; store ise timestamp tutuyor.
+ * Yalnız GÜN değişir: saat/dakika korunur — kullanıcı tarihi düzeltirken
+ * işlemin saatini sıfırlamak veri kaybı olurdu.
+ */
+const dateModel = computed({
+  get: () => new Date(store.values.date),
+  set: (v: Date | null) => {
     if (!v)
       return
-    const [y, m, d] = v.split('-').map(Number)
     const dt = new Date(store.values.date)
-    dt.setFullYear(y!, m! - 1, d!)
+    dt.setFullYear(v.getFullYear(), v.getMonth(), v.getDate())
     store.values.date = dt.getTime()
   },
 })
@@ -84,7 +87,7 @@ function onDelete() {
     <!-- Tür seçimi -->
     <v-btn-toggle
       :model-value="store.values.trnType"
-      color="primary" mandatory rounded="lg" density="comfortable" class="mb-4 w-100"
+      color="primary" mandatory density="comfortable" class="mb-4 w-100"
       @update:model-value="store.onChangeTrnType($event)"
     >
       <v-btn v-for="it in typeItems" :key="it.value" :value="it.value" class="flex-grow-1">{{ it.label }}</v-btn>
@@ -92,8 +95,8 @@ function onDelete() {
 
     <!-- Tutar göstergesi -->
     <div class="text-center mb-4">
-      <div class="text-h3 font-weight-bold">{{ activeRaw }}</div>
-      <div v-if="store.shouldShowSum()" class="text-body-2 text-medium-emphasis">
+      <div class="text-display-medium font-weight-bold">{{ activeRaw }}</div>
+      <div v-if="store.shouldShowSum()" class="text-body-medium text-medium-emphasis">
         = {{ store.values.amount[store.activeAmountIdx] }}
       </div>
     </div>
@@ -118,7 +121,7 @@ function onDelete() {
       <v-btn-toggle
         v-if="!store.isSameCurrencyTransfer"
         :model-value="store.values.transferType"
-        color="primary" mandatory rounded="lg" density="comfortable" class="mb-4 w-100"
+        color="primary" mandatory density="comfortable" class="mb-4 w-100"
         @update:model-value="store.onChangeTransferType($event)"
       >
         <v-btn value="expense" class="flex-grow-1">{{ t('trnForm.from') }}</v-btn>
@@ -128,7 +131,7 @@ function onDelete() {
 
     <!-- Gelir/Gider: cüzdan + kategori -->
     <template v-else>
-      <div v-if="!walletItems.length" class="text-body-2 text-medium-emphasis mb-3">{{ t('trnForm.noWallets') }}</div>
+      <div v-if="!walletItems.length" class="text-body-medium text-medium-emphasis mb-3">{{ t('trnForm.noWallets') }}</div>
       <v-chip-group
         :model-value="store.values.walletId"
         selected-class="text-primary" column class="mb-2"
@@ -139,7 +142,7 @@ function onDelete() {
         </v-chip>
       </v-chip-group>
 
-      <div v-if="!categoryItems.length" class="text-body-2 text-medium-emphasis mb-3">{{ t('trnForm.noCategories') }}</div>
+      <div v-if="!categoryItems.length" class="text-body-medium text-medium-emphasis mb-3">{{ t('trnForm.noCategories') }}</div>
       <v-chip-group
         :model-value="store.values.categoryId"
         selected-class="text-primary" column class="mb-2"
@@ -154,7 +157,7 @@ function onDelete() {
     <!-- Etiketler (tags): çoklu seçim + satır içi yeni etiket -->
     <div class="d-flex align-center mb-1">
       <v-icon icon="$navTags" size="16" class="me-2 text-medium-emphasis" />
-      <span class="text-body-2 text-medium-emphasis">{{ t('tags.title') }}</span>
+      <span class="text-body-medium text-medium-emphasis">{{ t('tags.title') }}</span>
     </div>
     <div class="d-flex align-center flex-wrap ga-2 mb-4">
       <v-chip
@@ -175,7 +178,15 @@ function onDelete() {
 
     <!-- Tarih + açıklama -->
     <div class="d-flex ga-2 mb-4">
-      <v-text-field v-model="dateStr" type="date" :label="t('trnForm.date')" hide-details density="comfortable" />
+      <!-- Tarayıcının type="date" alanı yerine Vuetify tarih seçici: biçim ve
+           takvim uygulamanın diline/temasına uyar (tarayıcı alanı işletim
+           sistemine uyuyordu). -->
+      <v-date-input
+        v-model="dateModel"
+        :label="t('trnForm.date')"
+        hide-details
+        density="comfortable"
+      />
       <v-text-field v-model="store.values.desc" :label="t('trnForm.description')" hide-details density="comfortable" />
     </div>
 

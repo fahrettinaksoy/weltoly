@@ -5,16 +5,19 @@ import { format } from 'date-fns'
 import { useStatStore, type StatType } from '@/features/stat/store'
 import { useCurrenciesStore } from '@/features/currencies/store'
 import { useWalletsStore } from '@/features/wallets/store'
+import { useCategoriesStore } from '@/features/categories/store'
 import { useTagsStore } from '@/features/tags/store'
 import type { Period } from '@/features/date/types'
 import StatChart from '@/features/stat/components/StatChart.vue'
 import CategoryBreakdown from '@/features/stat/components/CategoryBreakdown.vue'
+import SectionCard from '@/components/SectionCard.vue'
 import { useFormat } from '@/composables/useFormat'
 
 const { t } = useI18n()
 const stat = useStatStore()
 const currenciesStore = useCurrenciesStore()
 const walletsStore = useWalletsStore()
+const categoriesStore = useCategoriesStore()
 const tagsStore = useTagsStore()
 const fmt = useFormat()
 
@@ -42,88 +45,320 @@ const rangeLabel = computed(() => {
     case 'year': return format(start, 'yyyy')
   }
 })
+
+/**
+ * Değişim oranı. null = kıyaslanamaz, rozet gösterilmez.
+ * Önceki aralık 0 ise yüzde TANIMSIZDIR (0'a bölme) — "%Infinity arttı" yazmak
+ * yerine rozet hiç çizilmez; sıfırdan artış oransal bir artış değildir.
+ */
+function changeRatio(current: number, previous: number): number | null {
+  if (previous === 0)
+    return null
+  return ((current - previous) / Math.abs(previous)) * 100
+}
+
+/**
+ * Rozet rengi. Yön TEK BAŞINA renk belirlemez: gider artışı KÖTÜ, gelir artışı
+ * İYİ — ikisini de yeşil yapmak kullanıcıyı yanıltırdı. %1'in altındaki sapmalar
+ * nötr: olmayan bir eğilimi varmış gibi boyamamak için.
+ */
+function deltaTone(delta: number, positiveIsGood: boolean): string | undefined {
+  if (Math.abs(delta) < 1)
+    return undefined
+  return (delta > 0) === positiveIsGood ? 'success' : 'error'
+}
+
+/**
+ * Sayaç kartları — her biri bir ÖNCEKİ aynı aralıkla kıyaslı.
+ *
+ * 'net' kasıtlı olarak rozetsiz: net işaret değiştirebilir (−5.000 → +3.000) ve
+ * orada yüzde saçmalar.
+ * DİKKAT — `summary.sum` gerçekte income − expense, yani NET. Eskiden "Bakiye"
+ * etiketiyle gösteriliyordu; bakiye elindeki para demek, bu ise dönemin akışı.
+ */
+const factCards = computed(() => {
+  const s = stat.summary
+  const p = stat.prevSummary
+  return [
+    { key: 'income', label: t('trnForm.income'), value: s.income, money: true, tone: 'text-success', delta: changeRatio(s.income, p.income), positiveIsGood: true },
+    { key: 'expense', label: t('trnForm.expense'), value: s.expense, money: true, tone: 'text-error', delta: changeRatio(s.expense, p.expense), positiveIsGood: false },
+    { key: 'net', label: t('stat.net'), value: s.sum, money: true, tone: s.sum >= 0 ? '' : 'text-error', delta: null, positiveIsGood: true },
+    { key: 'count', label: t('wallets.table.trnCount'), value: s.count, money: false, tone: '', delta: changeRatio(s.count, p.count), positiveIsGood: true },
+  ]
+})
+
+/** İnilen kökün adı — kart başlığı onu gösterir. */
+const drillName = computed(() =>
+  stat.drillRoot ? categoriesStore.items[stat.drillRoot]?.name ?? '' : '',
+)
+
+/**
+ * Süzgeç özeti: tek seçimde adı, çoğulda "{n} seçili".
+ * Slot'tan gelen `item.title` yerine buradan okunuyor — o slot'un `item`'ı
+ * TS'te ham öğe olarak tipleniyor (`{ id, name }`), `.title` yok.
+ */
+const walletFilterLabel = computed(() => {
+  const ids = stat.filterWalletIds
+  return ids.length === 1
+    ? walletsStore.items?.[ids[0]!]?.name ?? ids[0]!
+    : t('walletDetail.nSelected', { n: ids.length })
+})
+const tagFilterLabel = computed(() => {
+  const ids = stat.filterTagIds
+  return ids.length === 1
+    ? tagsStore.items[ids[0]!]?.name ?? ids[0]!
+    : t('walletDetail.nSelected', { n: ids.length })
+})
 </script>
 
 <template>
   <div class="pa-4">
-    <!-- Periyot seçimi -->
-    <v-btn-toggle
-      :model-value="stat.period"
-      color="primary" mandatory rounded="lg" density="comfortable" class="mb-3 w-100"
-      @update:model-value="stat.setPeriod($event as Period)"
-    >
-      <v-btn v-for="p in periods" :key="p.value" :value="p.value" class="flex-grow-1">{{ p.label }}</v-btn>
-    </v-btn-toggle>
-
-    <!-- Cüzdan filtresi -->
-    <v-select
-      v-if="walletFilterItems.length"
-      :model-value="stat.filterWalletIds"
-      :items="walletFilterItems"
-      item-title="name" item-value="id"
-      :label="t('stat.filterWallets')"
-      multiple chips closable-chips clearable hide-details density="comfortable" class="mb-3"
-      @update:model-value="stat.setFilterWalletIds($event)"
-    />
-
-    <!-- Etiket filtresi -->
-    <v-select
-      v-if="tagFilterItems.length"
-      :model-value="stat.filterTagIds"
-      :items="tagFilterItems"
-      item-title="name" item-value="id"
-      :label="t('stat.filterTags')"
-      multiple chips closable-chips clearable hide-details density="comfortable" class="mb-3"
-      @update:model-value="stat.setFilterTagIds($event)"
-    />
-
-    <!-- Aralık navigasyonu -->
-    <div class="d-flex align-center justify-space-between mb-3">
-      <v-btn icon="mdi-chevron-left" variant="tonal" size="small" @click="stat.prev()" />
-      <span class="text-subtitle-1 font-weight-medium">{{ rangeLabel }}</span>
-      <v-btn icon="mdi-chevron-right" variant="tonal" size="small" :disabled="stat.offset >= 0" @click="stat.next()" />
-    </div>
-
-    <!-- Özet -->
-    <v-card variant="tonal" class="mb-4 pa-4">
-      <div class="d-flex justify-space-between">
-        <div>
-          <div class="text-caption text-medium-emphasis">{{ t('trnForm.income') }}</div>
-          <div class="text-subtitle-1 font-weight-bold text-success">{{ fmt.money(stat.summary.income, currenciesStore.base) }}</div>
+    <!-- Ana alan + sağ kontrol rayı. Eskiden her şey tek sütunda alt alta
+         yığılıydı: periyot, iki süzgeç, aralık gezinme, özet, grafik, kırılım —
+         altı blok. Veriyi görmek için üç blok kontrolü kaydırmak gerekiyordu ve
+         geniş ekranda sağ yarı boştu. Kontroller artık sabit rayda, veri solda.
+         Cüzdan detayındaki "Dönem sağda" düzeniyle aynı kültür. -->
+    <div class="d-flex ga-4 align-start stat-layout">
+      <div class="flex-1-1 stat-main">
+        <!-- Sayaçlar -->
+        <div class="d-flex ga-3 mb-4 flex-wrap">
+          <v-sheet
+            v-for="card in factCards"
+            :key="card.key"
+            color="surface-light"
+            class="pa-4 flex-1-1 stat-kpi"
+          >
+            <div class="d-flex align-center ga-2">
+              <div class="text-headline-small font-weight-bold text-truncate" :class="card.tone">
+                {{ card.money ? fmt.money(card.value, currenciesStore.base) : fmt.number(card.value) }}
+              </div>
+              <v-chip
+                v-if="card.delta !== null"
+                :color="deltaTone(card.delta, card.positiveIsGood)"
+                :prepend-icon="card.delta >= 0 ? 'mdi-arrow-up' : 'mdi-arrow-down'"
+                size="x-small"
+                variant="tonal"
+                :title="t('stat.vsPrevRange')"
+              >
+                %{{ fmt.number(Math.abs(Math.round(card.delta))) }}
+              </v-chip>
+            </div>
+            <div class="text-body-small text-medium-emphasis">{{ card.label }}</div>
+          </v-sheet>
         </div>
-        <div class="text-center">
-          <div class="text-caption text-medium-emphasis">{{ t('trnForm.expense') }}</div>
-          <div class="text-subtitle-1 font-weight-bold text-error">{{ fmt.money(stat.summary.expense, currenciesStore.base) }}</div>
-        </div>
-        <div class="text-right">
-          <div class="text-caption text-medium-emphasis">{{ t('stat.balance') }}</div>
-          <div class="text-subtitle-1 font-weight-bold">{{ fmt.money(stat.summary.sum, currenciesStore.base) }}</div>
-        </div>
+
+        <!-- Seyir grafiği -->
+        <SectionCard
+          :title="t('stat.trend')"
+          :subtitle="t('stat.trendDesc')"
+          icon="mdi-chart-bar"
+          class="mb-4"
+        >
+          <StatChart :series="stat.series" :period="stat.period" />
+        </SectionCard>
+
+        <!-- Kategori kırılımı -->
+        <SectionCard
+          :title="stat.drillRoot ? drillName : t('stat.breakdown')"
+          :subtitle="stat.drillRoot ? t('stat.breakdownDrillDesc') : t('stat.breakdownDesc')"
+          icon="mdi-chart-donut"
+          class="mb-4"
+        >
+          <template #actions>
+            <!-- İnildiyse çıkış yolu her zaman görünür: yoksa kullanıcı alt
+                 kırılımda kalır ve üst seviyeye dönemez. -->
+            <v-btn
+              v-if="stat.drillRoot"
+              :text="t('stat.allCategories')"
+              prepend-icon="mdi-arrow-left"
+              variant="text"
+              size="small"
+              @click="stat.setDrillRoot(null)"
+            />
+            <!-- Gelir/gider ayrımı kırılımın KENDİ ayarı; sayfanın tepesinde
+                 durunca neyi etkilediği belirsizdi. -->
+            <v-btn-toggle
+              :model-value="stat.statType"
+              color="primary"
+              mandatory
+              density="compact"
+              @update:model-value="stat.setStatType($event as StatType)"
+            >
+              <v-btn value="expense" size="small">{{ t('trnForm.expense') }}</v-btn>
+              <v-btn value="income" size="small">{{ t('trnForm.income') }}</v-btn>
+            </v-btn-toggle>
+          </template>
+
+          <div v-if="stat.breakdown.length">
+            <div class="d-flex align-center ga-2 mb-3">
+              <span class="text-body-small text-medium-emphasis">{{ t('wallets.total') }}</span>
+              <span class="text-title-small font-weight-bold">
+                {{ fmt.money(stat.breakdownTotal, currenciesStore.base) }}
+              </span>
+            </div>
+            <CategoryBreakdown :items="stat.breakdown" @drill="stat.setDrillRoot($event)" />
+          </div>
+          <div v-else class="d-flex align-center ga-3 text-medium-emphasis py-6">
+            <v-icon icon="mdi-chart-donut" size="32" />
+            <div class="text-body-medium">{{ t('stat.noData') }}</div>
+          </div>
+        </SectionCard>
+
+        <!-- Etiket kırılımı: kategori "ne için", etiket "hangi bağlamda".
+             Sayfada etiket SÜZGECİ vardı ama etiket analizi yoktu. -->
+        <SectionCard
+          v-if="stat.tagBreakdown.length"
+          :title="t('stat.byTag')"
+          :subtitle="t('stat.byTagDesc')"
+          icon="mdi-tag-multiple-outline"
+        >
+          <div class="stat-tagbars">
+            <div v-for="tg in stat.tagBreakdown" :key="tg.tagId" class="stat-tagbar">
+              <div class="d-flex align-center ga-2 mb-1">
+                <span class="text-body-small text-truncate flex-1-1">
+                  {{ tg.tagId === '__untagged' ? t('stat.untagged') : (tagsStore.items[tg.tagId]?.name ?? tg.tagId) }}
+                </span>
+                <span class="text-body-small font-weight-medium">
+                  {{ fmt.money(tg.amount, currenciesStore.base) }}
+                </span>
+                <span class="text-body-small text-medium-emphasis stat-tagbar-pct">
+                  %{{ fmt.number(Math.round(tg.percent)) }}
+                </span>
+              </div>
+              <v-progress-linear
+                :model-value="tg.percent"
+                :color="tg.tagId === '__untagged' ? 'grey' : (tagsStore.items[tg.tagId]?.color || 'grey')"
+                height="6"
+              />
+            </div>
+          </div>
+          <!-- Bu not şart: çubukların toplamı %100 etmez ve bu bir hata değil.
+               Açıklanmazsa kullanıcı rakamların bozuk olduğunu düşünür. -->
+          <div class="text-body-small text-medium-emphasis mt-3">{{ t('stat.byTagNote') }}</div>
+        </SectionCard>
       </div>
-    </v-card>
 
-    <!-- Grafik -->
-    <v-card variant="tonal" class="mb-4 pa-2">
-      <StatChart :series="stat.series" :period="stat.period" />
-    </v-card>
+      <!-- Kontrol rayı -->
+      <div class="stat-rail flex-0-0">
+        <SectionCard :title="t('walletDetail.period')" icon="mdi-calendar-range" class="mb-4">
+          <v-btn-toggle
+            :model-value="stat.period"
+            color="primary"
+            direction="vertical"
+            mandatory
+            class="w-100 mb-3"
+            @update:model-value="stat.setPeriod($event as Period)"
+          >
+            <v-btn v-for="p in periods" :key="p.value" :value="p.value" class="justify-start">
+              {{ p.label }}
+            </v-btn>
+          </v-btn-toggle>
 
-    <!-- Kırılım -->
-    <div class="d-flex align-center mb-3">
-      <span class="text-subtitle-1 font-weight-medium">{{ t('stat.breakdown') }}</span>
-      <v-spacer />
-      <v-btn-toggle
-        :model-value="stat.statType"
-        color="primary" mandatory rounded="lg" density="compact"
-        @update:model-value="stat.setStatType($event as StatType)"
-      >
-        <v-btn value="expense" size="small">{{ t('trnForm.expense') }}</v-btn>
-        <v-btn value="income" size="small">{{ t('trnForm.income') }}</v-btn>
-      </v-btn-toggle>
+          <!-- Aralık gezinme periyodun YANINDA: ikisi de aynı soruyu ayarlıyor
+               ("hangi aralık"), sayfanın iki ayrı yerinde durmaları kopuktu.
+               İleri butonu gelecekte kilitli — offset 0 = güncel aralık. -->
+          <div class="d-flex align-center ga-1">
+            <v-btn icon="mdi-chevron-left" variant="tonal" size="small" :aria-label="t('common.back')" @click="stat.prev()" />
+            <div class="text-body-medium font-weight-medium text-center flex-1-1 text-truncate">
+              {{ rangeLabel }}
+            </div>
+            <v-btn icon="mdi-chevron-right" variant="tonal" size="small" :disabled="stat.offset >= 0" @click="stat.next()" />
+          </div>
+        </SectionCard>
+
+        <SectionCard :title="t('stat.filters')" icon="mdi-filter-variant">
+          <template #actions>
+            <v-btn
+              v-if="stat.hasFilter"
+              :text="t('walletDetail.clearFilters')"
+              variant="text"
+              size="small"
+              @click="stat.clearFilters()"
+            />
+          </template>
+
+          <!-- chips/closable-chips KALDIRILDI: 36 cüzdanlık bir seçimde çipler
+               kartı ekranın dışına taşıyordu. Özet metin sabit yükseklik verir;
+               seçim zaten açılır listede işaretli görünüyor. -->
+          <v-select
+            v-if="walletFilterItems.length"
+            :model-value="stat.filterWalletIds"
+            :items="walletFilterItems"
+            item-title="name"
+            item-value="id"
+            :label="t('stat.filterWallets')"
+            :placeholder="t('walletDetail.filterAll')"
+            multiple
+            clearable
+            hide-details
+            class="mb-3"
+            @update:model-value="stat.setFilterWalletIds($event)"
+          >
+            <template #selection="{ index }">
+              <span v-if="index === 0" class="text-body-small text-truncate">{{ walletFilterLabel }}</span>
+            </template>
+          </v-select>
+
+          <v-select
+            v-if="tagFilterItems.length"
+            :model-value="stat.filterTagIds"
+            :items="tagFilterItems"
+            item-title="name"
+            item-value="id"
+            :label="t('stat.filterTags')"
+            :placeholder="t('walletDetail.filterAll')"
+            multiple
+            clearable
+            hide-details
+            @update:model-value="stat.setFilterTagIds($event)"
+          >
+            <template #selection="{ index }">
+              <span v-if="index === 0" class="text-body-small text-truncate">{{ tagFilterLabel }}</span>
+            </template>
+          </v-select>
+        </SectionCard>
+      </div>
     </div>
-
-    <CategoryBreakdown v-if="stat.breakdown.length" :items="stat.breakdown" />
-    <v-card v-else variant="tonal" class="pa-6 text-center">
-      <div class="text-body-2 text-medium-emphasis">{{ t('stat.noData') }}</div>
-    </v-card>
   </div>
 </template>
+
+<style scoped>
+/* Ray sabit, ana alan kalanı yer. min-width:0 ŞART — yoksa grafik/uzun metin
+   flex öğesini içeriğinden kısaltamaz ve sayfa yatay taşar. */
+.stat-main {
+  min-width: 0;
+}
+.stat-rail {
+  width: 260px;
+}
+
+/* Dar ekranda ray alta iner ve tam genişlik olur: 260px'lik bir sütun telefonda
+   ana alana yer bırakmaz. */
+@media (max-width: 900px) {
+  .stat-layout {
+    flex-wrap: wrap;
+  }
+  .stat-rail {
+    width: 100%;
+  }
+}
+
+/* Sayaçlar dar ekranda ikişerli sarsın; dörde bölünce rakamlar okunmuyordu. */
+.stat-kpi {
+  min-width: 150px;
+}
+
+.stat-tagbars {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px 24px;
+}
+.stat-tagbar {
+  min-width: 0;
+}
+/* Yüzdeler sağda hizalı: değişken genişlikte olsalar sütun tırtıklı görünür. */
+.stat-tagbar-pct {
+  min-width: 38px;
+  text-align: end;
+}
+</style>

@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import {
   categoryToRow,
   rowToCategory,
+  rowToTag,
+  tagToRow,
   rowToRates,
   rowToTrn,
   rowToWallet,
@@ -13,11 +15,12 @@ import {
 import { TrnType, type TrnItem } from '@/features/trns/types'
 import type { WalletItem } from '@/features/wallets/types'
 import type { CategoryItem } from '@/features/categories/types'
+import type { TagItem } from '@/features/tags/types'
 
 describe('wallet transforms', () => {
   it('boolean 0/1 ↔ true/false çevrimi', () => {
     const item: WalletItem = {
-      color: '#fff', currency: 'USD', desc: 'x', isArchived: true, isExcludeInTotal: false,
+      color: '#fff', currency: 'USD', desc: 'x', icon: '', isArchived: true, isExcludeInTotal: false,
       isWithdrawal: true, name: 'Cash', order: 2, updatedAt: 5, type: 'cash',
     }
     const row = walletToRow(item, 'local')
@@ -35,7 +38,7 @@ describe('wallet transforms', () => {
 
   it('credit cüzdanı creditLimit taşır', () => {
     const item: WalletItem = {
-      color: '#fff', currency: 'USD', desc: '', isArchived: false, isExcludeInTotal: false,
+      color: '#fff', currency: 'USD', desc: '', icon: '', isArchived: false, isExcludeInTotal: false,
       isWithdrawal: false, name: 'Card', order: 0, updatedAt: 0, type: 'credit', creditLimit: 500,
     }
     const back = rowToWallet({ id: 'w2', ...walletToRow(item, 'local') } as Row)
@@ -47,7 +50,7 @@ describe('wallet transforms', () => {
 describe('category transforms', () => {
   it('parentId 0 ↔ null (kök işareti)', () => {
     const root: CategoryItem = {
-      color: '#fff', icon: 'mdi:home', name: 'Root', parentId: 0,
+      color: '#fff', desc: '', icon: 'mdi:home', name: 'Root', parentId: 0,
       showInLastUsed: true, showInQuickSelector: false, updatedAt: 1,
     }
     const row = categoryToRow(root, 'local')
@@ -58,6 +61,39 @@ describe('category transforms', () => {
     const childRow = categoryToRow(child, 'local')
     expect(childRow.parentId).toBe('c1')
     expect(rowToCategory({ id: 'c2', ...childRow } as Row).parentId).toBe('c1')
+  })
+})
+
+describe('desc alanı (003 migrasyonu)', () => {
+  it('kategori desc round-trip; boş desc null olarak yazılır', () => {
+    const withDesc: CategoryItem = {
+      color: '#fff', desc: 'Aylık sabit gider', icon: 'mdi:home', name: 'Kira', parentId: 0,
+      showInLastUsed: true, showInQuickSelector: false, updatedAt: 1,
+    }
+    const row = categoryToRow(withDesc, 'local')
+    expect(row.desc).toBe('Aylık sabit gider')
+    expect(rowToCategory({ id: 'c1', ...row } as Row).desc).toBe('Aylık sabit gider')
+
+    // Boş string DB'ye null gider (kolon "yok" anlamında null tutulur)
+    expect(categoryToRow({ ...withDesc, desc: '' }, 'local').desc).toBeNull()
+  })
+
+  it('etiket desc round-trip; boş desc null olarak yazılır', () => {
+    const tag: TagItem = { name: 'Zorunlu', color: '#ef4444', desc: 'Kısılamaz giderler', updatedAt: 1 }
+    const row = tagToRow(tag, 'local')
+    expect(row.desc).toBe('Kısılamaz giderler')
+    expect(rowToTag({ id: 't1', ...row } as Row).desc).toBe('Kısılamaz giderler')
+
+    expect(tagToRow({ ...tag, desc: '' }, 'local').desc).toBeNull()
+  })
+
+  it('003 ÖNCESİ satırlar: desc kolonu null gelir, boş stringe düşer', () => {
+    // Migrasyon eski satırlara desc eklemez → null. UI'ın undefined görmemesi şart.
+    const legacyCategory = { id: 'c1', color: '#fff', icon: 'mdi:home', name: 'Eski', parentId: null, showInLastUsed: 1, showInQuickSelector: 0, updatedAt: 1 }
+    expect(rowToCategory(legacyCategory as unknown as Row).desc).toBe('')
+
+    const legacyTag = { id: 't1', name: 'Eski', color: '#000', updatedAt: 1 }
+    expect(rowToTag(legacyTag as unknown as Row).desc).toBe('')
   })
 })
 

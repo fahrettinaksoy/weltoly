@@ -14,6 +14,7 @@ import { formatTransaction, formatTransfer } from '@/features/trnForm/utils/form
 import { validate } from '@/features/trnForm/utils/validate'
 import { TrnType } from '@/features/trns/types'
 import { useTrnsStore } from '@/features/trns/store'
+import { useUserStore } from '@/features/user/store'
 import { useWalletsStore } from '@/features/wallets/store'
 import { showErrorToast } from '@/stores/ui'
 
@@ -326,11 +327,18 @@ export const useTrnsFormStore = defineStore('trnForm', () => {
   }
 
   function openFormForCreate() {
+    // Varsayılan cüzdan seçiliyse onunla aç. İşaretçi silinmiş/bilinmeyen bir
+    // cüzdanı gösteriyorsa yok say ve ilk cüzdana düş — form asla boş açılmasın.
+    const preferred = useUserStore().defaultWalletId
+    const defaultWalletId = preferred && walletsStore.items?.[preferred]
+      ? preferred
+      : walletsStore.sortedIds[0]
+
     setValues({
       action: 'create',
       categoriesIds: categoriesStore.categoriesIdsForTrnValues,
       trn: trnsStore.lastCreatedTrnItem ?? undefined,
-      walletId: walletsStore.sortedIds[0],
+      walletId: defaultWalletId,
       walletsIds: walletsStore.sortedIds,
     })
     ui.value.isShow = true

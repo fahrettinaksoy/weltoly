@@ -5,6 +5,7 @@ import {
   walletToRow, watchTable, type Row, type WatchHandle,
 } from '@/services/db'
 import { uniqueElementsBy } from '@/shared/lib/simple'
+import { walletIdsOfTrn } from '@/features/wallets/trnLink'
 import { getAmountInRate, getWalletsTotals } from '@/shared/lib/getTotal'
 
 import type { CurrencyCode } from '@/features/currencies/types'
@@ -15,7 +16,7 @@ import { useCurrenciesStore } from '@/features/currencies/store'
 import { TrnType } from '@/features/trns/types'
 import { useTrnsStore } from '@/features/trns/store'
 import { useUserStore } from '@/features/user/store'
-import { showErrorToast } from '@/stores/ui'
+import { showErrorToast, showSuccessToast } from '@/stores/ui'
 
 function rowsToWallets(rows: Row[]): Wallets | null {
   if (!rows.length)
@@ -65,7 +66,9 @@ export const useWalletsStore = defineStore('wallets', () => {
     // İyimser güncelleme (anında UI). Watch aynı şekli yeniden yayar.
     setWallets({ ...(items.value ?? {}), [id]: values })
 
-    upsertRow('wallets', id, walletToRow(values, resolveWriteUid(null))).catch((e) => {
+    return upsertRow('wallets', id, walletToRow(values, resolveWriteUid(null))).then(() => {
+      showSuccessToast(isNew ? 'wallets.added' : 'wallets.updated')
+    }).catch((e) => {
       setWallets(prev)
       console.error('[wallets] saveWallet failed', e)
       showErrorToast('wallets.errors.saveFailed')
@@ -166,21 +169,79 @@ export const useWalletsStore = defineStore('wallets', () => {
 
   const currenciesUsed = computed<CurrencyCode[]>(() => uniqueElementsBy(itemsComputed.value, 'currency'))
 
-  async function deleteWallet(id: WalletId, trnsIds?: TrnId[]) {
+  /**
+   * Varlık / borç / net — temel para biriminde.
+   *
+   * Varlık ve borç AYRI tutulur: kredi kartı ve kredi cüzdanlarının bakiyesi
+   * negatiftir; hepsini tek toplamda eritmek "net"i verir ama dengeyi gizler.
+   * Örnek veride net −223.138 çıkıyor, oysa 320.174 varlık var — tek rakam
+   * gösteren bir başlık (eski panelin "Toplam bakiye"si) bunu saklıyordu.
+   *
+   * "Toplamdan hariç tut" işaretli cüzdanlar hiçbir toplama girmez.
+   *
+   * Store'da durur çünkü hem Cüzdanlar sayfası hem Panel aynı rakamı gösteriyor;
+   * iki yerde ayrı hesaplanırsa zamanla sessizce ayrışırlar.
+   */
+  const totals = computed(() => {
+    let assets = 0
+    let debts = 0
+    for (const wallet of Object.values(itemsComputed.value)) {
+      if (wallet.isExcludeInTotal)
+        continue
+      const base = wallet.amount * (wallet.rate ?? 1)
+      if (base >= 0)
+        assets += base
+      else debts += -base
+    }
+    return { assets, debts, net: assets - debts }
+  })
+
+  /** Borcun varlığa oranı. Varlık 0 iken tanımsız → 0 (sıfıra bölme). */
+  const debtRatio = computed(() =>
+    totals.value.assets ? (totals.value.debts / totals.value.assets) * 100 : 0,
+  )
+
+  /**
+   * Bu cüzdana referans veren işlem id'leri. Transferler iki cüzdana birden
+   * bakar. Store'da durur çünkü hem form hem tablo silme yolunda gerekiyor —
+   * bileşen başına kopyalanırsa biri güncellenip diğeri unutulur.
+   */
+  function referencingTrnIds(walletId: WalletId): TrnId[] {
+    const trns = trnsStore.items
+    if (!trns)
+      return []
+    const ids: TrnId[] = []
+    for (const trnId in trns) {
+      if (walletIdsOfTrn(trns[trnId]!).includes(walletId))
+        ids.push(trnId)
+    }
+    return ids
+  }
+
+  /** Cüzdanı ve ona bağlı işlemleri siler; sonucu merkezî kuyrukta bildirir. */
+  async function deleteWallet(id: WalletId, trnsIds: TrnId[] = referencingTrnIds(id)) {
     const prevWallets = items.value
     const prevTrns = trnsStore.items
     const wallets = { ...(items.value ?? {}) }
     delete wallets[id]
     setWallets(wallets)
 
-    if (trnsIds?.length)
+    if (trnsIds.length)
       trnsStore.removeTrnsFromStore(trnsIds)
 
     try {
       await Promise.all([
         deleteRow('wallets', id),
-        ...(trnsIds ?? []).map(trnId => deleteRow('trns', trnId)),
+        ...trnsIds.map(trnId => deleteRow('trns', trnId)),
       ])
+
+      // Silinen cüzdan varsayılansa işaretçiyi temizle: FK yok, dangling
+      // referansı uygulama temizlemezse form var olmayan cüzdanla açılır.
+      const userStore = useUserStore()
+      if (userStore.defaultWalletId === id)
+        userStore.saveDefaultWalletId(null)
+
+      showSuccessToast('wallets.deleted')
     }
     catch (e) {
       setWallets(prevWallets)
@@ -192,7 +253,9 @@ export const useWalletsStore = defineStore('wallets', () => {
 
   return {
     currenciesUsed,
+    debtRatio,
     deleteWallet,
+    referencingTrnIds,
     hasItems,
     initWallets,
     isLoaded,
@@ -203,5 +266,6 @@ export const useWalletsStore = defineStore('wallets', () => {
     saveWalletsOrder,
     setWallets,
     sortedIds,
+    totals,
   }
 })

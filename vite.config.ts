@@ -19,7 +19,10 @@ export default defineConfig(async () => ({
     // NOT: `styles: { configFile }` (SASS treeshaking) BİLİNÇLİ kullanılmıyor — o mod
     // `import 'vuetify/styles'` ile birleşince kullanılmayan bileşenlerin .sass'ını
     // anlık derlemeye çalışıp 404 veriyor ve VApp.sass 404'ü beyaz ekrana yol açıyordu.
-    vuetify({ autoImport: true }),
+    // labs: true → VPie/VHeatmap gibi labs bileşenleri de otomatik import edilir
+    // (importMap-labs.json). Bunlar Vuetify'da henüz kararlı değil; API'leri
+    // minor sürümde değişebilir.
+    vuetify({ autoImport: { labs: true } }),
     // ref/computed/watch/store/router gibi API'ler için otomatik import
     AutoImport({
       imports: ['vue', 'vue-router', 'pinia', '@vueuse/core'],

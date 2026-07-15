@@ -2,115 +2,433 @@
 import { useI18n } from 'vue-i18n'
 
 import { useCategoriesStore } from '@/features/categories/store'
+import { useTrnsStore } from '@/features/trns/store'
 import CategoryFormDialog from '@/features/categories/components/CategoryFormDialog.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { useAppBarAction } from '@/composables/useAppBarAction'
+import type { CategoryId } from '@/features/categories/types'
 
 const { t } = useI18n()
 const categoriesStore = useCategoriesStore()
+const trnsStore = useTrnsStore()
+const fmt = useFormat()
 
 const showDialog = ref(false)
-const editId = ref<string | null>(null)
+const editId = ref<CategoryId | null>(null)
+
+const search = ref('')
+
+/** Silme onayı bekleyen satır. null = dialog kapalı. */
+const pendingDelete = ref<CategoryRow | null>(null)
+
+/**
+ * Silme onaylandı. Sonuç bildirimi (başarı/hata) store'un içinden merkezî
+ * snackbar kuyruğuna düşer — sayfa bildirim bağlamaz.
+ */
+function confirmDelete() {
+  const row = pendingDelete.value
+  if (!row)
+    return
+  categoriesStore.deleteCategory(row.id)
+  pendingDelete.value = null
+}
 
 function openNew() {
   editId.value = null
   showDialog.value = true
 }
-useAppBarAction({ icon: '$add', onClick: openNew })
+useAppBarAction(() => ({ icon: '$add', label: t('categories.add'), onClick: openNew }))
 
-function openEdit(id: string) {
+function openEdit(id: CategoryId) {
   editId.value = id
   showDialog.value = true
+}
+
+/**
+ * Kategori başına DOĞRUDAN atanmış işlem sayısı (alt kategoriler toplanmaz).
+ * Üst kategoriler doğrudan işlem almaz → 0 görünürler; bu doğrudur, onlar
+ * yapısal ebeveyn. Toplasaydık üst + alt aynı işlemi iki kez sayardı ve
+ * pay çubuklarının toplamı %100'ü aşardı.
+ */
+const usageById = computed<Record<string, number>>(() => {
+  const counts: Record<string, number> = {}
+  const trns = trnsStore.items
+  if (!trns)
+    return counts
+  for (const trnId in trns) {
+    const categoryId = trns[trnId]?.categoryId
+    if (categoryId)
+      counts[categoryId] = (counts[categoryId] ?? 0) + 1
+  }
+  return counts
+})
+
+type CategoryRow = {
+  id: CategoryId
+  name: string
+  color: string
+  icon: string
+  desc: string
+  parentId: CategoryId | null
+  childCount: number
+  quick: boolean
+  usage: number
+  share: number
+}
+
+/**
+ * Satırlar kök → çocukları sırasıyla, yani AĞAÇ SIRASINDA kurulur; bir üst
+ * kategorinin çocukları hemen onun altında gelir.
+ * Bu kurulum sentetik 'transfer'/'adjustment' kategorilerini kendiliğinden
+ * dışarıda bırakır (categoriesRootIds onları süzüyor) — items'ı doğrudan
+ * gezseydik tabloya sızarlardı.
+ */
+const baseRows = computed(() => {
+  const out: Omit<CategoryRow, 'share'>[] = []
+
+  const push = (id: CategoryId, parentId: CategoryId | null, childCount: number) => {
+    const c = categoriesStore.items[id]
+    if (!c)
+      return
+    out.push({
+      id,
+      name: c.name,
+      color: c.color,
+      icon: c.icon,
+      desc: c.desc,
+      parentId,
+      childCount,
+      quick: c.showInQuickSelector,
+      usage: usageById.value[id] ?? 0,
+    })
+  }
+
+  /**
+   * Kullanıma göre azalan sıralama — ama AĞAÇ İÇİNDE.
+   * Kökler kendi aralarında, çocuklar da kendi ebeveynlerinin altında sıralanır.
+   * Düz bir kolon sıralaması çocukları ebeveynlerinden koparırdı; bu yüzden
+   * sıralama tablonun değil bu fonksiyonun işi (headers'ta sortable: false).
+   * Roll-up: kökün ağırlığı = kendi + çocuklarının toplamı, yoksa işlem almayan
+   * ebeveynler her zaman en alta düşer ve dolu dalları da beraberinde götürür.
+   */
+  const usage = (id: CategoryId) => usageById.value[id] ?? 0
+  const byUsageThenName = (weight: (id: CategoryId) => number) =>
+    (a: CategoryId, b: CategoryId) =>
+      weight(b) - weight(a)
+      || (categoriesStore.items[a]?.name ?? '').localeCompare(categoriesStore.items[b]?.name ?? '')
+
+  const rootWeight = (rootId: CategoryId) =>
+    usage(rootId) + categoriesStore.getChildrenIds(rootId).reduce((sum, c) => sum + usage(c), 0)
+
+  const rootIds = [...categoriesStore.categoriesRootIds].sort(byUsageThenName(rootWeight))
+
+  for (const rootId of rootIds) {
+    const childIds = [...categoriesStore.getChildrenIds(rootId)].sort(byUsageThenName(usage))
+    push(rootId, null, childIds.length)
+    for (const childId of childIds)
+      push(childId, rootId, 0)
+  }
+  return out
+})
+
+/** Açık üst kategoriler. Varsayılan: hepsi açık. */
+const collapsed = ref(new Set<CategoryId>())
+
+function toggle(id: CategoryId) {
+  const next = new Set(collapsed.value)
+  if (!next.delete(id))
+    next.add(id)
+  collapsed.value = next
+}
+
+/**
+ * Görünen satırlar: kapalı bir üst kategorinin çocukları gizlenir.
+ * Arama sırasında kapalılık yok sayılır — yoksa eşleşen bir alt kategori
+ * kapalı ebeveyni yüzünden hiç bulunamazdı.
+ */
+const visibleRows = computed<CategoryRow[]>(() => {
+  const searching = search.value.trim().length > 0
+  return rows.value.filter(r =>
+    !r.parentId || searching || !collapsed.value.has(r.parentId),
+  )
+})
+
+const rootCount = computed(() => categoriesStore.categoriesRootIds.length)
+const usedCount = computed(() => baseRows.value.filter(r => r.usage > 0).length)
+const totalUsage = computed(() => baseRows.value.reduce((sum, r) => sum + r.usage, 0))
+const usedRatio = computed(() => baseRows.value.length ? (usedCount.value / baseRows.value.length) * 100 : 0)
+
+/** Tablo satırları: işlem sayısının toplam içindeki payı (%) burada eklenir. */
+const rows = computed<CategoryRow[]>(() => baseRows.value.map(r => ({
+  ...r,
+  share: totalUsage.value ? (r.usage / totalUsage.value) * 100 : 0,
+})))
+
+/** Özet sayaçları: kategorilerde anlamlı olan yapı (kaç ana / kaç alt). */
+const kpis = computed(() => [
+  { key: 'total', label: t('categories.stats.total'), value: fmt.number(rows.value.length) },
+  { key: 'root', label: t('categories.stats.root'), value: fmt.number(rootCount.value) },
+  { key: 'child', label: t('categories.stats.child'), value: fmt.number(rows.value.length - rootCount.value) },
+])
+
+/** Donut'ta ayrı dilim olarak gösterilecek en çok işlem alan kategori sayısı. */
+const PIE_LIMIT = 6
+
+/**
+ * Donut dilimleri: en çok işlem alan PIE_LIMIT kategori, kalanların toplamı tek
+ * "Diğer" diliminde. Renk her kategorinin kendi rengi (VPie: item.color ?? palette).
+ */
+const pieItems = computed(() => {
+  const used = rows.value.filter(r => r.usage > 0).toSorted((a, b) => b.usage - a.usage)
+  const items = used.slice(0, PIE_LIMIT).map(r => ({
+    key: r.id,
+    title: r.name,
+    value: r.usage,
+    color: r.color,
+  }))
+
+  const restUsage = used.slice(PIE_LIMIT).reduce((sum, r) => sum + r.usage, 0)
+  if (restUsage > 0) {
+    items.push({
+      key: '__rest',
+      title: t('categories.chart.other', { count: used.length - PIE_LIMIT }),
+      value: restUsage,
+      color: 'grey',
+    })
+  }
+  return items
+})
+
+/**
+ * Kolonlar. Kolon sıralaması KAPALI: satır sırası ağacın kendisi.
+ * Varsayılan sıralama (işleme göre azalan) baseRows'ta AĞAÇ İÇİNDE yapılır —
+ * tabloya bıraksaydık çocukları ebeveynlerinden koparırdı.
+ */
+const headers = computed(() => [
+  { title: t('categories.table.name'), key: 'name', sortable: false, width: 320, nowrap: true },
+  { title: t('categories.description'), key: 'desc', sortable: false, width: 340, nowrap: true },
+  { title: t('categories.table.usage'), key: 'usage', align: 'end', sortable: false, width: 260, nowrap: true },
+  { title: '', key: 'actions', align: 'end', sortable: false, width: 104 },
+] as const)
+
+/** VDataTable @click:row → (event, { item }). Satıra tıklamak düzenlemeyi açar. */
+function onRowClick(_event: unknown, { item }: { item: CategoryRow }) {
+  openEdit(item.id)
 }
 </script>
 
 <template>
-  <div class="pa-4">
-    <v-list v-if="categoriesStore.hasItems" class="bg-transparent">
-      <template v-for="rootId in categoriesStore.categoriesRootIds" :key="rootId">
-        <v-list-item rounded="lg" class="mb-1" @click="openEdit(rootId)">
-          <template #prepend>
-            <v-avatar :color="categoriesStore.items[rootId]?.color" size="36">
-              <v-icon :icon="categoriesStore.items[rootId]?.icon" color="white" size="20" />
-            </v-avatar>
+  <div class="categories-page pa-4">
+    <template v-if="categoriesStore.hasItems">
+      <!-- Özet şeridi: tek satır. Asıl içerik tablo — özet ekranı yemesin.
+           Donutun legend'i yok: tablo zaten renk rozeti + pay çubuğu gösteriyor. -->
+      <v-sheet color="surface-light" class="d-flex align-center ga-6 pa-4 mb-3 flex-wrap flex-0-0">
+        <!-- Hiç işlem yoksa donut anlamsız → gizle. -->
+        <v-pie
+          v-if="totalUsage > 0"
+          :items="pieItems"
+          :size="80"
+          :inner-cut="64"
+          :gap="2"
+          rounded="2"
+          tooltip
+        >
+          <template #center>
+            <div class="text-body-medium font-weight-bold">{{ fmt.number(totalUsage) }}</div>
           </template>
-          <v-list-item-title class="font-weight-medium">{{ categoriesStore.items[rootId]?.name }}</v-list-item-title>
-          <template v-if="categoriesStore.items[rootId]?.showInQuickSelector" #append>
-            <v-icon icon="mdi-star" color="warning" size="18" />
-          </template>
-        </v-list-item>
+        </v-pie>
 
-        <!-- Alt kategoriler: hiyerarşiyi gösteren ağaç çizgileriyle (tree lines) -->
-        <div v-if="categoriesStore.getChildrenIds(rootId).length" class="cat-tree">
-          <v-list-item
-            v-for="(childId, i) in categoriesStore.getChildrenIds(rootId)"
-            :key="childId"
-            rounded="lg"
-            class="cat-tree__item"
-            :class="{ 'cat-tree__item--last': i === categoriesStore.getChildrenIds(rootId).length - 1 }"
-            @click="openEdit(childId)"
-          >
-            <template #prepend>
-              <v-avatar :color="categoriesStore.items[childId]?.color" size="30">
-                <v-icon :icon="categoriesStore.items[childId]?.icon" color="white" size="16" />
-              </v-avatar>
-            </template>
-            <v-list-item-title>{{ categoriesStore.items[childId]?.name }}</v-list-item-title>
-            <template v-if="categoriesStore.items[childId]?.showInQuickSelector" #append>
-              <v-icon icon="mdi-star" color="warning" size="16" />
-            </template>
-          </v-list-item>
+        <div
+          v-for="kpi in kpis"
+          :key="kpi.key"
+        >
+          <div class="text-headline-small font-weight-bold">{{ kpi.value }}</div>
+          <div class="text-body-small text-medium-emphasis">{{ kpi.label }}</div>
         </div>
-      </template>
-    </v-list>
 
+        <v-spacer />
+
+        <div class="d-flex align-center ga-3">
+          <div class="text-body-small text-medium-emphasis">{{ t('categories.stats.usedRatio') }}</div>
+          <v-progress-circular :model-value="usedRatio" :size="48" :width="5" color="primary">
+            <span class="text-body-small font-weight-bold">%{{ Math.round(usedRatio) }}</span>
+          </v-progress-circular>
+        </div>
+      </v-sheet>
+
+      <!-- Arama. variant/density global-configuration'dan (defaults.ts) gelir;
+           yuvarlaklığı --app-radius belirler. Eski sarmalayıcı v-sheet kaldırıldı:
+           filled variant'ın alt çizgisini gizlemek içindi, outlined'da gereksiz. -->
+      <v-text-field
+        v-model="search"
+        :placeholder="t('categories.search')"
+        prepend-inner-icon="mdi-magnify"
+        clearable
+        class="mb-3 flex-0-0"
+      />
+
+      <!-- Ağaç tablosu: satırlar kök → çocuk sırasında, üst kategoride aç/kapa.
+           Sayfalama yok: bir sayfa sınırı ebeveyni çocuklarından ayırırdı. -->
+      <v-data-table-virtual
+        :headers="headers"
+        :items="visibleRows"
+        :search="search"
+        item-value="id"
+        density="comfortable"
+        hover
+        fixed-header
+        class="bg-transparent categories-table"
+        @click:row="onRowClick"
+      >
+        <!-- Kategori: aç/kapa + ikon rozeti + ad (+ hızlı seçici yıldızı).
+             Çocuklar girintili → ebeveynine ait olduğu görülsün. -->
+        <template #[`item.name`]="{ item }">
+          <div class="d-flex align-center ga-3 py-1" :class="{ 'ps-8': item.parentId }">
+            <!-- Çocuğu olmayan satırlarda da buton RENDER EDİLİR, sadece görünmez:
+                 böylece yerini korur ve ikon rozetleri hizada kalır. -->
+            <v-btn
+              :icon="collapsed.has(item.id) ? 'mdi-chevron-right' : 'mdi-chevron-down'"
+              variant="text"
+              size="x-small"
+              :class="{ 'cat-toggle--placeholder': !item.childCount }"
+              :disabled="!item.childCount"
+              :aria-label="item.name"
+              :aria-expanded="!collapsed.has(item.id)"
+              @click.stop="toggle(item.id)"
+            />
+
+            <v-avatar :color="item.color" size="32">
+              <v-icon :icon="item.icon" color="white" size="18" />
+            </v-avatar>
+            <span class="font-weight-medium">{{ item.name }}</span>
+
+            <v-chip v-if="item.childCount" size="x-small" variant="tonal">
+              {{ fmt.number(item.childCount) }}
+            </v-chip>
+            <v-icon
+              v-if="item.quick"
+              icon="mdi-star"
+              color="warning"
+              size="16"
+              :aria-label="t('categories.showInQuickSelector')"
+            />
+          </div>
+        </template>
+
+        <!-- Açıklama: boşsa satırı kalabalıklaştırma, sönük tire koy -->
+        <template #[`item.desc`]="{ item }">
+          <span v-if="item.desc" class="text-body-medium text-medium-emphasis">{{ item.desc }}</span>
+          <span v-else class="text-disabled">—</span>
+        </template>
+
+        <!-- İşlem: sayı + toplam içindeki payı gösteren çubuk -->
+        <template #[`item.usage`]="{ item }">
+          <div v-if="item.usage" class="d-flex align-center ga-3 justify-end">
+            <v-progress-linear
+              :model-value="item.share"
+              :color="item.color"
+              height="6"
+              rounded
+              class="categories-share"
+            />
+            <span class="text-body-medium font-weight-medium categories-usage-num">
+              {{ fmt.number(item.usage) }}
+            </span>
+          </div>
+          <div v-else class="d-flex align-center ga-2 justify-end text-disabled">
+            <v-icon icon="mdi-circle-off-outline" size="16" />
+            <span class="text-body-small">{{ t('categories.unused') }}</span>
+          </div>
+        </template>
+
+        <template #[`item.actions`]="{ item }">
+          <div class="d-flex justify-end">
+            <v-btn
+              icon="mdi-pencil-outline"
+              variant="text"
+              size="small"
+              :aria-label="t('categories.edit')"
+              @click.stop="openEdit(item.id)"
+            />
+            <v-btn
+              icon="mdi-trash-can-outline"
+              variant="text"
+              size="small"
+              color="error"
+              :aria-label="t('common.delete')"
+              @click.stop="pendingDelete = item"
+            />
+          </div>
+        </template>
+
+        <template #no-data>
+          <div class="text-center py-10">
+            <v-icon icon="mdi-shape-outline" size="48" class="mb-3 text-medium-emphasis" />
+            <div class="text-body-large">{{ t('categories.noResults') }}</div>
+          </div>
+        </template>
+      </v-data-table-virtual>
+    </template>
+
+    <!-- Boş durum -->
     <v-card v-else variant="tonal" class="pa-8 text-center">
       <v-icon icon="mdi-shape-plus-outline" size="56" class="mb-4 text-medium-emphasis" />
-      <div class="text-body-1 mb-1">{{ t('categories.empty') }}</div>
-      <div class="text-body-2 text-medium-emphasis mb-4">{{ t('categories.emptyHint') }}</div>
+      <div class="text-body-large mb-1">{{ t('categories.empty') }}</div>
+      <div class="text-body-medium text-medium-emphasis mb-4">{{ t('categories.emptyHint') }}</div>
       <v-btn-primary prepend-icon="mdi-plus" @click="openNew">{{ t('categories.add') }}</v-btn-primary>
     </v-card>
 
     <CategoryFormDialog v-model="showDialog" :category-id="editId" />
+
+    <ConfirmDialog
+      :model-value="!!pendingDelete"
+      :title="pendingDelete?.name"
+      :message="t('categories.deleteConfirm')"
+      @update:model-value="pendingDelete = null"
+      @confirm="confirmDelete"
+    />
   </div>
 </template>
 
 <style scoped>
-/* Kategori hiyerarşisi ağaç çizgileri (tree lines). Dikey gövde + her alt öğeye dirsek. */
-.cat-tree {
-  position: relative;
-}
-
-.cat-tree__item {
-  position: relative;
-  padding-inline-start: 52px !important;
-}
-
-/* Dikey gövde çizgisi (öğeler arasında sürekli olsun diye tam yükseklik). */
-.cat-tree__item::before {
-  content: '';
-  position: absolute;
-  inset-inline-start: 26px;
-  top: 0;
+/* Sayfa, kartın verdiği yüksekliği tam doldurur: özet + arama sabit,
+   kalan alanın tamamı tabloya gider (kart 100dvh tabanlı → tablo ekranı baz alır). */
+.categories-page {
+  display: flex;
+  flex-direction: column;
   height: 100%;
-  width: 2px;
-  background: rgba(var(--v-border-color), 0.28);
+  box-sizing: border-box;
 }
 
-/* Son alt öğede gövde çizgisini dirseğe kadar (ortaya) kes. */
-.cat-tree__item--last::before {
-  height: 50%;
+/* min-height:0 şart: flex öğesi varsayılan olarak içeriğinden kısalmaz,
+   o zaman tablo taşar ve iç kaydırma hiç oluşmaz. */
+.categories-table {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
-/* Yatay dirsek çizgisi. */
-.cat-tree__item::after {
-  content: '';
-  position: absolute;
-  inset-inline-start: 26px;
-  top: 50%;
-  width: 16px;
-  height: 2px;
-  background: rgba(var(--v-border-color), 0.28);
+/* Satır tıklanabilir (düzenlemeyi açar) — imleç bunu belli etsin. */
+.categories-table :deep(tbody tr) {
+  cursor: pointer;
 }
 
-/* RTL'de dirsek ve gövde otomatik yansısın diye inset-inline-start kullanıldı. */
+/* Aç/kapa butonu yoksa yerini SABİT GENİŞLİKLİ bir div ile doldurmak hizayı bozar:
+   Vuetify'da ikon butonun genişliği .v-btn--icon.v-btn--density-default kuralıyla
+   calc(--v-btn-height + 12px) = 32px'tir; elle yazılan her sayı er ya da geç kayar
+   (nitekim 20px yazılmıştı ve rozetler 12px kaymıştı).
+   Onun yerine butonun kendisi görünmez kılınır → genişlik tanım gereği birebir eşleşir.
+   visibility:hidden ayrıca öğeyi erişilebilirlik ağacından ve odak sırasından çıkarır. */
+.cat-toggle--placeholder {
+  visibility: hidden;
+}
+
+/* Pay çubuğu ve sayı sabit genişlik: satırlar arasında hizalı okunsun. */
+.categories-share {
+  width: 120px;
+  flex: 0 0 auto;
+}
+.categories-usage-num {
+  min-width: 32px;
+  text-align: end;
+}
 </style>

@@ -13,7 +13,7 @@ import { filterTrnsIds } from '@/features/trns/getTrns'
 import { reconcileTrns, rowsToTrns } from '@/features/trns/reconcile'
 import { TrnType } from '@/features/trns/types'
 import { useWalletsStore } from '@/features/wallets/store'
-import { showErrorToast } from '@/stores/ui'
+import { showErrorToast, showSuccessToast } from '@/stores/ui'
 
 // trns en büyük tablo; watch'ı 30ms varsayılandan daha agresif birleştirir.
 const TRNS_WATCH_THROTTLE_MS = 120
@@ -100,12 +100,21 @@ export const useTrnsStore = defineStore('trns', () => {
     }, TRNS_WATCH_THROTTLE_MS)
   }
 
-  function saveTrn({ id, values }: { id: TrnId, values: TrnItem }) {
+  /**
+   * @param silent Bildirim gösterme. Kullanıcı eylemi olmayan iç yazımlar için
+   * ŞART: örn. bir etiket silinince onu kullanan her işlem güncellenir — sessiz
+   * olmasa tek silme işlemi onlarca snackbar patlatırdı.
+   */
+  function saveTrn({ id, values, silent = false }: { id: TrnId, values: TrnItem, silent?: boolean }) {
     const valuesWithEditDate = { ...values, updatedAt: Date.now() }
     const prev = items.value
+    const isNew = !items.value?.[id]
     setTrns({ ...(items.value ?? {}), [id]: valuesWithEditDate })
 
-    upsertRow('trns', id, trnToRow(valuesWithEditDate, resolveWriteUid(null))).catch((e) => {
+    return upsertRow('trns', id, trnToRow(valuesWithEditDate, resolveWriteUid(null))).then(() => {
+      if (!silent)
+        showSuccessToast(isNew ? 'trns.added' : 'trns.updated')
+    }).catch((e) => {
       setTrns(prev)
       console.error('[trns] saveTrn failed', e)
       showErrorToast('trns.errors.saveFailed')
@@ -149,8 +158,8 @@ export const useTrnsStore = defineStore('trns', () => {
     if (!category) {
       if (trn.categoryId === 'transfer' || trn.categoryId === 'adjustment') {
         category = trn.categoryId === 'transfer'
-          ? { color: '', icon: 'mdi-swap-horizontal', name: 'Transfer', parentId: 0, showInLastUsed: false, showInQuickSelector: false }
-          : { color: '', icon: 'mdi-scale-balance', name: 'Adjustment', parentId: 0, showInLastUsed: false, showInQuickSelector: false }
+          ? { color: '', desc: '', icon: 'mdi-swap-horizontal', name: 'Transfer', parentId: 0, showInLastUsed: false, showInQuickSelector: false }
+          : { color: '', desc: '', icon: 'mdi-scale-balance', name: 'Adjustment', parentId: 0, showInLastUsed: false, showInQuickSelector: false }
       }
       else {
         return null

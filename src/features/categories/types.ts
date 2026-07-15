@@ -8,6 +8,7 @@ export type CategoryId = string
 
 export const categoryFormSchema = z.object({
   color: z.string().default(() => random(colorsArray)),
+  desc: z.string().default(''),
   icon: z.string().trim().min(1).default(() => random(random(icons))),
   name: z.string().trim().min(1).default(''),
   parentId: z.union([z.string(), z.literal(0)]).default(0),

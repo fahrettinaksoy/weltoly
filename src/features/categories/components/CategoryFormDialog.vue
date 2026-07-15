@@ -4,11 +4,12 @@ import { useI18n } from 'vue-i18n'
 import { generateId } from '@/shared/lib/generateId'
 import { random } from '@/shared/lib/random'
 import { colorsArray } from '@/features/color/colors'
-import { categoryIcons } from '@/features/categories/iconList'
 import { useCategoriesStore } from '@/features/categories/store'
-import { useTrnsStore } from '@/features/trns/store'
 import FormDrawer from '@/components/FormDrawer.vue'
 import ColorSwatches from '@/components/ColorSwatches.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import IconPicker from '@/components/IconPicker.vue'
+import { categoryIcons } from '@/features/categories/iconList'
 import type { CategoryId } from '@/features/categories/types'
 
 const props = defineProps<{ modelValue: boolean, categoryId: string | null }>()
@@ -16,17 +17,16 @@ const emit = defineEmits<{ 'update:modelValue': [boolean] }>()
 
 const { t } = useI18n()
 const categoriesStore = useCategoriesStore()
-const trnsStore = useTrnsStore()
 
 const isEdit = computed(() => !!props.categoryId)
 const confirmDelete = ref(false)
 const iconPicker = ref(false)
-const iconSearch = ref('')
 
 const palette = colorsArray.filter((_, i) => i % 6 === 0)
 
 type FormState = {
   name: string
+  desc: string
   icon: string
   color: string
   parentId: CategoryId | 0
@@ -36,7 +36,7 @@ type FormState = {
 
 function blankForm(): FormState {
   return {
-    name: '', icon: random(categoryIcons), color: random(colorsArray),
+    name: '', desc: '', icon: random(categoryIcons), color: random(colorsArray),
     parentId: 0, showInLastUsed: true, showInQuickSelector: false,
   }
 }
@@ -44,6 +44,13 @@ function blankForm(): FormState {
 const form = reactive<FormState>(blankForm())
 
 // Üst kategori olabilecekler: kök kategoriler (kendisi ve çocukları hariç).
+/** Başlık şeridinin ikinci satırı: kök mü, yoksa hangi kategorinin altında. */
+const parentLabel = computed(() =>
+  form.parentId
+    ? categoriesStore.items[form.parentId]?.name ?? t('categories.noParent')
+    : t('categories.noParent'),
+)
+
 const parentOptions = computed(() => {
   const selfId = props.categoryId
   const childIds = selfId ? categoriesStore.getChildrenIds(selfId) : []
@@ -54,17 +61,11 @@ const parentOptions = computed(() => {
   return [{ value: 0 as CategoryId | 0, title: t('categories.noParent') }, ...opts]
 })
 
-const filteredIcons = computed(() => {
-  const q = iconSearch.value.trim().toLowerCase()
-  const list = q ? categoryIcons.filter(i => i.toLowerCase().includes(q)) : categoryIcons
-  return list.slice(0, 300)
-})
-
 function loadForm() {
   if (props.categoryId && categoriesStore.items[props.categoryId]) {
     const c = categoriesStore.items[props.categoryId]!
     Object.assign(form, {
-      name: c.name, icon: c.icon, color: c.color, parentId: c.parentId,
+      name: c.name, desc: c.desc, icon: c.icon, color: c.color, parentId: c.parentId,
       showInLastUsed: c.showInLastUsed, showInQuickSelector: c.showInQuickSelector,
     })
   }
@@ -92,30 +93,18 @@ function save() {
     id,
     isUpdateChildCategoriesColor: false,
     values: {
-      name: form.name.trim(), icon: form.icon, color: form.color, parentId: form.parentId,
+      name: form.name.trim(), desc: form.desc.trim(), icon: form.icon, color: form.color, parentId: form.parentId,
       showInLastUsed: form.showInLastUsed, showInQuickSelector: form.showInQuickSelector,
     },
   })
   close()
 }
 
-function referencingTrnIds(categoryId: string): string[] {
-  const trns = trnsStore.items
-  if (!trns)
-    return []
-  const ids: string[] = []
-  for (const id in trns) {
-    if (trns[id]!.categoryId === categoryId)
-      ids.push(id)
-  }
-  return ids
-}
 
 function remove() {
   if (!props.categoryId)
     return
-  categoriesStore.deleteCategory(props.categoryId, referencingTrnIds(props.categoryId))
-  confirmDelete.value = false
+  categoriesStore.deleteCategory(props.categoryId)
   close()
 }
 </script>
@@ -124,6 +113,8 @@ function remove() {
   <FormDrawer
     :model-value="modelValue"
     :title="isEdit ? t('categories.edit') : t('categories.add')"
+    :subtitle="parentLabel"
+    :icon="form.icon"
     :deletable="isEdit"
     :save-disabled="!isValid"
     :width="480"
@@ -131,64 +122,50 @@ function remove() {
     @save="save"
     @delete="confirmDelete = true"
   >
-    <div class="d-flex align-center ga-3 mb-4">
+    <!-- Alanlar arası boşluk FormDrawer gövdesinden (gap); burada mb-* YOK. -->
+    <div class="d-flex align-center ga-3">
       <v-avatar :color="form.color" size="56" class="cursor-pointer" @click="iconPicker = true">
         <v-icon :icon="form.icon" color="white" size="28" />
       </v-avatar>
       <v-btn variant="tonal" size="small" @click="iconPicker = true">{{ t('categories.pickIcon') }}</v-btn>
     </div>
 
-    <v-text-field v-model="form.name" :label="t('categories.name')" autofocus class="mb-2" />
-
-    <v-select
-      v-model="form.parentId"
-      :items="parentOptions"
-      :label="t('categories.parent')"
-      class="mb-2"
+    <v-text-field
+      v-model="form.name"
+      :label="t('categories.name')"
+      :rules="['required']"
+      autofocus
     />
 
-    <div class="text-body-2 text-medium-emphasis mb-1">{{ t('categories.color') }}</div>
-    <ColorSwatches v-model="form.color" :colors="palette" class="mb-3" />
+    <v-select v-model="form.parentId" :items="parentOptions" :label="t('categories.parent')" />
 
-    <v-switch v-model="form.showInLastUsed" :label="t('categories.showInLastUsed')" color="primary" density="compact" hide-details />
-    <v-switch v-model="form.showInQuickSelector" :label="t('categories.showInQuickSelector')" color="primary" density="compact" hide-details />
+    <v-textarea v-model="form.desc" :label="t('categories.description')" rows="2" auto-grow />
+
+    <!-- Etiket + örnekler tek grup: başlık kendi alanına yapışık kalmalı. -->
+    <div>
+      <div class="text-body-medium text-medium-emphasis mb-2">{{ t('categories.color') }}</div>
+      <ColorSwatches v-model="form.color" :colors="palette" />
+    </div>
+
+    <!-- Anahtarlar tek grup: ikisi de "nerede görünsün" sorusunu yanıtlıyor. -->
+    <div class="d-flex flex-column ga-2">
+      <v-switch v-model="form.showInLastUsed" :label="t('categories.showInLastUsed')" />
+      <v-switch v-model="form.showInQuickSelector" :label="t('categories.showInQuickSelector')" />
+    </div>
   </FormDrawer>
 
   <!-- İkon seçici -->
-  <v-dialog v-model="iconPicker" max-width="520" scrollable>
-      <v-card>
-        <v-card-title class="d-flex align-center">
-          {{ t('categories.pickIcon') }}
-          <v-spacer />
-          <v-btn icon="mdi-close" variant="text" size="small" @click="iconPicker = false" />
-        </v-card-title>
-        <v-card-text style="max-height: 60vh;">
-          <v-text-field v-model="iconSearch" prepend-inner-icon="mdi-magnify" density="compact" hide-details class="mb-3" clearable />
-          <div class="icon-grid">
-            <v-btn
-              v-for="ic in filteredIcons" :key="ic" :icon="ic" variant="text" size="small"
-              :color="form.icon === ic ? 'primary' : undefined"
-              @click="form.icon = ic; iconPicker = false"
-            />
-          </div>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
+  <IconPicker v-model="iconPicker" v-model:icon="form.icon" :title="t('categories.pickIcon')" />
 
     <!-- Silme onayı -->
-    <v-dialog v-model="confirmDelete" max-width="360">
-      <v-card>
-        <v-card-text>{{ t('categories.deleteConfirm') }}</v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="confirmDelete = false">{{ t('common.cancel') }}</v-btn>
-          <v-btn color="error" variant="flat" @click="remove">{{ t('common.delete') }}</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <ConfirmDialog
+      v-model="confirmDelete"
+      :title="t('categories.edit')"
+      :message="t('categories.deleteConfirm')"
+      @confirm="remove"
+    />
 </template>
 
 <style scoped>
 .cursor-pointer { cursor: pointer; }
-.icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 4px; }
 </style>

@@ -7,6 +7,7 @@ import { colorsArray } from '@/features/color/colors'
 import { useTagsStore } from '@/features/tags/store'
 import FormDrawer from '@/components/FormDrawer.vue'
 import ColorSwatches from '@/components/ColorSwatches.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import type { TagId } from '@/features/tags/types'
 
 const props = defineProps<{ tagId: TagId | null }>()
@@ -22,7 +23,11 @@ const tagsStore = useTagsStore()
 // Renk paleti — kategori formuyla aynı seyreltme (her 6. renk).
 const palette = colorsArray.filter((_, i) => i % 6 === 0)
 
-const form = reactive<{ name: string, color: string }>({ name: '', color: random(colorsArray) })
+const form = reactive<{ name: string, color: string, desc: string }>({
+  name: '',
+  color: random(colorsArray),
+  desc: '',
+})
 
 const isEdit = computed(() => !!props.tagId)
 const isValid = computed(() => form.name.trim().length > 0)
@@ -35,6 +40,7 @@ watch(model, (open) => {
   const existing = props.tagId ? tagsStore.items[props.tagId] : null
   form.name = existing?.name ?? ''
   form.color = existing?.color ?? random(colorsArray)
+  form.desc = existing?.desc ?? ''
   confirmDelete.value = false
 })
 
@@ -42,7 +48,7 @@ function save() {
   if (!isValid.value)
     return
   const id = props.tagId ?? generateId()
-  tagsStore.saveTag({ id, values: { name: form.name, color: form.color } })
+  tagsStore.saveTag({ id, values: { name: form.name, color: form.color, desc: form.desc.trim() } })
   if (!props.tagId)
     emit('created', id)
   model.value = false
@@ -51,7 +57,6 @@ function save() {
 function remove() {
   if (props.tagId)
     tagsStore.deleteTag(props.tagId)
-  confirmDelete.value = false
   model.value = false
 }
 </script>
@@ -60,30 +65,42 @@ function remove() {
   <FormDrawer
     v-model="model"
     :title="isEdit ? t('tags.editTitle') : t('tags.newTitle')"
+    :subtitle="form.name.trim() || undefined"
+    icon="mdi-tag"
     :deletable="isEdit"
     :save-disabled="!isValid"
     @save="save"
     @delete="confirmDelete = true"
   >
-    <div class="d-flex align-center mb-4">
-      <v-avatar :color="form.color" size="40" class="me-3">
-        <v-icon icon="mdi-tag" color="white" size="20" />
+    <!-- Alanlar arası boşluk FormDrawer gövdesinden (gap); burada mb-* YOK. -->
+    <div class="d-flex align-center ga-3">
+      <v-avatar :color="form.color" size="56" class="flex-0-0">
+        <v-icon icon="mdi-tag" color="white" size="28" />
       </v-avatar>
-      <v-text-field v-model="form.name" :label="t('tags.name')" autofocus hide-details density="comfortable" @keyup.enter="save" />
+      <!-- hide-details="auto" ŞART: düz hide-details doğrulama mesajını da gizler. -->
+      <v-text-field
+        v-model="form.name"
+        :label="t('tags.name')"
+        :rules="['required']"
+        autofocus
+        hide-details="auto"
+        @keyup.enter="save"
+      />
     </div>
 
-    <div class="text-body-2 text-medium-emphasis mb-2">{{ t('tags.color') }}</div>
-    <ColorSwatches v-model="form.color" :colors="palette" />
+    <v-textarea v-model="form.desc" :label="t('tags.description')" rows="2" auto-grow />
+
+    <!-- Etiket + örnekler tek grup: başlık kendi alanına yapışık kalmalı. -->
+    <div>
+      <div class="text-body-medium text-medium-emphasis mb-2">{{ t('tags.color') }}</div>
+      <ColorSwatches v-model="form.color" :colors="palette" />
+    </div>
   </FormDrawer>
 
-  <v-dialog v-model="confirmDelete" max-width="360">
-    <v-card>
-      <v-card-text>{{ t('tags.deleteConfirm') }}</v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn variant="text" @click="confirmDelete = false">{{ t('common.cancel') }}</v-btn>
-        <v-btn color="error" variant="flat" @click="remove">{{ t('common.delete') }}</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+  <ConfirmDialog
+    v-model="confirmDelete"
+    :title="t('tags.editTitle')"
+    :message="t('tags.deleteConfirm')"
+    @confirm="remove"
+  />
 </template>

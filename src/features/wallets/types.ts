@@ -16,6 +16,8 @@ const walletBaseSchema = z.object({
   color: z.string().default(() => random(colorsArray)),
   currency: z.string().default('USD'),
   desc: z.string().default(''),
+  /** '' = seçilmedi → tür varsayılanına düşer (walletMeta.walletIcon). */
+  icon: z.string().default(''),
   isArchived: z.boolean().default(false),
   isExcludeInTotal: z.boolean().default(false),
   isWithdrawal: z.boolean().default(false),

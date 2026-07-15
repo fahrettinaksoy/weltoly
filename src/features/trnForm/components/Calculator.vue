@@ -27,7 +27,7 @@ const rows: Btn[][] = [
           @click="emit('key', btn.k)"
         >
           <v-icon v-if="btn.icon" :icon="btn.icon" />
-          <span v-else class="text-h6">{{ btn.label ?? btn.k }}</span>
+          <span v-else class="text-title-large">{{ btn.label ?? btn.k }}</span>
         </v-btn>
       </div>
     </div>

@@ -58,7 +58,7 @@ const title = computed(() => {
 </script>
 
 <template>
-  <v-list-item v-if="full" rounded="lg" class="mb-1" @click="trnForm.openFormForEdit(id)">
+  <v-list-item v-if="full" class="mb-1" @click="trnForm.openFormForEdit(id)">
     <template #prepend>
       <v-avatar :color="full.category.color || 'surface-variant'" size="38">
         <v-icon :icon="full.category.icon" color="white" size="20" />
@@ -75,7 +75,7 @@ const title = computed(() => {
       </v-chip>
     </div>
     <template #append>
-      <div class="text-body-1 font-weight-medium" :class="`text-${amountColor}`">{{ amountText }}</div>
+      <div class="text-body-large font-weight-medium" :class="`text-${amountColor}`">{{ amountText }}</div>
     </template>
   </v-list-item>
 </template>

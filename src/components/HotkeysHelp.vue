@@ -26,7 +26,7 @@ const rows = computed(() => [
       </v-card-title>
       <v-card-text>
         <div v-for="(r, i) in rows" :key="i" class="d-flex align-center justify-space-between py-2">
-          <span class="text-body-2">{{ r.label }}</span>
+          <span class="text-body-medium">{{ r.label }}</span>
           <span class="d-flex ga-1">
             <kbd v-for="k in r.keys" :key="k" class="kbd">{{ k }}</kbd>
           </span>
@@ -37,9 +37,11 @@ const rows = computed(() => [
 </template>
 
 <style scoped>
+/* Tuş rozeti: küçük bir yüzey → ayarı izler. Diyalogun içinde durduğu için
+   bir tık daha az yuvarlanır (eşmerkezli köşe). */
 .kbd {
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: max(0px, calc(var(--app-radius) - 4px));
   font-family: monospace;
   font-size: 12px;
   background: rgb(var(--v-theme-surface-light));

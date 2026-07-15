@@ -12,7 +12,20 @@
       "Bash(curl -s \"http://localhost:1420/src/shared/lib/format.ts\" -o /dev/null -w \"format.ts: %{http_code}\\\\n\")",
       "Bash(node -p \"require\\('./package.json'\\).dependencies.vue\")",
       "Bash(curl -s \"http://localhost:1420/src/App.vue\" -o /dev/null -w \"App.vue: %{http_code}\\\\n\")",
-      "Bash(perl -pi -e \"s/mdi:/mdi-/g\" src/features/categories/store.ts src/features/trns/store.ts)"
+      "Bash(perl -pi -e \"s/mdi:/mdi-/g\" src/features/categories/store.ts src/features/trns/store.ts)",
+      "Bash(node -e ' *)",
+      "Bash(node /tmp/eq.js)",
+      "Bash(xargs -I{} sh -c '[ {} -eq 0 ] && echo \"  wallet-main temizlendi ✅\" || echo \"  ❌ wallet-main hâlâ var: {}\"')",
+      "Bash(node /tmp/filter.js)",
+      "Bash(node /tmp/tdz.js)",
+      "Bash(node /tmp/dp.js)",
+      "Bash(node /tmp/df.js)",
+      "Bash(node -p \"require\\('vuetify/package.json'\\).version\")",
+      "Bash(node -p \"JSON.stringify\\(require\\('./package.json'\\).scripts,null,1\\)\")",
+      "Bash(awk '/^<style/,0' src/pages/SettingsPage.vue)",
+      "Bash(awk '/^<style/,0' src/layouts/DefaultLayout.vue)",
+      "Bash(sed -n '/^<template>/,/^<\\\\/template>/p' src/features/categories/components/CategoryFormDialog.vue)",
+      "Bash(sed -n '/^<template>/,/^<\\\\/template>/p' src/features/tags/components/TagFormDialog.vue)"
     ]
   }
 }
