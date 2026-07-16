@@ -135,8 +135,8 @@ async function onClearData() {
             <v-icon :icon="activeTab.icon" size="22" />
           </v-avatar>
           <div class="overflow-hidden">
-            <div class="text-title-medium font-weight-bold">{{ activeTab.label }}</div>
-            <div class="text-body-small text-medium-emphasis">{{ activeTab.desc }}</div>
+            <div class="text-subtitle-1 font-weight-bold">{{ activeTab.label }}</div>
+            <div class="text-caption text-medium-emphasis">{{ activeTab.desc }}</div>
           </div>
         </div>
         <v-divider class="mb-4" />
@@ -149,7 +149,7 @@ async function onClearData() {
             :subtitle="t('settings.groupThemeDesc')"
             icon="mdi-palette-outline"
           >
-              <div class="text-body-medium text-medium-emphasis mb-2">{{ t('settings.theme') }}</div>
+              <div class="text-body-2 text-medium-emphasis mb-2">{{ t('settings.theme') }}</div>
               <v-btn-toggle
                 :model-value="settings.themeMode"
                 color="primary" density="comfortable" mandatory class="mb-4"
@@ -160,7 +160,7 @@ async function onClearData() {
                 </v-btn>
               </v-btn-toggle>
 
-              <div class="text-body-medium text-medium-emphasis mb-2">{{ t('settings.primaryColor') }}</div>
+              <div class="text-body-2 text-medium-emphasis mb-2">{{ t('settings.primaryColor') }}</div>
               <ColorSwatches
                 :model-value="settings.primaryColor"
                 :colors="primaryPalette"
@@ -168,7 +168,7 @@ async function onClearData() {
                 @update:model-value="settings.setPrimaryColor($event)"
               />
 
-              <div class="text-body-medium text-medium-emphasis mb-2">{{ t('settings.neutral') }}</div>
+              <div class="text-body-2 text-medium-emphasis mb-2">{{ t('settings.neutral') }}</div>
               <div class="d-flex flex-wrap ga-2 mb-4">
                 <button
                   v-for="n in neutralKeys" :key="n" type="button" class="neutral-swatch"
@@ -181,7 +181,7 @@ async function onClearData() {
                 </button>
               </div>
 
-              <div class="text-body-medium text-medium-emphasis mb-1">{{ t('settings.radius') }} ({{ settings.radius }}px)</div>
+              <div class="text-body-2 text-medium-emphasis mb-1">{{ t('settings.radius') }} ({{ settings.radius }}px)</div>
               <v-slider
                 :model-value="settings.radius"
                 :min="MIN_RADIUS" :max="MAX_RADIUS" :step="1"
@@ -230,7 +230,7 @@ async function onClearData() {
             icon="mdi-translate"
             class="mb-4"
           >
-              <div class="text-body-medium text-medium-emphasis mb-2">{{ t('settings.language') }}</div>
+              <div class="text-body-2 text-medium-emphasis mb-2">{{ t('settings.language') }}</div>
               <v-select
                 :model-value="settings.locale"
                 :items="localeOptions" item-title="label" item-value="value" hide-details
@@ -238,7 +238,7 @@ async function onClearData() {
                 @update:model-value="settings.setAppLocale($event as LocaleCode)"
               />
 
-              <div class="text-body-medium text-medium-emphasis mb-2">{{ t('settings.currency') }}</div>
+              <div class="text-body-2 text-medium-emphasis mb-2">{{ t('settings.currency') }}</div>
               <v-select
                 :model-value="userStore.baseCurrency"
                 :items="currencyOptions" item-title="label" item-value="value" hide-details

@@ -17,6 +17,8 @@ import { TrnType, type TrnId, type TrnItem } from '@/features/trns/types'
 import WalletFormDialog from '@/features/wallets/components/WalletFormDialog.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import SectionCard from '@/components/SectionCard.vue'
+import DateRangeField from '@/components/DateRangeField.vue'
+import AppEmptyState from '@/components/AppEmptyState.vue'
 import WalletBalanceChart from '@/features/wallets/components/WalletBalanceChart.vue'
 import { usePageHeader } from '@/composables/usePageHeader'
 import { useAppBarAction } from '@/composables/useAppBarAction'
@@ -616,11 +618,11 @@ function remove() {
 <template>
   <div class="wallet-detail pa-4" :class="{ 'wallet-detail--table': tab === 'trns' }">
     <!-- Cüzdan silinmiş/bilinmeyen id: sessizce boş sayfa yerine açık mesaj. -->
-    <v-card v-if="!wallet" variant="tonal" class="pa-8 text-center">
-      <v-icon icon="mdi-wallet-outline" size="56" class="mb-4 text-medium-emphasis" />
-      <div class="text-body-large mb-4">{{ t('walletDetail.notFound') }}</div>
-      <v-btn-primary to="/wallets" prepend-icon="mdi-arrow-left">{{ t('nav.wallets') }}</v-btn-primary>
-    </v-card>
+    <AppEmptyState v-if="!wallet" icon="mdi-wallet-outline" :title="t('walletDetail.notFound')">
+      <template #action>
+        <v-btn-primary to="/wallets" prepend-icon="mdi-arrow-left">{{ t('nav.wallets') }}</v-btn-primary>
+      </template>
+    </AppEmptyState>
 
     <template v-else>
       <template v-if="tab === 'summary'">
@@ -632,48 +634,48 @@ function remove() {
            birer hücre; boşluk kalmıyor ve hepsi bilgi taşıyor. -->
       <v-sheet color="surface-light" class="d-flex align-center flex-wrap ga-4 pa-4 mb-4">
         <div class="wallet-fact wallet-fact--main">
-          <div class="text-body-small text-medium-emphasis">{{ t('wallets.table.balance') }}</div>
+          <div class="text-caption text-medium-emphasis">{{ t('wallets.table.balance') }}</div>
           <div class="d-flex align-baseline ga-2 flex-wrap">
             <span
-              class="text-headline-medium font-weight-bold"
+              class="text-h5 font-weight-bold"
               :class="{ 'text-error': wallet.amount < 0 }"
             >{{ fmt.money(wallet.amount, wallet.currency) }}</span>
             <!-- Karşılık AYNI satırda: alt satıra alınca blok uzuyor ve şerit
                  tek satırlık olmaktan çıkıyordu. Yalnız farklı para biriminde. -->
-            <span v-if="baseEquivalent !== null" class="text-body-small text-medium-emphasis">
+            <span v-if="baseEquivalent !== null" class="text-caption text-medium-emphasis">
               ≈ {{ fmt.money(baseEquivalent, currenciesStore.base) }}
             </span>
           </div>
         </div>
 
         <div class="wallet-fact">
-          <div class="text-body-small text-medium-emphasis">{{ t('walletDetail.lastTrn') }}</div>
-          <div class="text-title-medium font-weight-medium text-truncate">
+          <div class="text-caption text-medium-emphasis">{{ t('walletDetail.lastTrn') }}</div>
+          <div class="text-subtitle-1 font-weight-medium text-truncate">
             {{ lastTrnDate ? fmt.date(lastTrnDate) : '—' }}
           </div>
         </div>
 
         <!-- Dönemden BAĞIMSIZ toplam; süzgeçli adet aşağıdaki sayaçta. -->
         <div class="wallet-fact">
-          <div class="text-body-small text-medium-emphasis">{{ t('walletDetail.totalTrns') }}</div>
-          <div class="text-title-medium font-weight-medium">{{ fmt.number(allTrns.length) }}</div>
+          <div class="text-caption text-medium-emphasis">{{ t('walletDetail.totalTrns') }}</div>
+          <div class="text-subtitle-1 font-weight-medium">{{ fmt.number(allTrns.length) }}</div>
         </div>
 
         <!-- Kullanılabilir limit yalnız kredi kartında anlamlı. -->
         <div v-if="credit" class="wallet-fact">
-          <div class="text-body-small text-medium-emphasis">{{ t('walletDetail.available') }}</div>
-          <div class="text-title-medium font-weight-medium text-truncate">
+          <div class="text-caption text-medium-emphasis">{{ t('walletDetail.available') }}</div>
+          <div class="text-subtitle-1 font-weight-medium text-truncate">
             {{ fmt.money(credit.available, wallet.currency) }}
           </div>
         </div>
 
         <div v-if="wallet.desc" class="wallet-fact wallet-fact--desc">
-          <div class="text-body-small text-medium-emphasis">{{ t('wallets.description') }}</div>
-          <div class="text-body-medium text-truncate" :title="wallet.desc">{{ wallet.desc }}</div>
+          <div class="text-caption text-medium-emphasis">{{ t('wallets.description') }}</div>
+          <div class="text-body-2 text-truncate" :title="wallet.desc">{{ wallet.desc }}</div>
         </div>
 
         <div v-if="statusChips.length" class="wallet-fact">
-          <div class="text-body-small text-medium-emphasis">{{ t('walletDetail.status') }}</div>
+          <div class="text-caption text-medium-emphasis">{{ t('walletDetail.status') }}</div>
           <div class="d-flex ga-1 flex-wrap">
             <v-chip
               v-for="chip in statusChips"
@@ -692,8 +694,8 @@ function remove() {
       <!-- Kredi kartı: limit kullanımı. Yalnız credit türünde anlamlı. -->
       <v-sheet v-if="credit" color="surface-light" class="pa-5 mb-4">
         <div class="d-flex align-center justify-space-between mb-2 flex-wrap ga-2">
-          <span class="text-title-small font-weight-bold">{{ t('walletDetail.creditUsage') }}</span>
-          <span class="text-body-medium">
+          <span class="text-subtitle-2 font-weight-bold">{{ t('walletDetail.creditUsage') }}</span>
+          <span class="text-body-2">
             {{ fmt.money(credit.used, wallet.currency) }} / {{ fmt.money(credit.limit, wallet.currency) }}
           </span>
         </div>
@@ -704,10 +706,10 @@ function remove() {
           rounded
         />
         <div class="d-flex justify-space-between mt-2">
-          <span class="text-body-small text-medium-emphasis">
+          <span class="text-caption text-medium-emphasis">
             {{ t('walletDetail.available') }}: {{ fmt.money(credit.available, wallet.currency) }}
           </span>
-          <span class="text-body-small font-weight-medium">%{{ Math.round(credit.ratio) }}</span>
+          <span class="text-caption font-weight-medium">%{{ Math.round(credit.ratio) }}</span>
         </div>
       </v-sheet>
 
@@ -720,7 +722,7 @@ function remove() {
           class="pa-4 flex-1-1 wallet-kpi"
         >
           <div class="d-flex align-center ga-2">
-            <div class="text-headline-small font-weight-bold text-truncate" :class="card.tone">
+            <div class="text-h5 font-weight-bold text-truncate" :class="card.tone">
               {{ card.money ? fmt.money(card.value, wallet.currency) : fmt.number(card.value) }}
             </div>
             <!-- Rozet yalnız kıyas MÜMKÜNSE: 'Tümü' döneminde öncesi yok,
@@ -736,7 +738,7 @@ function remove() {
               %{{ fmt.number(Math.abs(Math.round(card.delta))) }}
             </v-chip>
           </div>
-          <div class="text-body-small text-medium-emphasis">{{ card.label }}</div>
+          <div class="text-caption text-medium-emphasis">{{ card.label }}</div>
         </v-sheet>
       </div>
 
@@ -780,15 +782,17 @@ function remove() {
               />
             </template>
 
-            <div v-if="!categoryBreakdown.length" class="d-flex align-center ga-3 text-medium-emphasis py-6">
-              <v-icon icon="mdi-chart-donut" size="32" />
-              <div class="text-body-medium">{{ t('walletDetail.noExpense') }}</div>
-            </div>
+            <AppEmptyState
+              v-if="!categoryBreakdown.length"
+              density="compact"
+              icon="mdi-chart-donut"
+              :title="t('walletDetail.noExpense')"
+            />
 
             <div v-else class="d-flex align-center ga-5 flex-wrap">
               <v-pie :items="categoryBreakdown" :size="150" :inner-cut="64" :gap="2" rounded="2" tooltip>
                 <template #center>
-                  <div class="text-body-small font-weight-bold">
+                  <div class="text-caption font-weight-bold">
                     {{ fmt.money(totalExpense, wallet.currency) }}
                   </div>
                 </template>
@@ -809,8 +813,8 @@ function remove() {
                   @click="c.canDrill && (drillRoot = String(c.key))"
                 >
                   <v-avatar :color="c.color" size="10" />
-                  <span class="text-body-small text-truncate flex-1-1 text-start">{{ c.title }}</span>
-                  <span class="text-body-small text-medium-emphasis">
+                  <span class="text-caption text-truncate flex-1-1 text-start">{{ c.title }}</span>
+                  <span class="text-caption text-medium-emphasis">
                     {{ fmt.money(c.value, wallet.currency) }}
                   </span>
                   <!-- Yer her satırda ayrılır (visibility), yoksa inilebilen ve
@@ -861,9 +865,9 @@ function remove() {
         <div class="wallet-tagbars">
           <div v-for="tg in tagBreakdown" :key="tg.key" class="wallet-tagbar">
             <div class="d-flex align-center ga-2 mb-1">
-              <span class="text-body-small text-truncate flex-1-1">{{ tg.title }}</span>
-              <span class="text-body-small font-weight-medium">{{ fmt.money(tg.value, wallet.currency) }}</span>
-              <span class="text-body-small text-medium-emphasis wallet-tagbar-pct">
+              <span class="text-caption text-truncate flex-1-1">{{ tg.title }}</span>
+              <span class="text-caption font-weight-medium">{{ fmt.money(tg.value, wallet.currency) }}</span>
+              <span class="text-caption text-medium-emphasis wallet-tagbar-pct">
                 %{{ fmt.number(Math.round(tg.ratio)) }}
               </span>
             </div>
@@ -872,7 +876,7 @@ function remove() {
         </div>
         <!-- Bu not şart: çubukların toplamı %100 etmez ve bu bir hata değil.
              Açıklanmazsa kullanıcı rakamların bozuk olduğunu düşünür. -->
-        <div class="text-body-small text-medium-emphasis mt-3">
+        <div class="text-caption text-medium-emphasis mt-3">
           {{ t('walletDetail.byTagNote') }}
         </div>
       </SectionCard>
@@ -926,17 +930,10 @@ function remove() {
                  taşıyor, satırlar üst üste biniyordu. Süzgeç satırı normal hücre. -->
             <tr class="trn-filters">
               <td v-for="column in columns" :key="String(column.key)">
-                <v-date-input
+                <DateRangeField
                   v-if="column.key === 'date'"
                   v-model="trnFilters.dateRange"
-                  multiple="range"
                   :placeholder="t('walletDetail.filterDate')"
-                  prepend-icon=""
-                  prepend-inner-icon="$calendar"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                  clearable
                 />
                 <v-select
                   v-else-if="column.key === 'kind'"
@@ -950,7 +947,7 @@ function remove() {
                   clearable
                 >
                   <template #selection="{ index, item: opt }">
-                    <span v-if="index === 0" class="text-body-small text-truncate">
+                    <span v-if="index === 0" class="text-caption text-truncate">
                       {{ trnFilters.kinds.length === 1 ? opt.title : t('walletDetail.nSelected', { n: trnFilters.kinds.length }) }}
                     </span>
                   </template>
@@ -978,7 +975,7 @@ function remove() {
                 >
                   <template #selection="{ index }">
                     <!-- Çip yerine özet: çipler hücreyi büyütüp satırı taşırıyordu. -->
-                    <span v-if="index === 0" class="text-body-small text-truncate">
+                    <span v-if="index === 0" class="text-caption text-truncate">
                       {{ trnFilters.categories.length === 1 ? trnFilters.categories[0] : t('walletDetail.nSelected', { n: trnFilters.categories.length }) }}
                     </span>
                   </template>
@@ -996,7 +993,7 @@ function remove() {
                 >
                   <template #selection="{ index }">
                     <!-- Çip yerine özet: çipler hücreyi büyütüp satırı taşırıyordu. -->
-                    <span v-if="index === 0" class="text-body-small text-truncate">
+                    <span v-if="index === 0" class="text-caption text-truncate">
                       {{ trnFilters.tags.length === 1 ? trnFilters.tags[0] : t('walletDetail.nSelected', { n: trnFilters.tags.length }) }}
                     </span>
                   </template>
@@ -1016,7 +1013,7 @@ function remove() {
             </tr>
           </template>
           <template #[`item.date`]="{ item }">
-            <span class="text-body-medium">{{ fmt.date(item.date) }}</span>
+            <span class="text-body-2">{{ fmt.date(item.date) }}</span>
           </template>
 
           <!-- Tür: renk + ok yönü rozeti. Tutarın işaretiyle aynı bilgiyi taşır
@@ -1045,7 +1042,7 @@ function remove() {
           <!-- Açıklama artık kategori adının altında değil, kendi sütununda:
                kullanıcı ona göre süzüp sıralayabilsin diye. -->
           <template #[`item.desc`]="{ item }">
-            <span v-if="item.desc" class="text-body-medium">{{ item.desc }}</span>
+            <span v-if="item.desc" class="text-body-2">{{ item.desc }}</span>
             <span v-else class="text-disabled">—</span>
           </template>
 
@@ -1060,7 +1057,7 @@ function remove() {
                cüzdanın tarafına göre belirlenir (signedAmount). -->
           <template #[`item.amount`]="{ item }">
             <span
-              class="text-body-medium font-weight-medium"
+              class="text-body-2 font-weight-medium"
               :class="item.amount >= 0 ? 'text-success' : 'text-error'"
             >
               {{ fmt.money(item.amount, wallet.currency) }}
@@ -1070,15 +1067,13 @@ function remove() {
           <!-- Boş durum süzgeci ayırt eder: "işlem yok" ile "süzgece uyan yok"
                farklı sorunlar; ikincisinde çıkış yolu (temizle) sunulur. -->
           <template #no-data>
-            <div class="text-center py-10">
-              <v-icon :icon="hasFilter ? 'mdi-filter-off-outline' : 'mdi-swap-horizontal'" size="48" class="mb-3 text-medium-emphasis" />
-              <div class="text-body-large mb-3">
-                {{ hasFilter ? t('walletDetail.noFilterMatch') : t('walletDetail.noTrns') }}
-              </div>
-              <v-btn v-if="hasFilter" variant="tonal" size="small" @click="clearFilters">
-                {{ t('walletDetail.clearFilters') }}
-              </v-btn>
-            </div>
+            <AppEmptyState
+              :icon="hasFilter ? 'mdi-filter-off-outline' : 'mdi-swap-horizontal'"
+              :title="hasFilter ? t('walletDetail.noFilterMatch') : t('walletDetail.noTrns')"
+              :action-text="hasFilter ? t('walletDetail.clearFilters') : undefined"
+              action-icon="mdi-filter-off-outline"
+              @action="clearFilters"
+            />
           </template>
         </v-data-table-virtual>
       </v-sheet>
@@ -1244,11 +1239,13 @@ function remove() {
    satırı birbirine binmesin. */
 /* Sabit başlık zeminini Vuetify surface veriyor:
      .v-table--fixed-header ... thead > tr > th { background: rgb(var(--v-theme-surface)) }
-   Bu tablo surface-light bir kartın İÇİNDE → başlık beyaz kalıp karttan kopuyordu.
-   Kartla aynı ton olmalı; opak kalması şart, altından satırlar kayıyor. */
+   Bu tablo surface-light bir kartın İÇİNDE → başlık koyu (surface) kalıp ayrı bir
+   bant gibi karttan kopuyordu. Kartla aynı tona (surface-light) çekilir → bant yok.
+   !important ŞART: Vuetify'ın fixed-header kuralı daha yüksek özgüllükte, yoksa
+   koyu varsayılan kazanır. Opak kalır (transparent DEĞİL) — altından satır kayar. */
 .wallet-trns :deep(thead th),
 .wallet-trns :deep(.trn-filters td) {
-  background: rgb(var(--v-theme-surface-light));
+  background: rgb(var(--v-theme-surface-light)) !important;
 }
 .wallet-trns :deep(.trn-filters td) {
   padding: 6px 8px;

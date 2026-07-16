@@ -38,8 +38,8 @@ function onConfirm() {
 <template>
   <v-dialog v-model="model" max-width="400">
     <v-card>
-      <v-card-title v-if="title" class="text-title-large">{{ title }}</v-card-title>
-      <v-card-text class="text-body-medium">{{ message }}</v-card-text>
+      <v-card-title v-if="title" class="text-h6">{{ title }}</v-card-title>
+      <v-card-text class="text-body-2">{{ message }}</v-card-text>
       <v-card-actions>
         <v-spacer />
         <v-btn variant="text" @click="model = false">{{ t('common.cancel') }}</v-btn>

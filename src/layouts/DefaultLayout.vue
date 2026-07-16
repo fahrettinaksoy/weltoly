@@ -20,6 +20,7 @@ type NavItem = { key: string, to: string, icon: string, labelKey: string }
 const navItems: NavItem[] = [
   { key: 'dashboard', to: '/dashboard', icon: '$navDashboard', labelKey: 'nav.dashboard' },
   { key: 'wallets', to: '/wallets', icon: '$navWallets', labelKey: 'nav.wallets' },
+  { key: 'trns', to: '/trns', icon: '$navTrns', labelKey: 'nav.trns' },
   { key: 'categories', to: '/categories', icon: '$navCategories', labelKey: 'nav.categories' },
   { key: 'tags', to: '/tags', icon: '$navTags', labelKey: 'nav.tags' },
   { key: 'stat', to: '/stat', icon: '$navStat', labelKey: 'nav.stat' },
@@ -41,7 +42,7 @@ const header = computed(() => override.value ?? {
 })
 
 // Mobil alt bar sıkışmasın: ikincil öğeler yukarı açılan "Daha fazla" menüsünde toplanır.
-const MORE_KEYS = ['categories', 'tags', 'settings']
+const MORE_KEYS = ['trns', 'categories', 'tags', 'settings']
 const moreItems = computed(() => navItems.filter(i => MORE_KEYS.includes(i.key)))
 const isMoreActive = computed(() => MORE_KEYS.includes(activeKey.value))
 const moreMenu = ref(false)
@@ -81,7 +82,7 @@ function onAdd() {
       <v-avatar color="white" size="32" rounded="circle">
         <v-icon icon="mdi-wallet-outline" color="primary" size="18" />
       </v-avatar>
-      <span class="text-title-medium font-weight-bold">Weltoly</span>
+      <span class="text-subtitle-1 font-weight-bold">Weltoly</span>
     </div>
   </v-app-bar>
 
@@ -104,8 +105,8 @@ function onAdd() {
         />
         <v-icon v-if="header.icon" :icon="header.icon" size="30" />
         <div class="overflow-hidden">
-          <div class="text-title-large font-weight-bold text-truncate">{{ header.title }}</div>
-          <div v-if="header.desc" class="text-body-medium text-truncate" style="opacity: 0.85;">{{ header.desc }}</div>
+          <div class="text-h6 font-weight-bold text-truncate">{{ header.title }}</div>
+          <div v-if="header.desc" class="text-body-2 text-truncate" style="opacity: 0.85;">{{ header.desc }}</div>
         </div>
       </div>
     </v-sheet>
@@ -142,7 +143,7 @@ function onAdd() {
                 {{ tab.label }}
               </v-tab>
             </v-tabs>
-            <span v-else class="text-title-large font-weight-bold ps-1">
+            <span v-else class="text-h6 font-weight-bold ps-1">
               {{ header.cardTitle ?? t('common.list') }}
             </span>
             <v-spacer />

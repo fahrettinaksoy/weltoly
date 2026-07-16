@@ -11,6 +11,7 @@ import { TrnType } from '@/features/trns/types'
 import { walletIdsOfTrn } from '@/features/wallets/trnLink'
 import WalletFormDialog from '@/features/wallets/components/WalletFormDialog.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import AppEmptyState from '@/components/AppEmptyState.vue'
 import { useAppBarAction } from '@/composables/useAppBarAction'
 import type { WalletId } from '@/features/wallets/types'
 
@@ -302,22 +303,22 @@ function onRowClick(_event: unknown, { item }: { item: WalletRow }) {
           v-for="kpi in kpis"
           :key="kpi.key"
         >
-          <div class="text-headline-small font-weight-bold">{{ kpi.value }}</div>
-          <div class="text-body-small text-medium-emphasis">{{ kpi.label }}</div>
+          <div class="text-h5 font-weight-bold">{{ kpi.value }}</div>
+          <div class="text-caption text-medium-emphasis">{{ kpi.label }}</div>
         </div>
 
         <v-spacer />
 
         <!-- Borç oranı: borcun varlığa oranı. Yüksekse uyarı rengine döner. -->
         <div class="d-flex align-center ga-3">
-          <div class="text-body-small text-medium-emphasis">{{ t('wallets.stats.debtRatio') }}</div>
+          <div class="text-caption text-medium-emphasis">{{ t('wallets.stats.debtRatio') }}</div>
           <v-progress-circular
             :model-value="Math.min(debtRatio, 100)"
             :size="48"
             :width="5"
             :color="debtRatio > 50 ? 'error' : 'primary'"
           >
-            <span class="text-body-small font-weight-bold">%{{ Math.round(debtRatio) }}</span>
+            <span class="text-caption font-weight-bold">%{{ Math.round(debtRatio) }}</span>
           </v-progress-circular>
         </div>
       </v-sheet>
@@ -356,7 +357,7 @@ function onRowClick(_event: unknown, { item }: { item: WalletRow }) {
             </v-avatar>
             <div class="wallets-name">
               <div class="font-weight-medium text-truncate">{{ item.name }}</div>
-              <div v-if="item.desc" class="text-body-small text-medium-emphasis text-truncate">
+              <div v-if="item.desc" class="text-caption text-medium-emphasis text-truncate">
                 {{ item.desc }}
               </div>
             </div>
@@ -418,25 +419,25 @@ function onRowClick(_event: unknown, { item }: { item: WalletRow }) {
         </template>
 
         <template #[`item.typeLabel`]="{ item }">
-          <span class="text-body-medium text-medium-emphasis">{{ item.typeLabel }}</span>
+          <span class="text-body-2 text-medium-emphasis">{{ item.typeLabel }}</span>
         </template>
 
         <template #[`item.trnCount`]="{ item }">
-          <span v-if="item.trnCount" class="text-body-medium">{{ fmt.number(item.trnCount) }}</span>
+          <span v-if="item.trnCount" class="text-body-2">{{ fmt.number(item.trnCount) }}</span>
           <span v-else class="text-disabled">—</span>
         </template>
 
         <!-- Gelir / gider: kendi para biriminde. Sıfırsa sönük tire — 0,00 yazmak
              satırı kalabalıklaştırır ve "veri var" izlenimi verir. -->
         <template #[`item.incomeBase`]="{ item }">
-          <span v-if="item.income" class="text-body-medium text-success">
+          <span v-if="item.income" class="text-body-2 text-success">
             {{ fmt.money(item.income, item.currency) }}
           </span>
           <span v-else class="text-disabled">—</span>
         </template>
 
         <template #[`item.expenseBase`]="{ item }">
-          <span v-if="item.expense" class="text-body-medium text-error">
+          <span v-if="item.expense" class="text-body-2 text-error">
             {{ fmt.money(item.expense, item.currency) }}
           </span>
           <span v-else class="text-disabled">—</span>
@@ -457,7 +458,7 @@ function onRowClick(_event: unknown, { item }: { item: WalletRow }) {
             <div v-else class="wallets-share" />
 
             <span
-              class="text-body-medium font-weight-medium wallets-amount"
+              class="text-body-2 font-weight-medium wallets-amount"
               :class="{ 'text-error': item.amount < 0 }"
             >
               {{ fmt.money(item.amount, item.currency) }}
@@ -486,21 +487,21 @@ function onRowClick(_event: unknown, { item }: { item: WalletRow }) {
         </template>
 
         <template #no-data>
-          <div class="text-center py-10">
-            <v-icon icon="mdi-wallet-outline" size="48" class="mb-3 text-medium-emphasis" />
-            <div class="text-body-large">{{ t('wallets.noResults') }}</div>
-          </div>
+          <AppEmptyState icon="mdi-wallet-outline" :title="t('wallets.noResults')" />
         </template>
       </v-data-table-virtual>
     </template>
 
     <!-- Boş durum -->
-    <v-card v-else variant="tonal" class="pa-8 text-center">
-      <v-icon icon="mdi-wallet-plus-outline" size="56" class="mb-4 text-medium-emphasis" />
-      <div class="text-body-large mb-1">{{ t('wallets.empty') }}</div>
-      <div class="text-body-medium text-medium-emphasis mb-4">{{ t('wallets.emptyHint') }}</div>
-      <v-btn-primary prepend-icon="mdi-plus" @click="openNew">{{ t('wallets.add') }}</v-btn-primary>
-    </v-card>
+    <AppEmptyState
+      v-else
+      icon="mdi-wallet-plus-outline"
+      :title="t('wallets.empty')"
+      :text="t('wallets.emptyHint')"
+      :action-text="t('wallets.add')"
+      action-icon="mdi-plus"
+      @action="openNew"
+    />
 
     <WalletFormDialog v-model="showDialog" :wallet-id="editId" />
 

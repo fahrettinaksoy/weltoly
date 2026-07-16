@@ -13,6 +13,7 @@ import { walletTypeIcon } from '@/features/wallets/walletMeta'
 import { TrnType } from '@/features/trns/types'
 import { useFormat } from '@/composables/useFormat'
 import SectionCard from '@/components/SectionCard.vue'
+import AppEmptyState from '@/components/AppEmptyState.vue'
 import TrnList from '@/features/trns/components/TrnList.vue'
 
 const { t } = useI18n()
@@ -272,24 +273,24 @@ const recentIds = computed(() =>
     <v-sheet color="primary" class="pa-5 mb-4 dash-hero">
       <div class="d-flex align-center ga-6 flex-wrap">
         <div class="dash-hero-main">
-          <div class="text-body-small dash-hero-label">{{ t('dashboard.netWorth') }}</div>
-          <div class="text-headline-large font-weight-bold">{{ fmt.money(totals.net, base) }}</div>
+          <div class="text-caption dash-hero-label">{{ t('dashboard.netWorth') }}</div>
+          <div class="text-h4 font-weight-bold">{{ fmt.money(totals.net, base) }}</div>
         </div>
         <div class="dash-hero-cell">
-          <div class="text-body-small dash-hero-label">{{ t('wallets.stats.assets') }}</div>
-          <div class="text-title-medium font-weight-medium">{{ fmt.money(totals.assets, base) }}</div>
+          <div class="text-caption dash-hero-label">{{ t('wallets.stats.assets') }}</div>
+          <div class="text-subtitle-1 font-weight-medium">{{ fmt.money(totals.assets, base) }}</div>
         </div>
         <div class="dash-hero-cell">
-          <div class="text-body-small dash-hero-label">{{ t('wallets.stats.debts') }}</div>
-          <div class="text-title-medium font-weight-medium">{{ fmt.money(totals.debts, base) }}</div>
+          <div class="text-caption dash-hero-label">{{ t('wallets.stats.debts') }}</div>
+          <div class="text-subtitle-1 font-weight-medium">{{ fmt.money(totals.debts, base) }}</div>
         </div>
         <div class="dash-hero-cell">
-          <div class="text-body-small dash-hero-label">{{ t('wallets.stats.debtRatio') }}</div>
-          <div class="text-title-medium font-weight-medium">%{{ fmt.number(Math.round(walletsStore.debtRatio)) }}</div>
+          <div class="text-caption dash-hero-label">{{ t('wallets.stats.debtRatio') }}</div>
+          <div class="text-subtitle-1 font-weight-medium">%{{ fmt.number(Math.round(walletsStore.debtRatio)) }}</div>
         </div>
         <div v-if="defaultWallet" class="dash-hero-cell dash-hero-wallet">
-          <div class="text-body-small dash-hero-label">{{ t('wallets.default') }}</div>
-          <div class="text-title-medium font-weight-medium text-truncate">{{ defaultWallet.name }}</div>
+          <div class="text-caption dash-hero-label">{{ t('wallets.default') }}</div>
+          <div class="text-subtitle-1 font-weight-medium text-truncate">{{ defaultWallet.name }}</div>
         </div>
       </div>
     </v-sheet>
@@ -303,7 +304,7 @@ const recentIds = computed(() =>
         class="pa-4 flex-1-1 dash-kpi"
       >
         <div class="d-flex align-center ga-2">
-          <div class="text-headline-small font-weight-bold text-truncate" :class="card.tone">
+          <div class="text-h5 font-weight-bold text-truncate" :class="card.tone">
             {{ card.money ? fmt.money(card.value, base) : fmt.number(card.value) }}
           </div>
           <v-chip
@@ -317,7 +318,7 @@ const recentIds = computed(() =>
             %{{ fmt.number(Math.abs(Math.round(card.delta))) }}
           </v-chip>
         </div>
-        <div class="text-body-small text-medium-emphasis">
+        <div class="text-caption text-medium-emphasis">
           {{ t('dashboard.thisMonth') }} · {{ card.label }}
         </div>
       </v-sheet>
@@ -335,9 +336,9 @@ const recentIds = computed(() =>
         <div v-for="row in assetsByType" :key="row.key" class="mb-3">
           <div class="d-flex align-center ga-2 mb-1">
             <v-icon :icon="row.icon" size="18" class="text-medium-emphasis" />
-            <span class="text-body-medium text-truncate flex-1-1">{{ row.title }}</span>
-            <span class="text-body-medium font-weight-medium">{{ fmt.money(row.value, base) }}</span>
-            <span class="text-body-small text-medium-emphasis dash-pct">%{{ fmt.number(Math.round(row.percent)) }}</span>
+            <span class="text-body-2 text-truncate flex-1-1">{{ row.title }}</span>
+            <span class="text-body-2 font-weight-medium">{{ fmt.money(row.value, base) }}</span>
+            <span class="text-caption text-medium-emphasis dash-pct">%{{ fmt.number(Math.round(row.percent)) }}</span>
           </div>
           <v-progress-linear :model-value="row.percent" color="primary" height="6" />
         </div>
@@ -354,8 +355,8 @@ const recentIds = computed(() =>
         <!-- Önce toplam: tek tek kartlara bakmadan "ne durumdayım" cevabı. -->
         <div class="mb-4">
           <div class="d-flex align-center ga-2 mb-1">
-            <span class="text-body-medium flex-1-1">{{ t('wallets.total') }}</span>
-            <span class="text-body-medium font-weight-medium">
+            <span class="text-body-2 flex-1-1">{{ t('wallets.total') }}</span>
+            <span class="text-body-2 font-weight-medium">
               {{ fmt.money(creditTotal.used, base) }} / {{ fmt.money(creditTotal.limit, base) }}
             </span>
           </div>
@@ -365,9 +366,9 @@ const recentIds = computed(() =>
         <div v-for="card in creditCards" :key="card.id" class="mb-3">
           <div class="d-flex align-center ga-2 mb-1">
             <v-avatar :color="card.color" size="10" />
-            <span class="text-body-small text-truncate flex-1-1">{{ card.name }}</span>
-            <span class="text-body-small text-medium-emphasis">{{ fmt.money(card.used, card.currency) }}</span>
-            <span class="text-body-small text-medium-emphasis dash-pct">%{{ fmt.number(Math.round(card.ratio)) }}</span>
+            <span class="text-caption text-truncate flex-1-1">{{ card.name }}</span>
+            <span class="text-caption text-medium-emphasis">{{ fmt.money(card.used, card.currency) }}</span>
+            <span class="text-caption text-medium-emphasis dash-pct">%{{ fmt.number(Math.round(card.ratio)) }}</span>
           </div>
           <v-progress-linear :model-value="card.ratio" :color="usageTone(card.ratio)" height="6" />
         </div>
@@ -431,12 +432,12 @@ const recentIds = computed(() =>
         </div>
         <!-- Boş durum süzgeci ayırt eder: "işlem yok" ile "süzgece uyan yok"
              farklı sorunlar; ikincisinde kullanıcı çıkışı yukarıdaki butonda. -->
-        <div v-else class="text-center py-8">
-          <v-icon icon="mdi-note-plus-outline" size="48" class="mb-3 text-medium-emphasis" />
-          <div class="text-body-medium text-medium-emphasis">
-            {{ filterTagIds.length ? t('walletDetail.noFilterMatch') : t('dashboard.noTrns') }}
-          </div>
-        </div>
+        <AppEmptyState
+          v-else
+          density="compact"
+          icon="mdi-note-plus-outline"
+          :title="filterTagIds.length ? t('walletDetail.noFilterMatch') : t('dashboard.noTrns')"
+        />
       </SectionCard>
 
       <!-- Proje durumu: diğer kartlar paranın hikâyesini anlatıyor, bu defterin
@@ -458,7 +459,7 @@ const recentIds = computed(() =>
             class="px-2"
           >
             <template #append>
-              <span class="text-title-small font-weight-bold">{{ fmt.number(s.value) }}</span>
+              <span class="text-subtitle-2 font-weight-bold">{{ fmt.number(s.value) }}</span>
             </template>
           </v-list-item>
         </v-list>
@@ -466,12 +467,12 @@ const recentIds = computed(() =>
         <v-divider class="my-3" />
 
         <div v-if="trnSpan" class="px-2 mb-3">
-          <div class="text-body-small text-medium-emphasis">{{ t('dashboard.trnSpan') }}</div>
-          <div class="text-body-medium">{{ fmt.date(trnSpan.first) }} – {{ fmt.date(trnSpan.last) }}</div>
+          <div class="text-caption text-medium-emphasis">{{ t('dashboard.trnSpan') }}</div>
+          <div class="text-body-2">{{ fmt.date(trnSpan.first) }} – {{ fmt.date(trnSpan.last) }}</div>
         </div>
         <div class="px-2">
-          <div class="text-body-small text-medium-emphasis">{{ t('settings.currency') }}</div>
-          <div class="text-body-medium">{{ base }}</div>
+          <div class="text-caption text-medium-emphasis">{{ t('settings.currency') }}</div>
+          <div class="text-body-2">{{ base }}</div>
         </div>
       </SectionCard>
     </div>

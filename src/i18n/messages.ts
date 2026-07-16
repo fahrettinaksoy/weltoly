@@ -5,8 +5,8 @@ export type LocaleCode = 'tr' | 'en' | 'ru'
 export const messages = {
   tr: {
     app: { name: 'Weltoly' },
-    nav: { dashboard: 'Panel', wallets: 'Cüzdanlar', categories: 'Kategoriler', tags: 'Etiketler', stat: 'İstatistik', settings: 'Ayarlar', add: 'Ekle', more: 'Daha', menu: 'Menü' },
-    pageDesc: { dashboard: 'Genel bakış ve son işlemler', wallets: 'Hesaplarını yönet', categories: 'Gelir ve gider kategorileri', tags: 'İşlem etiketleri', stat: 'Harcama analizi', settings: 'Uygulama tercihleri' },
+    nav: { dashboard: 'Panel', wallets: 'Cüzdanlar', trns: 'İşlemler', categories: 'Kategoriler', tags: 'Etiketler', stat: 'İstatistik', settings: 'Ayarlar', add: 'Ekle', more: 'Daha', menu: 'Menü' },
+    pageDesc: { dashboard: 'Genel bakış ve son işlemler', wallets: 'Hesaplarını yönet', trns: 'Tüm cüzdanlardaki işlemler', categories: 'Gelir ve gider kategorileri', tags: 'İşlem etiketleri', stat: 'Harcama analizi', settings: 'Uygulama tercihleri' },
     settings: {
       title: 'Ayarlar', appearance: 'Görünüm', theme: 'Tema',
       themeSystem: 'Sistem', themeLight: 'Açık', themeDark: 'Koyu', language: 'Dil', currency: 'Para birimi',
@@ -85,6 +85,11 @@ export const messages = {
       byTagNote: 'Bir işlem birden çok etiket taşıyabilir; her oran toplam gidere göredir ve oranların toplamı %100 etmez.',
       drillHint: '{name} alt kırılımını gör',
     },
+    trnsPage: {
+      wallet: 'Cüzdan', filterWallet: 'Cüzdan', allWallets: 'Tüm cüzdanlar',
+      count: '{n} işlem', noTrns: 'Henüz işlem yok',
+      total: 'Toplam', add: 'İşlem ekle',
+    },
     wallets: {
       title: 'Cüzdanlar', add: 'Cüzdan ekle', edit: 'Cüzdanı düzenle', empty: 'Henüz cüzdan yok', emptyHint: 'İlk cüzdanını ekleyerek başla.',
       name: 'Ad', type: 'Tür', currency: 'Para birimi', color: 'Renk', creditLimit: 'Kredi limiti', description: 'Açıklama', pickIcon: 'İkon seç', resetIcon: 'Türe göre',
@@ -147,8 +152,8 @@ export const messages = {
 
   en: {
     app: { name: 'Weltoly' },
-    nav: { dashboard: 'Dashboard', wallets: 'Wallets', categories: 'Categories', tags: 'Tags', stat: 'Stats', settings: 'Settings', add: 'Add', more: 'More', menu: 'Menu' },
-    pageDesc: { dashboard: 'Overview & recent activity', wallets: 'Manage your accounts', categories: 'Income & expense categories', tags: 'Transaction tags', stat: 'Spending analytics', settings: 'App preferences' },
+    nav: { dashboard: 'Dashboard', wallets: 'Wallets', trns: 'Transactions', categories: 'Categories', tags: 'Tags', stat: 'Stats', settings: 'Settings', add: 'Add', more: 'More', menu: 'Menu' },
+    pageDesc: { dashboard: 'Overview & recent activity', wallets: 'Manage your accounts', trns: 'Transactions across all wallets', categories: 'Income & expense categories', tags: 'Transaction tags', stat: 'Spending analytics', settings: 'App preferences' },
     settings: {
       title: 'Settings', appearance: 'Appearance', theme: 'Theme',
       themeSystem: 'System', themeLight: 'Light', themeDark: 'Dark', language: 'Language', currency: 'Currency',
@@ -223,6 +228,11 @@ export const messages = {
       byTagNote: 'A transaction can carry several tags; each share is measured against total expense, so the shares do not add up to 100%.',
       drillHint: 'See breakdown of {name}',
     },
+    trnsPage: {
+      wallet: 'Wallet', filterWallet: 'Wallet', allWallets: 'All wallets',
+      count: '{n} transactions', noTrns: 'No transactions yet',
+      total: 'Total', add: 'Add transaction',
+    },
     wallets: {
       title: 'Wallets', add: 'Add wallet', edit: 'Edit wallet', empty: 'No wallets yet', emptyHint: 'Start by adding your first wallet.',
       name: 'Name', type: 'Type', currency: 'Currency', color: 'Color', creditLimit: 'Credit limit', description: 'Description', pickIcon: 'Pick icon', resetIcon: 'Use type default',
@@ -285,8 +295,8 @@ export const messages = {
 
   ru: {
     app: { name: 'Weltoly' },
-    nav: { dashboard: 'Панель', wallets: 'Кошельки', categories: 'Категории', tags: 'Метки', stat: 'Статистика', settings: 'Настройки', add: 'Добавить', more: 'Ещё', menu: 'Меню' },
-    pageDesc: { dashboard: 'Обзор и последние операции', wallets: 'Управление счетами', categories: 'Категории доходов и расходов', tags: 'Метки операций', stat: 'Анализ расходов', settings: 'Настройки приложения' },
+    nav: { dashboard: 'Панель', wallets: 'Кошельки', trns: 'Операции', categories: 'Категории', tags: 'Метки', stat: 'Статистика', settings: 'Настройки', add: 'Добавить', more: 'Ещё', menu: 'Меню' },
+    pageDesc: { dashboard: 'Обзор и последние операции', wallets: 'Управление счетами', trns: 'Операции по всем кошелькам', categories: 'Категории доходов и расходов', tags: 'Метки операций', stat: 'Анализ расходов', settings: 'Настройки приложения' },
     settings: {
       title: 'Настройки', appearance: 'Внешний вид', theme: 'Тема',
       themeSystem: 'Система', themeLight: 'Светлая', themeDark: 'Тёмная', language: 'Язык', currency: 'Валюта',
@@ -360,6 +370,11 @@ export const messages = {
       byTag: 'Разбивка по меткам', byTagDesc: 'Распределение расходов по меткам', untagged: 'Без метки',
       byTagNote: 'Операция может иметь несколько меток; каждая доля считается от общих расходов, поэтому сумма долей не равна 100%.',
       drillHint: 'Показать разбивку: {name}',
+    },
+    trnsPage: {
+      wallet: 'Кошелёк', filterWallet: 'Кошелёк', allWallets: 'Все кошельки',
+      count: '{n} операций', noTrns: 'Пока нет операций',
+      total: 'Всего', add: 'Добавить операцию',
     },
     wallets: {
       title: 'Кошельки', add: 'Добавить кошелёк', edit: 'Изменить кошелёк', empty: 'Пока нет кошельков', emptyHint: 'Начните с добавления первого кошелька.',

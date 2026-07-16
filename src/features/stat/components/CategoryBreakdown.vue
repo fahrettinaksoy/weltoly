@@ -41,14 +41,14 @@ const fmt = useFormat()
         <v-avatar :color="categoriesStore.items[it.categoryId]?.color || 'surface-variant'" size="28" class="me-2">
           <v-icon :icon="categoriesStore.items[it.categoryId]?.icon" color="white" size="16" />
         </v-avatar>
-        <span class="text-body-medium text-truncate">
+        <span class="text-body-2 text-truncate">
           {{ categoriesStore.items[it.categoryId]?.name ?? it.categoryId }}
         </span>
         <v-spacer />
-        <span class="text-body-medium font-weight-medium">
+        <span class="text-body-2 font-weight-medium">
           {{ fmt.money(it.amount, currenciesStore.base) }}
         </span>
-        <span class="text-body-small text-medium-emphasis ms-2 stat-row-pct">
+        <span class="text-caption text-medium-emphasis ms-2 stat-row-pct">
           %{{ fmt.number(Math.round(it.percent)) }}
         </span>
         <!-- Yer her satırda ayrılır (visibility), yoksa inilebilen ve inilemeyen

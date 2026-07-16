@@ -117,7 +117,6 @@ function remove() {
     :icon="form.icon"
     :deletable="isEdit"
     :save-disabled="!isValid"
-    :width="480"
     @update:model-value="emit('update:modelValue', $event)"
     @save="save"
     @delete="confirmDelete = true"
@@ -143,7 +142,7 @@ function remove() {
 
     <!-- Etiket + örnekler tek grup: başlık kendi alanına yapışık kalmalı. -->
     <div>
-      <div class="text-body-medium text-medium-emphasis mb-2">{{ t('categories.color') }}</div>
+      <div class="text-body-2 text-medium-emphasis mb-2">{{ t('categories.color') }}</div>
       <ColorSwatches v-model="form.color" :colors="palette" />
     </div>
 

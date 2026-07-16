@@ -12,8 +12,14 @@ const props = withDefaults(defineProps<{
   icon?: string
   deletable?: boolean
   saveDisabled?: boolean
+  /**
+   * Panel genişliği. Varsayılan tüm formlar için geçerli olmalı — dört form
+   * (cüzdan/işlem/kategori/etiket) tek yapıyı paylaşıyor, genişlik de o
+   * yapının parçası. Önceden her form kendi değerini geçiyordu (460/480/420)
+   * ve yan yana açıldıklarında panel eni oynuyordu; artık tek kaynak burası.
+   */
   width?: number
-}>(), { deletable: false, saveDisabled: false, width: 420 })
+}>(), { deletable: false, saveDisabled: false, width: 480 })
 
 const emit = defineEmits<{ save: [], delete: [] }>()
 const model = defineModel<boolean>({ required: true })
@@ -41,8 +47,8 @@ const drawerWidth = computed(() => (mobile.value ? viewportWidth.value : props.w
           <v-icon :icon="icon" color="primary" size="20" />
         </v-avatar>
         <div class="overflow-hidden flex-1-1">
-          <div class="text-title-medium font-weight-bold text-truncate">{{ title }}</div>
-          <div v-if="subtitle" class="text-body-small form-drawer-subtitle text-truncate">{{ subtitle }}</div>
+          <div class="text-subtitle-1 font-weight-bold text-truncate">{{ title }}</div>
+          <div v-if="subtitle" class="text-caption form-drawer-subtitle text-truncate">{{ subtitle }}</div>
         </div>
         <v-btn
           icon="mdi-close"

@@ -37,6 +37,31 @@ function numberLocale(key: NumberFormatKey, appLocale: string): string {
   return NUMBER_FORMATS.find(f => f.key === key)?.locale ?? appLocale
 }
 
+/** Binlik ve ondalık ayracı (giriş alanları için). */
+export interface NumberSeparators {
+  group: string
+  decimal: string
+}
+
+/**
+ * Seçili sayı biçiminin ayraçlarını Intl'den ÖĞRENİR — elle tablo tutmaz.
+ * NUMBER_FORMATS zaten her biçimi temsilî bir locale'e eşliyor; ayraçları da
+ * oradan sormak tek kaynak demek: 'auto' uygulama diline uyar ve biçim listesi
+ * büyüdüğünde burası kendiliğinden doğru kalır.
+ *
+ * Not: bazı locale'ler binlik için normal boşluk değil dar bölünmez boşluk
+ * (U+202F, fr-FR) kullanır. Sorun değil — biçimlendirme ve geri çözme aynı
+ * karakteri kullandığı sürece gidiş-dönüş tutarlı.
+ */
+export function getNumberSeparators(o: FormatOptions): NumberSeparators {
+  const loc = numberLocale(o.numberFormat, o.locale)
+  const parts = new Intl.NumberFormat(loc).formatToParts(1234567.8)
+  return {
+    group: parts.find(p => p.type === 'group')?.value ?? ',',
+    decimal: parts.find(p => p.type === 'decimal')?.value ?? '.',
+  }
+}
+
 /** Tutarı para birimiyle biçimlendirir. Geçersiz/kripto kodlarda güvenli fallback. */
 export function formatMoney(amount: number, currency: string, o: FormatOptions): string {
   const loc = numberLocale(o.numberFormat, o.locale)
