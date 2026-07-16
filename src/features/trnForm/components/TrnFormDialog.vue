@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 
+import type { CalculatorKey } from '@/features/trnForm/utils/calculate'
+import { formatAmountResult, padDisplayCents } from '@/features/trnForm/utils/calculate'
 import { useTrnsFormStore } from '@/features/trnForm/store'
 import { useWalletsStore } from '@/features/wallets/store'
 import { useCategoriesStore } from '@/features/categories/store'
@@ -34,7 +36,16 @@ const typeItems = computed(() => [
   { value: TrnType.Transfer, label: t('trnForm.transfer') },
 ])
 
-const activeRaw = computed(() => store.values.amountRaw[store.activeAmountIdx] || '0')
+// Görüntü: tam sayılar "xxxx,00" olarak, kullanıcı kuruşa dokunmadıkça.
+// Doldurma salt görsel — saklanan amountRaw'a girmez (bkz. padDisplayCents).
+const activeRaw = computed(() =>
+  padDisplayCents(store.values.amountRaw[store.activeAmountIdx] || '0', store.separators),
+)
+
+// İpucundaki "= ..." önizlemesi de kuruşlu (matematik sonucu 2 ondalık).
+const sumPreview = computed(() =>
+  formatAmountResult(store.values.amount[store.activeAmountIdx] ?? 0, store.separators),
+)
 
 const walletItems = computed(() =>
   walletsStore.sortedIds.map(id => ({ id, name: walletsStore.items?.[id]?.name ?? id, color: walletsStore.items?.[id]?.color })),
@@ -45,6 +56,10 @@ const categoryItems = computed(() =>
     id, name: categoriesStore.items[id]?.name ?? id,
     icon: categoriesStore.items[id]?.icon, color: categoriesStore.items[id]?.color,
   })),
+)
+
+const tagItems = computed(() =>
+  tagsStore.sortedIds.map(id => ({ id, name: tagsStore.items[id]?.name ?? id, color: tagsStore.items[id]?.color })),
 )
 
 /**
@@ -65,6 +80,87 @@ const dateModel = computed({
 
 const isTransfer = computed(() => store.values.trnType === TrnType.Transfer)
 
+/**
+ * Başlık şeridi: diğer formlarla (cüzdan/kategori/etiket) aynı dil —
+ * ikon + başlık + "ne düzenleniyor" satırı.
+ *
+ * Cüzdanda tür, kategoride üst kategori, etikette adın kendisi ne ise burada
+ * da o: işlemin türü ve hangi kategoriye/cüzdana yazıldığı. Seçim değiştikçe
+ * canlı güncellenir — kullanıcı forma dalmışken başlıkta ne kaydedeceğini
+ * görür.
+ */
+const headerIcon = computed(() => {
+  if (isTransfer.value)
+    return '$transfer'
+  return store.values.trnType === TrnType.Income ? '$income' : '$expense'
+})
+
+const headerSubtitle = computed(() => {
+  const typeLabel = typeItems.value.find(i => i.value === store.values.trnType)?.label ?? ''
+
+  if (isTransfer.value) {
+    const from = store.transferExpenseWalletId ? walletsStore.items?.[store.transferExpenseWalletId]?.name : null
+    const to = store.transferIncomeWalletId ? walletsStore.items?.[store.transferIncomeWalletId]?.name : null
+    return from && to ? `${from} → ${to}` : typeLabel
+  }
+
+  const categoryName = store.values.categoryId ? categoriesStore.items?.[store.values.categoryId]?.name : null
+  return categoryName ? `${typeLabel} · ${categoryName}` : typeLabel
+})
+
+/**
+ * Tutar alanı artık gerçek bir input — eskiden <div> idi, o yüzden ne odak
+ * alabiliyordu ne de klavyeyi görüyordu; hesap makinesi yalnız fareyle
+ * çalışıyordu.
+ *
+ * Klavye NEDEN doğrudan input'a yazmıyor: tutar düz bir sayı değil, bir İFADE
+ * ("1 200 + 35"). Kuralları (basamak sınırı, tek ondalık nokta, operatör
+ * değiştirme, binlik ayracı) createExpressionString tutuyor. Tarayıcının kendi
+ * yazımına izin verseydik iki ayrı doğruluk kaynağı olurdu ve biçimlendirme
+ * imleci sürekli sona atardı. Bu yüzden tuşu yakalayıp AYNI hesap makinesi
+ * koduna veriyoruz — klavye ile butonlar birebir aynı yolu izliyor.
+ */
+const amountField = ref<{ focus: () => void } | null>(null)
+
+function onAmountKey(e: KeyboardEvent) {
+  // Kopyala/yapıştır gibi kısayollara dokunma.
+  if (e.ctrlKey || e.metaKey || e.altKey)
+    return
+  // Tab: alanlar arası geçiş — engellenirse klavyeyle formda gezilemez.
+  if (e.key === 'Tab')
+    return
+
+  e.preventDefault()
+
+  if (e.key === 'Enter') {
+    store.submitAndSave()
+    return
+  }
+  if (e.key === 'Backspace' || e.key === 'Delete') {
+    store.onClickCalculator('c')
+    return
+  }
+
+  // Ondalık: kullanıcı ayarındaki ayraç ne ise (nokta ya da virgül) onu kabul
+  // et, ama hesap makinesine her zaman kanonik '.' ver. Böylece hem "1,5" hem
+  // "1.5" tuşlaması, seçili biçime bakılmaksızın çalışır — ayrık klavyelerde
+  // ikisi de denk gelebiliyor.
+  const decimalSep = store.separators.decimal
+  const key = (e.key === decimalSep || e.key === ',' || e.key === '.') ? '.' : e.key
+  if (/^[0-9]$/.test(key) || ['.', '+', '-', '*', '/'].includes(key))
+    store.onClickCalculator(key as CalculatorKey)
+  // Kalan tuşlar (harfler vb.) yukarıdaki preventDefault ile zaten yutuldu.
+}
+
+// Panel açılınca tutara odaklan: form açılır açılmaz klavyeden yazmaya
+// başlanabilsin — hesap makinesi için fareye uzanmak gerekmesin.
+watch(isShow, async (open) => {
+  if (!open)
+    return
+  await nextTick()
+  amountField.value?.focus()
+})
+
 function onDelete() {
   const id = store.values.trnId
   if (id)
@@ -79,7 +175,8 @@ function onDelete() {
   <FormDrawer
     v-model="isShow"
     :title="isEditing ? t('trnForm.editTitle') : t('trnForm.newTitle')"
-    :width="460"
+    :subtitle="headerSubtitle"
+    :icon="headerIcon"
     :deletable="isEditing"
     @save="store.submitAndSave()"
     @delete="confirmDelete = true"
@@ -87,41 +184,55 @@ function onDelete() {
     <!-- Tür seçimi -->
     <v-btn-toggle
       :model-value="store.values.trnType"
-      color="primary" mandatory density="comfortable" class="mb-4 w-100"
+      color="primary" mandatory class="w-100"
       @update:model-value="store.onChangeTrnType($event)"
     >
       <v-btn v-for="it in typeItems" :key="it.value" :value="it.value" class="flex-grow-1">{{ it.label }}</v-btn>
     </v-btn-toggle>
 
-    <!-- Tutar göstergesi -->
-    <div class="text-center mb-4">
-      <div class="text-display-medium font-weight-bold">{{ activeRaw }}</div>
-      <div v-if="store.shouldShowSum()" class="text-body-medium text-medium-emphasis">
-        = {{ store.values.amount[store.activeAmountIdx] }}
-      </div>
-    </div>
+    <!-- Tutar: formun ana alanı.
+         Yükseklik `--v-input-control-height` ile — VTextField'ın `height`
+         PROP'U YOK (VInput dimension prop'larından yalnız width'i alıyor,
+         VInput.js:46), ama Vuetify yüksekliği zaten bu kendi değişkeninden
+         okuyor; density'ler de (56/48/40/32px) bunu set ediyor. Yani kendi
+         mekanizması, üzerine yazılan bir kural değil. -->
+    <v-text-field
+      ref="amountField"
+      :model-value="activeRaw"
+      class="trn-amount"
+      style="--v-input-control-height: 72px"
+      inputmode="decimal"
+      :hint="store.shouldShowSum() ? `= ${sumPreview}` : undefined"
+      persistent-hint
+      @keydown="onAmountKey"
+    />
 
-    <!-- Transfer: cüzdanlar -->
+    <!-- Alan sırası: cüzdan → tarih → kategori → etiket → açıklama.
+         Çip duvarı yerine autocomplete: 30+ cüzdan / 70+ kategori çip olarak
+         basılınca form ekranlar boyu uzuyor ve seçili olan kayboluyordu.
+         Autocomplete tek satır kaplar, yazarak süzmeye de izin verir. -->
+
+    <!-- Transfer: gönderen/alan cüzdanlar -->
     <template v-if="isTransfer">
-      <div class="d-flex align-center ga-2 mb-4">
-        <v-select
+      <div class="d-flex align-center ga-2">
+        <v-autocomplete
           :model-value="store.transferExpenseWalletId"
           :items="walletItems" item-title="name" item-value="id"
-          :label="t('trnForm.from')" hide-details density="comfortable"
+          :label="t('trnForm.from')" auto-select-first
           @update:model-value="store.onTransferWalletSelected('expense', $event)"
         />
         <v-btn icon="mdi-swap-horizontal" variant="tonal" @click="store.switchTransferWallets()" />
-        <v-select
+        <v-autocomplete
           :model-value="store.transferIncomeWalletId"
           :items="walletItems" item-title="name" item-value="id"
-          :label="t('trnForm.to')" hide-details density="comfortable"
+          :label="t('trnForm.to')" auto-select-first
           @update:model-value="store.onTransferWalletSelected('income', $event)"
         />
       </div>
       <v-btn-toggle
         v-if="!store.isSameCurrencyTransfer"
         :model-value="store.values.transferType"
-        color="primary" mandatory density="comfortable" class="mb-4 w-100"
+        color="primary" mandatory class="w-100"
         @update:model-value="store.onChangeTransferType($event)"
       >
         <v-btn value="expense" class="flex-grow-1">{{ t('trnForm.from') }}</v-btn>
@@ -129,66 +240,103 @@ function onDelete() {
       </v-btn-toggle>
     </template>
 
-    <!-- Gelir/Gider: cüzdan + kategori -->
+    <!-- Gelir/Gider: cüzdan -->
     <template v-else>
-      <div v-if="!walletItems.length" class="text-body-medium text-medium-emphasis mb-3">{{ t('trnForm.noWallets') }}</div>
-      <v-chip-group
-        :model-value="store.values.walletId"
-        selected-class="text-primary" column class="mb-2"
-        @update:model-value="store.values.walletId = $event"
+      <div v-if="!walletItems.length" class="text-medium-emphasis">{{ t('trnForm.noWallets') }}</div>
+      <v-autocomplete
+        v-else
+        v-model="store.values.walletId"
+        :items="walletItems" item-title="name" item-value="id"
+        :label="t('trnForm.wallet')" auto-select-first
       >
-        <v-chip v-for="w in walletItems" :key="w.id" :value="w.id" filter>
-          <v-icon icon="mdi-wallet-outline" :color="w.color" start size="16" />{{ w.name }}
-        </v-chip>
-      </v-chip-group>
-
-      <div v-if="!categoryItems.length" class="text-body-medium text-medium-emphasis mb-3">{{ t('trnForm.noCategories') }}</div>
-      <v-chip-group
-        :model-value="store.values.categoryId"
-        selected-class="text-primary" column class="mb-2"
-        @update:model-value="store.values.categoryId = $event"
-      >
-        <v-chip v-for="c in categoryItems" :key="c.id" :value="c.id" filter>
-          <v-icon :icon="c.icon" :color="c.color" start size="16" />{{ c.name }}
-        </v-chip>
-      </v-chip-group>
+        <template #prepend-inner>
+          <v-icon icon="mdi-wallet-outline" :color="walletsStore.items?.[store.values.walletId ?? '']?.color" size="20" />
+        </template>
+        <template #item="{ props: itemProps, item }">
+          <v-list-item v-bind="itemProps" :title="item.raw.name">
+            <template #prepend>
+              <v-icon icon="mdi-wallet-outline" :color="item.raw.color" size="20" />
+            </template>
+          </v-list-item>
+        </template>
+      </v-autocomplete>
     </template>
 
-    <!-- Etiketler (tags): çoklu seçim + satır içi yeni etiket -->
-    <div class="d-flex align-center mb-1">
-      <v-icon icon="$navTags" size="16" class="me-2 text-medium-emphasis" />
-      <span class="text-body-medium text-medium-emphasis">{{ t('tags.title') }}</span>
-    </div>
-    <div class="d-flex align-center flex-wrap ga-2 mb-4">
-      <v-chip
-        v-for="id in tagsStore.sortedIds"
-        :key="id"
-        :color="tagsStore.items[id]?.color"
-        :variant="store.values.tagIds.includes(id) ? 'flat' : 'outlined'"
-        size="small"
-        @click="store.toggleTag(id)"
-      >
-        <v-icon v-if="store.values.tagIds.includes(id)" icon="mdi-check" start size="14" />
-        {{ tagsStore.items[id]?.name }}
-      </v-chip>
-      <v-chip size="small" variant="tonal" prepend-icon="mdi-plus" @click="showTagForm = true">
-        {{ t('tags.add') }}
-      </v-chip>
-    </div>
+    <!-- Tarih. Tarayıcının type="date" alanı yerine Vuetify tarih seçici:
+         biçim ve takvim uygulamanın diline/temasına uyar (tarayıcı alanı
+         işletim sistemine uyuyordu). Takvim ikonu içeride — defaults.ts. -->
+    <v-date-input v-model="dateModel" :label="t('trnForm.date')" />
 
-    <!-- Tarih + açıklama -->
-    <div class="d-flex ga-2 mb-4">
-      <!-- Tarayıcının type="date" alanı yerine Vuetify tarih seçici: biçim ve
-           takvim uygulamanın diline/temasına uyar (tarayıcı alanı işletim
-           sistemine uyuyordu). -->
-      <v-date-input
-        v-model="dateModel"
-        :label="t('trnForm.date')"
-        hide-details
-        density="comfortable"
-      />
-      <v-text-field v-model="store.values.desc" :label="t('trnForm.description')" hide-details density="comfortable" />
-    </div>
+    <!-- Kategori (transfer'de yok: kategori 'transfer' olarak sabitleniyor) -->
+    <template v-if="!isTransfer">
+      <div v-if="!categoryItems.length" class="text-medium-emphasis">{{ t('trnForm.noCategories') }}</div>
+      <v-autocomplete
+        v-else
+        v-model="store.values.categoryId"
+        :items="categoryItems" item-title="name" item-value="id"
+        :label="t('trnForm.category')" auto-select-first
+      >
+        <template #prepend-inner>
+          <v-icon
+            :icon="categoriesStore.items?.[store.values.categoryId ?? '']?.icon ?? '$navCategories'"
+            :color="categoriesStore.items?.[store.values.categoryId ?? '']?.color"
+            size="20"
+          />
+        </template>
+        <template #item="{ props: itemProps, item }">
+          <v-list-item v-bind="itemProps" :title="item.raw.name">
+            <template #prepend>
+              <v-icon :icon="item.raw.icon" :color="item.raw.color" size="20" />
+            </template>
+          </v-list-item>
+        </template>
+      </v-autocomplete>
+    </template>
+
+    <!-- Etiketler (tags): çoklu seçim + yanında satır içi yeni etiket butonu -->
+    <v-autocomplete
+      v-model="store.values.tagIds"
+      :items="tagItems" item-title="name" item-value="id"
+      :label="t('tags.title')" prepend-inner-icon="$navTags"
+      multiple chips closable-chips auto-select-first
+    >
+      <template #chip="{ props: chipProps, item }">
+        <v-chip v-bind="chipProps" :color="item.raw.color" size="small" :text="item.raw.name" />
+      </template>
+      <template #item="{ props: itemProps, item }">
+        <v-list-item v-bind="itemProps" :title="item.raw.name">
+          <template #prepend="{ isSelected }">
+            <v-icon :icon="isSelected ? 'mdi-check-circle' : 'mdi-circle-outline'" :color="item.raw.color" size="20" />
+          </template>
+        </v-list-item>
+      </template>
+      <!-- "Yeni etiket" alanın İÇİNDE, açılır ok ikonunun yanında.
+           mousedown.stop ŞART: alanın içine yapılan basış autocomplete'i
+           odaklayıp menüyü açıyor — durdurulmazsa etiket paneli, arkasında
+           açık kalmış bir açılır listeyle birlikte geliyor. click.stop ise
+           basışın seçim mantığına düşmesini engelliyor. -->
+      <template #append-inner>
+        <v-btn
+          icon="mdi-plus"
+          variant="text"
+          density="comfortable"
+          size="small"
+          :aria-label="t('tags.add')"
+          @mousedown.stop
+          @click.stop="showTagForm = true"
+        />
+      </template>
+    </v-autocomplete>
+
+    <!-- Açıklama: textarea — açıklamalar tek satıra sığmıyor, uzun metin
+         text-field'da soldan kayıp görünmez oluyordu. auto-grow: kısa
+         açıklamada yer kaplamaz, uzadıkça büyür. -->
+    <v-textarea
+      v-model="store.values.desc"
+      :label="t('trnForm.description')"
+      prepend-inner-icon="mdi-text"
+      rows="2" auto-grow
+    />
 
     <!-- Hesap makinesi -->
     <Calculator @key="store.onClickCalculator($event)" />
@@ -209,3 +357,23 @@ function onDelete() {
     </v-card>
   </v-dialog>
 </template>
+
+<style scoped>
+/* Tutar input'unun İÇ metni. Bu üç şey için Vuetify'da prop YOK ve utility
+   class da İŞE YARAMIYOR — ölçüldü: kök öğeye `text-center text-h4` verince
+   input'ta text-align hâlâ `start`, font-size hâlâ 16px çıkıyor (Vuetify'ın
+   kendi .v-field__input kuralları kazanıyor). Bu yüzden :deep ile input'un
+   kendisi hedefleniyor.
+   Yükseklik burada DEĞİL: onu Vuetify'ın kendi --v-input-control-height
+   değişkeni veriyor (template'te), CSS'le ezilmiyor. */
+.trn-amount :deep(input) {
+  text-align: center;
+  font-size: 2.125rem; /* text-h4 ölçeğiyle aynı */
+  font-weight: 700;
+}
+
+/* Hesaplanan sonuç ("= 1235") tutarın altında, ortada. */
+.trn-amount :deep(.v-messages) {
+  text-align: center;
+}
+</style>

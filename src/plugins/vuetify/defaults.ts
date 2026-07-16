@@ -86,6 +86,24 @@ export const defaults = {
     density: 'comfortable',
     hideDetails: 'auto',
   },
+  // VDateInput'a variant/density AYRICA yazılmak ZORUNDA — yukarıdaki
+  // VTextField varsayılanı buraya İNMEZ. Sebep: VDateInput, VTextField'ın
+  // proplarını `makeVTextFieldProps()` ile KENDİ propu olarak tanımlıyor ve
+  // içteki VTextField'a `VTextField.filterProps(props)` ile AÇIKÇA geçiriyor.
+  // Açıkça geçirilen prop, o bileşenin default'unu ezer; yani alan VField'ın
+  // `default: 'filled'` değeriyle dolgulu çıkıyordu — tek bu alan diğerlerinden
+  // farklı görünmesinin sebebi buydu (ölçüldü: VDateInput.js:44, :206).
+  // prependIcon: aynı mekanizmayla '$calendar' default'u takvim ikonunu alanın
+  // DIŞINA koyuyor. Boş string dış ikonu tamamen kaldırır (Vuetify
+  // `slots.prepend || props.prependIcon` ile bakıyor; '' falsy → prepend hiç
+  // render edilmez), ikon prependInnerIcon ile içeri alınır.
+  VDateInput: {
+    variant: 'outlined',
+    density: 'comfortable',
+    hideDetails: 'auto',
+    prependIcon: '',
+    prependInnerIcon: '$calendar',
+  },
 
   VList: {
     density: 'comfortable',

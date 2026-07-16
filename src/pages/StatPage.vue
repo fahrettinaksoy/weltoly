@@ -11,6 +11,7 @@ import type { Period } from '@/features/date/types'
 import StatChart from '@/features/stat/components/StatChart.vue'
 import CategoryBreakdown from '@/features/stat/components/CategoryBreakdown.vue'
 import SectionCard from '@/components/SectionCard.vue'
+import AppEmptyState from '@/components/AppEmptyState.vue'
 import { useFormat } from '@/composables/useFormat'
 
 const { t } = useI18n()
@@ -129,7 +130,7 @@ const tagFilterLabel = computed(() => {
             class="pa-4 flex-1-1 stat-kpi"
           >
             <div class="d-flex align-center ga-2">
-              <div class="text-headline-small font-weight-bold text-truncate" :class="card.tone">
+              <div class="text-h5 font-weight-bold text-truncate" :class="card.tone">
                 {{ card.money ? fmt.money(card.value, currenciesStore.base) : fmt.number(card.value) }}
               </div>
               <v-chip
@@ -143,7 +144,7 @@ const tagFilterLabel = computed(() => {
                 %{{ fmt.number(Math.abs(Math.round(card.delta))) }}
               </v-chip>
             </div>
-            <div class="text-body-small text-medium-emphasis">{{ card.label }}</div>
+            <div class="text-caption text-medium-emphasis">{{ card.label }}</div>
           </v-sheet>
         </div>
 
@@ -191,17 +192,19 @@ const tagFilterLabel = computed(() => {
 
           <div v-if="stat.breakdown.length">
             <div class="d-flex align-center ga-2 mb-3">
-              <span class="text-body-small text-medium-emphasis">{{ t('wallets.total') }}</span>
-              <span class="text-title-small font-weight-bold">
+              <span class="text-caption text-medium-emphasis">{{ t('wallets.total') }}</span>
+              <span class="text-subtitle-2 font-weight-bold">
                 {{ fmt.money(stat.breakdownTotal, currenciesStore.base) }}
               </span>
             </div>
             <CategoryBreakdown :items="stat.breakdown" @drill="stat.setDrillRoot($event)" />
           </div>
-          <div v-else class="d-flex align-center ga-3 text-medium-emphasis py-6">
-            <v-icon icon="mdi-chart-donut" size="32" />
-            <div class="text-body-medium">{{ t('stat.noData') }}</div>
-          </div>
+          <AppEmptyState
+            v-else
+            density="compact"
+            icon="mdi-chart-donut"
+            :title="t('stat.noData')"
+          />
         </SectionCard>
 
         <!-- Etiket kırılımı: kategori "ne için", etiket "hangi bağlamda".
@@ -215,13 +218,13 @@ const tagFilterLabel = computed(() => {
           <div class="stat-tagbars">
             <div v-for="tg in stat.tagBreakdown" :key="tg.tagId" class="stat-tagbar">
               <div class="d-flex align-center ga-2 mb-1">
-                <span class="text-body-small text-truncate flex-1-1">
+                <span class="text-caption text-truncate flex-1-1">
                   {{ tg.tagId === '__untagged' ? t('stat.untagged') : (tagsStore.items[tg.tagId]?.name ?? tg.tagId) }}
                 </span>
-                <span class="text-body-small font-weight-medium">
+                <span class="text-caption font-weight-medium">
                   {{ fmt.money(tg.amount, currenciesStore.base) }}
                 </span>
-                <span class="text-body-small text-medium-emphasis stat-tagbar-pct">
+                <span class="text-caption text-medium-emphasis stat-tagbar-pct">
                   %{{ fmt.number(Math.round(tg.percent)) }}
                 </span>
               </div>
@@ -234,7 +237,7 @@ const tagFilterLabel = computed(() => {
           </div>
           <!-- Bu not şart: çubukların toplamı %100 etmez ve bu bir hata değil.
                Açıklanmazsa kullanıcı rakamların bozuk olduğunu düşünür. -->
-          <div class="text-body-small text-medium-emphasis mt-3">{{ t('stat.byTagNote') }}</div>
+          <div class="text-caption text-medium-emphasis mt-3">{{ t('stat.byTagNote') }}</div>
         </SectionCard>
       </div>
 
@@ -259,7 +262,7 @@ const tagFilterLabel = computed(() => {
                İleri butonu gelecekte kilitli — offset 0 = güncel aralık. -->
           <div class="d-flex align-center ga-1">
             <v-btn icon="mdi-chevron-left" variant="tonal" size="small" :aria-label="t('common.back')" @click="stat.prev()" />
-            <div class="text-body-medium font-weight-medium text-center flex-1-1 text-truncate">
+            <div class="text-body-2 font-weight-medium text-center flex-1-1 text-truncate">
               {{ rangeLabel }}
             </div>
             <v-btn icon="mdi-chevron-right" variant="tonal" size="small" :disabled="stat.offset >= 0" @click="stat.next()" />
@@ -295,7 +298,7 @@ const tagFilterLabel = computed(() => {
             @update:model-value="stat.setFilterWalletIds($event)"
           >
             <template #selection="{ index }">
-              <span v-if="index === 0" class="text-body-small text-truncate">{{ walletFilterLabel }}</span>
+              <span v-if="index === 0" class="text-caption text-truncate">{{ walletFilterLabel }}</span>
             </template>
           </v-select>
 
@@ -313,7 +316,7 @@ const tagFilterLabel = computed(() => {
             @update:model-value="stat.setFilterTagIds($event)"
           >
             <template #selection="{ index }">
-              <span v-if="index === 0" class="text-body-small text-truncate">{{ tagFilterLabel }}</span>
+              <span v-if="index === 0" class="text-caption text-truncate">{{ tagFilterLabel }}</span>
             </template>
           </v-select>
         </SectionCard>

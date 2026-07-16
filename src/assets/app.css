@@ -142,10 +142,17 @@
 /* Çizgisiz: bölücü yerine tonal "track" zemini; seçili segment primary dolgulu.
    Yuvarlaklık BURADA DEĞİL — defaults.ts'te (VBtnGroup + iç içe VBtnToggle>VBtn,
    eşmerkezli hesabıyla). Burada yalnız zemin ve boşluk kalır. */
+/* DİKKAT — buraya `height` YAZMA.
+   Burada `height: auto !important` vardı ve segmented control'ü ÇÖKERTİYORDU:
+   Vuetify yüksekliği density sınıfından verir (default 48px), `auto` ise şeridi
+   içeriğe indiriyordu (~20px, Kaydet butonundan bile kısa). `!important` olduğu
+   için de üstüne yazılan hiçbir kural tutmuyordu.
+   Dikey toggle için konulmuş olmalı ama gereksiz: Vuetify zaten
+   `.v-btn-group--vertical { height: auto !important }` veriyor (vuetify.css).
+   Yükseklik gerekiyorsa density prop'u kullanılmalı, CSS değil. */
 .v-btn-toggle {
   background: rgba(var(--v-theme-on-surface), 0.06);
   padding: 4px;
-  height: auto !important;
 }
 .v-btn-toggle > .v-btn:not(.v-btn--active) {
   background-color: transparent !important;

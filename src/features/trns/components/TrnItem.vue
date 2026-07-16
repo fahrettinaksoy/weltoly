@@ -75,7 +75,7 @@ const title = computed(() => {
       </v-chip>
     </div>
     <template #append>
-      <div class="text-body-large font-weight-medium" :class="`text-${amountColor}`">{{ amountText }}</div>
+      <div class="text-body-1 font-weight-medium" :class="`text-${amountColor}`">{{ amountText }}</div>
     </template>
   </v-list-item>
 </template>

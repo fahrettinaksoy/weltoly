@@ -152,7 +152,6 @@ function remove() {
     :icon="walletIcon(form)"
     :deletable="isEdit"
     :save-disabled="!isValid"
-    :width="480"
     @update:model-value="emit('update:modelValue', $event)"
     @save="save"
     @delete="confirmDelete = true"
@@ -214,7 +213,7 @@ function remove() {
 
     <!-- Etiket + örnekler tek grup: başlık kendi alanına yapışık kalmalı. -->
     <div>
-      <div class="text-body-medium text-medium-emphasis mb-2">{{ t('wallets.color') }}</div>
+      <div class="text-body-2 text-medium-emphasis mb-2">{{ t('wallets.color') }}</div>
       <ColorSwatches v-model="form.color" :colors="palette" />
     </div>
 
@@ -226,7 +225,7 @@ function remove() {
     <div class="d-flex flex-column ga-2">
       <div>
         <v-switch v-model="form.isDefault" :label="t('wallets.default')" />
-        <div v-if="form.isDefault && otherDefaultName" class="text-body-small text-medium-emphasis ms-1">
+        <div v-if="form.isDefault && otherDefaultName" class="text-caption text-medium-emphasis ms-1">
           {{ t('wallets.defaultMovedFrom', { name: otherDefaultName }) }}
         </div>
       </div>
