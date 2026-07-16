@@ -15,6 +15,8 @@ import { validate } from '@/features/trnForm/utils/validate'
 import { TrnType } from '@/features/trns/types'
 import { useTrnsStore } from '@/features/trns/store'
 import { useUserStore } from '@/features/user/store'
+import { useSettingsStore } from '@/stores/settings'
+import { getNumberSeparators } from '@/shared/lib/format'
 import { useWalletsStore } from '@/features/wallets/store'
 import { showErrorToast } from '@/stores/ui'
 
@@ -34,6 +36,20 @@ export const useTrnsFormStore = defineStore('trnForm', () => {
   const categoriesStore = useCategoriesStore()
   const trnsStore = useTrnsStore()
   const walletsStore = useWalletsStore()
+  const settingsStore = useSettingsStore()
+
+  /**
+   * Tutar alanının binlik/ondalık ayracı Ayarlar → sayı biçiminden gelir
+   * (1,000.33 / 1.000,33 / 1 000,33 / 1'000.33). Eskiden boşluk+nokta sabitti;
+   * kullanıcı virgülle ondalık giren bir biçim seçse bile alan noktayla
+   * yazıyordu.
+   */
+  const separators = computed(() => getNumberSeparators({
+    numberFormat: settingsStore.numberFormat,
+    dateFormat: settingsStore.dateFormat,
+    hideDecimals: settingsStore.hideDecimals,
+    locale: settingsStore.locale,
+  }))
 
   const values = reactive<TrnFormValues>({
     amount: [0, 0, 0],
@@ -76,11 +92,11 @@ export const useTrnsFormStore = defineStore('trnForm', () => {
 
   function setAmountAt(idx: number, raw: string) {
     values.amount[idx] = evaluateExpression(raw)
-    values.amountRaw[idx] = formatInput(raw)
+    values.amountRaw[idx] = formatInput(raw, separators.value)
   }
 
   function syncAmountRawAt(idx: number) {
-    values.amountRaw[idx] = formatInput(values.amount[idx] ?? 0)
+    values.amountRaw[idx] = formatInput(values.amount[idx] ?? 0, separators.value)
   }
 
   const transferIncomeWalletId = computed<WalletId | undefined>(
@@ -100,6 +116,16 @@ export const useTrnsFormStore = defineStore('trnForm', () => {
     return expenseWallet.currency === incomeWallet.currency
   })
 
+  /**
+   * Ayar değişince GÖRÜNEN metin eski ayraçlarla kalmasın: sayısal değer
+   * (values.amount) doğruluk kaynağı, amountRaw ondan yeniden üretilir.
+   * Yapılmazsa "1 200" yazarken biçim dot_comma'ya çevrildiğinde metin eski
+   * boşluklu hâliyle kalır ve bir sonraki tuşta yanlış çözümlenir.
+   */
+  watch(separators, (seps) => {
+    values.amountRaw = values.amount.map(i => formatInput(i, seps)) as TrnFormValues['amountRaw']
+  })
+
   function onChangeAmount(amountRaw: string) {
     setAmountAt(activeAmountIdx.value, amountRaw)
   }
@@ -109,7 +135,7 @@ export const useTrnsFormStore = defineStore('trnForm', () => {
   }
 
   function onClickCalculator(key: CalculatorKey) {
-    const value = createExpressionString(key, values.amountRaw[activeAmountIdx.value] ?? '')
+    const value = createExpressionString(key, values.amountRaw[activeAmountIdx.value] ?? '', separators.value)
     if (values.trnType === TrnType.Transfer && isSameCurrencyTransfer.value)
       onChangeTransferAmountSynced(value)
     else
@@ -172,12 +198,12 @@ export const useTrnsFormStore = defineStore('trnForm', () => {
 
   function shouldShowSum() {
     if (values.trnType === TrnType.Transfer) {
-      const expense = values.amount[1] !== 0 && formatInput(values.amount[1]) !== values.amountRaw[1]
-      const income = values.amount[2] !== 0 && formatInput(values.amount[2]) !== values.amountRaw[2]
+      const expense = values.amount[1] !== 0 && formatInput(values.amount[1], separators.value) !== values.amountRaw[1]
+      const income = values.amount[2] !== 0 && formatInput(values.amount[2], separators.value) !== values.amountRaw[2]
       return expense || income
     }
     return (values.amount[0] !== 0 || values.amountRaw[0] !== '')
-      && formatInput(values.amount[0]) !== values.amountRaw[0]
+      && formatInput(values.amount[0], separators.value) !== values.amountRaw[0]
   }
 
   function onChangeTrnType(trnType: TrnType) {
@@ -249,7 +275,7 @@ export const useTrnsFormStore = defineStore('trnForm', () => {
         values.categoryId = 'transfer'
       }
 
-      values.amountRaw = values.amount.map(i => formatInput(i)) as TrnFormValues['amountRaw']
+      values.amountRaw = values.amount.map(i => formatInput(i, separators.value)) as TrnFormValues['amountRaw']
       values.trnType = props.trn.type
       values.desc = props.trn.desc
       values.date = props.trn.date
@@ -375,6 +401,7 @@ export const useTrnsFormStore = defineStore('trnForm', () => {
     onClose,
     onSubmit,
     onTransferWalletSelected,
+    separators,
     openFormForCreate,
     openFormForDuplicate,
     openFormForEdit,

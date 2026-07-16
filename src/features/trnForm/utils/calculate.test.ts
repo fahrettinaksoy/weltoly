@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { createExpressionString, evaluateExpression, formatInput } from './calculate'
+import { createExpressionString, evaluateExpression, formatAmountResult, formatInput, padDisplayCents } from './calculate'
 
 describe('evaluateExpression', () => {
   it('işlem önceliğini uygular', () => {
@@ -49,5 +49,86 @@ describe('createExpressionString', () => {
 describe('formatInput', () => {
   it('binlik ayraç ekler', () => {
     expect(formatInput('1234567')).toBe('1 234 567')
+  })
+
+  it('ondalık kısmı korur', () => {
+    expect(formatInput('1234.5')).toBe('1 234.5')
+  })
+
+  it('yerel ayraçları uygular (dot_comma: 1.234.567,8)', () => {
+    expect(formatInput('1234567.8', { group: '.', decimal: ',' })).toBe('1.234.567,8')
+  })
+
+  it('yerel ayraçları uygular (comma_dot: 1,234,567.8)', () => {
+    expect(formatInput('1234567.8', { group: ',', decimal: '.' })).toBe('1,234,567.8')
+  })
+})
+
+// Yerelleştirmenin ASIL tuzağı: binlik ayracı NOKTA olan biçimde (1.000,33)
+// görünen metin, kanonik ondalık noktasıyla karışabilir. Bu blok görünen→kanonik
+// dönüşümünü createExpressionString üzerinden kilitler (sanitizeInput dışa
+// açık değil; bu fonksiyon onu içeriden çağırıyor).
+describe('createExpressionString (yerel ayraçlar)', () => {
+  const dotComma = { group: '.', decimal: ',' }
+
+  it('nokta-binlikli görünene rakam eklemeyi doğru sürdürür', () => {
+    // Görünen "1.200" (bin iki yüz) + tuş "5" → kanonik "12005", "1.2005" DEĞİL.
+    expect(createExpressionString('5', '1.200', dotComma)).toBe('12005')
+  })
+
+  it('virgül ondalıklı görünene rakam ekler', () => {
+    // Görünen "2,5" + "0" → kanonik "2.50"
+    expect(createExpressionString('0', '2,5', dotComma)).toBe('2.50')
+  })
+
+  it('operatör sonrası kanonik ifade kurar', () => {
+    // Görünen "1.200,5 + 2,5"e "=" → kanonik "1203"
+    expect(createExpressionString('=', '1.200,5 + 2,5', dotComma)).toBe('1203')
+  })
+
+  it('comma_dot biçiminde binlik virgülü çözer', () => {
+    // Görünen "1,200" (bin iki yüz) + "=" → 1200
+    expect(createExpressionString('=', '1,200', { group: ',', decimal: '.' })).toBe('1200')
+  })
+})
+
+// "Her zaman xxxx,00" — kullanıcı kuruşa dokunmadıkça tam sayılar kuruşlu
+// gösterilir; ondalık ayracı varsa (kuruş giriliyorsa) olduğu gibi kalır.
+describe('padDisplayCents', () => {
+  const dc = { group: '.', decimal: ',' }
+
+  it('tam sayıyı ,00 ile gösterir', () => {
+    expect(padDisplayCents('3.272.460', dc)).toBe('3.272.460,00')
+  })
+
+  it('boş/sıfır → 0,00 (varsayılan)', () => {
+    expect(padDisplayCents('', dc)).toBe('0,00')
+    expect(padDisplayCents('0', dc)).toBe('0,00')
+  })
+
+  it('kullanıcı kuruş giriyorsa DOLDURMAZ (soldan sağa yazım korunur)', () => {
+    expect(padDisplayCents('3.272.460,', dc)).toBe('3.272.460,')
+    expect(padDisplayCents('3.272.460,3', dc)).toBe('3.272.460,3')
+    expect(padDisplayCents('3.272.460,37', dc)).toBe('3.272.460,37')
+  })
+
+  it('ifadede her operandı ayrı doldurur', () => {
+    expect(padDisplayCents('1.200 + 250', dc)).toBe('1.200,00 + 250,00')
+  })
+
+  it('comma_dot biçimi', () => {
+    expect(padDisplayCents('3,272,460', { group: ',', decimal: '.' })).toBe('3,272,460.00')
+  })
+})
+
+describe('formatAmountResult', () => {
+  const dc = { group: '.', decimal: ',' }
+
+  it('tam sonucu ,00 ile biçimler', () => {
+    expect(formatAmountResult(1450, dc)).toBe('1.450,00')
+  })
+
+  it('ondalık sonucu 2 haneye tamamlar', () => {
+    expect(formatAmountResult(1450.5, dc)).toBe('1.450,50')
   })
 })

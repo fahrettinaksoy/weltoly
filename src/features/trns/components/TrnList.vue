@@ -78,13 +78,13 @@ watch(
       elevation="0"
     >
       <v-expansion-panel-title>
-        <span class="text-body-small text-medium-emphasis text-uppercase">
+        <span class="text-caption text-medium-emphasis text-uppercase">
           {{ g.label === 'today' ? $t('trns.today') : g.label === 'yesterday' ? $t('trns.yesterday') : g.label }}
         </span>
         <v-spacer />
         <!-- Adet kapalıyken de görünür: paneli açmadan "o gün kaç hareket olmuş"
              sorusunu yanıtlar. me-2 → varsayılan açılma okuna yapışmasın. -->
-        <span class="text-body-small text-disabled me-2">{{ fmt.number(g.ids.length) }}</span>
+        <span class="text-caption text-disabled me-2">{{ fmt.number(g.ids.length) }}</span>
       </v-expansion-panel-title>
 
       <v-expansion-panel-text>

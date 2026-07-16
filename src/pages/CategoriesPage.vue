@@ -5,6 +5,7 @@ import { useCategoriesStore } from '@/features/categories/store'
 import { useTrnsStore } from '@/features/trns/store'
 import CategoryFormDialog from '@/features/categories/components/CategoryFormDialog.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import AppEmptyState from '@/components/AppEmptyState.vue'
 import { useAppBarAction } from '@/composables/useAppBarAction'
 import type { CategoryId } from '@/features/categories/types'
 
@@ -234,7 +235,7 @@ function onRowClick(_event: unknown, { item }: { item: CategoryRow }) {
           tooltip
         >
           <template #center>
-            <div class="text-body-medium font-weight-bold">{{ fmt.number(totalUsage) }}</div>
+            <div class="text-body-2 font-weight-bold">{{ fmt.number(totalUsage) }}</div>
           </template>
         </v-pie>
 
@@ -242,16 +243,16 @@ function onRowClick(_event: unknown, { item }: { item: CategoryRow }) {
           v-for="kpi in kpis"
           :key="kpi.key"
         >
-          <div class="text-headline-small font-weight-bold">{{ kpi.value }}</div>
-          <div class="text-body-small text-medium-emphasis">{{ kpi.label }}</div>
+          <div class="text-h5 font-weight-bold">{{ kpi.value }}</div>
+          <div class="text-caption text-medium-emphasis">{{ kpi.label }}</div>
         </div>
 
         <v-spacer />
 
         <div class="d-flex align-center ga-3">
-          <div class="text-body-small text-medium-emphasis">{{ t('categories.stats.usedRatio') }}</div>
+          <div class="text-caption text-medium-emphasis">{{ t('categories.stats.usedRatio') }}</div>
           <v-progress-circular :model-value="usedRatio" :size="48" :width="5" color="primary">
-            <span class="text-body-small font-weight-bold">%{{ Math.round(usedRatio) }}</span>
+            <span class="text-caption font-weight-bold">%{{ Math.round(usedRatio) }}</span>
           </v-progress-circular>
         </div>
       </v-sheet>
@@ -317,7 +318,7 @@ function onRowClick(_event: unknown, { item }: { item: CategoryRow }) {
 
         <!-- Açıklama: boşsa satırı kalabalıklaştırma, sönük tire koy -->
         <template #[`item.desc`]="{ item }">
-          <span v-if="item.desc" class="text-body-medium text-medium-emphasis">{{ item.desc }}</span>
+          <span v-if="item.desc" class="text-body-2 text-medium-emphasis">{{ item.desc }}</span>
           <span v-else class="text-disabled">—</span>
         </template>
 
@@ -331,13 +332,13 @@ function onRowClick(_event: unknown, { item }: { item: CategoryRow }) {
               rounded
               class="categories-share"
             />
-            <span class="text-body-medium font-weight-medium categories-usage-num">
+            <span class="text-body-2 font-weight-medium categories-usage-num">
               {{ fmt.number(item.usage) }}
             </span>
           </div>
           <div v-else class="d-flex align-center ga-2 justify-end text-disabled">
             <v-icon icon="mdi-circle-off-outline" size="16" />
-            <span class="text-body-small">{{ t('categories.unused') }}</span>
+            <span class="text-caption">{{ t('categories.unused') }}</span>
           </div>
         </template>
 
@@ -362,21 +363,21 @@ function onRowClick(_event: unknown, { item }: { item: CategoryRow }) {
         </template>
 
         <template #no-data>
-          <div class="text-center py-10">
-            <v-icon icon="mdi-shape-outline" size="48" class="mb-3 text-medium-emphasis" />
-            <div class="text-body-large">{{ t('categories.noResults') }}</div>
-          </div>
+          <AppEmptyState icon="mdi-shape-outline" :title="t('categories.noResults')" />
         </template>
       </v-data-table-virtual>
     </template>
 
     <!-- Boş durum -->
-    <v-card v-else variant="tonal" class="pa-8 text-center">
-      <v-icon icon="mdi-shape-plus-outline" size="56" class="mb-4 text-medium-emphasis" />
-      <div class="text-body-large mb-1">{{ t('categories.empty') }}</div>
-      <div class="text-body-medium text-medium-emphasis mb-4">{{ t('categories.emptyHint') }}</div>
-      <v-btn-primary prepend-icon="mdi-plus" @click="openNew">{{ t('categories.add') }}</v-btn-primary>
-    </v-card>
+    <AppEmptyState
+      v-else
+      icon="mdi-shape-plus-outline"
+      :title="t('categories.empty')"
+      :text="t('categories.emptyHint')"
+      :action-text="t('categories.add')"
+      action-icon="mdi-plus"
+      @action="openNew"
+    />
 
     <CategoryFormDialog v-model="showDialog" :category-id="editId" />
 

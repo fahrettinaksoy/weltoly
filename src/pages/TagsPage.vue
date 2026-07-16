@@ -5,6 +5,7 @@ import { useTagsStore } from '@/features/tags/store'
 import { useTrnsStore } from '@/features/trns/store'
 import TagFormDialog from '@/features/tags/components/TagFormDialog.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import AppEmptyState from '@/components/AppEmptyState.vue'
 import { useAppBarAction } from '@/composables/useAppBarAction'
 import type { TagId } from '@/features/tags/types'
 
@@ -148,7 +149,7 @@ const headers = computed(() => [
           tooltip
         >
           <template #center>
-            <div class="text-body-medium font-weight-bold">{{ fmt.number(totalUsage) }}</div>
+            <div class="text-body-2 font-weight-bold">{{ fmt.number(totalUsage) }}</div>
           </template>
         </v-pie>
 
@@ -156,17 +157,17 @@ const headers = computed(() => [
           v-for="kpi in kpis"
           :key="kpi.key"
         >
-          <div class="text-headline-small font-weight-bold">{{ kpi.value }}</div>
-          <div class="text-body-small text-medium-emphasis">{{ kpi.label }}</div>
+          <div class="text-h5 font-weight-bold">{{ kpi.value }}</div>
+          <div class="text-caption text-medium-emphasis">{{ kpi.label }}</div>
         </div>
 
         <v-spacer />
 
         <!-- Kullanım oranı: halka (sayaçların yanında çubuktan daha kompakt) -->
         <div class="d-flex align-center ga-3">
-          <div class="text-body-small text-medium-emphasis">{{ t('tags.stats.usedRatio') }}</div>
+          <div class="text-caption text-medium-emphasis">{{ t('tags.stats.usedRatio') }}</div>
           <v-progress-circular :model-value="usedRatio" :size="48" :width="5" color="primary">
-            <span class="text-body-small font-weight-bold">%{{ Math.round(usedRatio) }}</span>
+            <span class="text-caption font-weight-bold">%{{ Math.round(usedRatio) }}</span>
           </v-progress-circular>
         </div>
       </v-sheet>
@@ -207,7 +208,7 @@ const headers = computed(() => [
 
         <!-- Açıklama: boşsa satırı kalabalıklaştırma, sönük tire koy -->
         <template #[`item.desc`]="{ item }">
-          <span v-if="item.desc" class="text-body-medium text-medium-emphasis">{{ item.desc }}</span>
+          <span v-if="item.desc" class="text-body-2 text-medium-emphasis">{{ item.desc }}</span>
           <span v-else class="text-disabled">—</span>
         </template>
 
@@ -221,13 +222,13 @@ const headers = computed(() => [
               rounded
               class="tags-share"
             />
-            <span class="text-body-medium font-weight-medium tags-usage-num">
+            <span class="text-body-2 font-weight-medium tags-usage-num">
               {{ fmt.number(item.usage) }}
             </span>
           </div>
           <div v-else class="d-flex align-center ga-2 justify-end text-disabled">
             <v-icon icon="mdi-tag-off-outline" size="16" />
-            <span class="text-body-small">{{ t('tags.unused') }}</span>
+            <span class="text-caption">{{ t('tags.unused') }}</span>
           </div>
         </template>
 
@@ -253,21 +254,21 @@ const headers = computed(() => [
 
         <!-- Aramaya karşılık gelen etiket yok -->
         <template #no-data>
-          <div class="text-center py-10">
-            <v-icon icon="mdi-tag-search-outline" size="48" class="mb-3 text-medium-emphasis" />
-            <div class="text-body-large">{{ t('tags.noResults') }}</div>
-          </div>
+          <AppEmptyState icon="mdi-tag-search-outline" :title="t('tags.noResults')" />
         </template>
       </v-data-table-virtual>
     </template>
 
     <!-- Boş durum -->
-    <v-card v-else variant="tonal" class="pa-8 text-center">
-      <v-icon icon="mdi-tag-multiple-outline" size="56" class="mb-4 text-medium-emphasis" />
-      <div class="text-body-large mb-1">{{ t('tags.empty') }}</div>
-      <div class="text-body-medium text-medium-emphasis mb-4">{{ t('tags.emptyHint') }}</div>
-      <v-btn-primary prepend-icon="mdi-plus" @click="openNew">{{ t('tags.add') }}</v-btn-primary>
-    </v-card>
+    <AppEmptyState
+      v-else
+      icon="mdi-tag-multiple-outline"
+      :title="t('tags.empty')"
+      :text="t('tags.emptyHint')"
+      :action-text="t('tags.add')"
+      action-icon="mdi-plus"
+      @action="openNew"
+    />
 
     <TagFormDialog v-model="showDialog" :tag-id="editId" />
 

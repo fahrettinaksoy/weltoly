@@ -9,6 +9,7 @@ export const icons = {
     // Uygulama-özel semantik alias'lar (tek kaynak; değiştirmek için tek yer)
     navDashboard: 'mdi-view-dashboard-outline',
     navWallets: 'mdi-wallet-outline',
+    navTrns: 'mdi-swap-horizontal',
     navCategories: 'mdi-shape-outline',
     navTags: 'mdi-tag-multiple-outline',
     navStat: 'mdi-chart-box-outline',

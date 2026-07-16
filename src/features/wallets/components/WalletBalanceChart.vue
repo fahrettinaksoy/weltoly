@@ -5,6 +5,7 @@ import { format } from 'date-fns'
 import VChart from 'vue-echarts'
 
 import { TrnType, type TrnId, type TrnItem } from '@/features/trns/types'
+import AppEmptyState from '@/components/AppEmptyState.vue'
 
 const props = defineProps<{
   trns: { id: TrnId, trn: TrnItem }[]
@@ -102,9 +103,8 @@ const option = computed(() => {
 
 <template>
   <!-- Yükseklik zincirinin kopmaması için sarmalayıcı da %100 (aşağıdaki CSS). -->
-  <div v-if="!series.length" class="d-flex align-center justify-center ga-3 text-medium-emphasis balance-empty">
-    <v-icon icon="mdi-chart-line" size="32" />
-    <div class="text-body-medium">{{ t('walletDetail.noTrns') }}</div>
+  <div v-if="!series.length" class="d-flex align-center justify-center balance-empty">
+    <AppEmptyState density="compact" icon="mdi-chart-line" :title="t('walletDetail.noTrns')" />
   </div>
   <VChart v-else :option="option" autoresize class="balance-chart" />
 </template>

@@ -23,6 +23,13 @@ const routes: RouteRecordRaw[] = [
     meta: { navKey: 'wallets' },
   },
   {
+    // Cüzdandan bağımsız TÜM işlemler; her satırda hangi cüzdan olduğu ayrı sütunda.
+    path: '/trns',
+    name: 'trns',
+    component: () => import('@/pages/TransactionsPage.vue'),
+    meta: { navKey: 'trns' },
+  },
+  {
     path: '/categories',
     name: 'categories',
     component: () => import('@/pages/CategoriesPage.vue'),
