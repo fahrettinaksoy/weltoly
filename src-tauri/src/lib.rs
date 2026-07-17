@@ -1,6 +1,8 @@
 // Weltoly - Tauri arka uç girişi.
 // Yerel veri katmanı: tauri-plugin-sql (SQLite, bundled) + tauri-plugin-store.
 
+mod tx;
+
 use tauri_plugin_sql::{Migration, MigrationKind};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -36,9 +38,23 @@ pub fn run() {
             sql: include_str!("../migrations/005_wallet_icon.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 6,
+            description: "add user_settings.rateSource and rates.rateDate",
+            sql: include_str!("../migrations/006_rate_source.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 7,
+            description: "trns NOT NULL + CHECK constraints (type/amount/shape)",
+            sql: include_str!("../migrations/007_trns_constraints.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()
+        // Y-3: çok-adımlı yazma (mutasyon + outbox) tek transaction'da.
+        .invoke_handler(tauri::generate_handler![tx::run_tx])
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_http::init())

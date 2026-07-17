@@ -13,6 +13,8 @@ import { useTrnsFormStore } from '@/features/trnForm/store'
 import { applyTrnFilters, emptyTrnFilters, hasAnyTrnFilter } from '@/features/trns/lib/trnFilters'
 import { KIND_META, trnKind, trnKindLabelKey } from '@/features/trns/lib/trnKind'
 import { signedAmount as signedAmountFor } from '@/features/wallets/lib/balanceSeries'
+import { keyboardRowProps } from '@/shared/lib/rowA11y'
+import { ariaSort } from '@/shared/lib/sortA11y'
 
 /**
  * Cüzdanın İŞLEMLER sekmesi: süzgeçli sanal tablo (Y-7).
@@ -152,9 +154,21 @@ const trnHeaders = computed(() => [
   { title: t('trnForm.amount'), key: 'amount', align: 'end', sortable: true, width: 170, nowrap: true },
 ] as const)
 
-function onRowClick(_e: unknown, { item }: { item: TrnRow }) {
+function openTrn(item: TrnRow) {
   trnForm.openFormForEdit(item.id)
 }
+
+function onRowClick(_e: unknown, { item }: { item: TrnRow }) {
+  openTrn(item)
+}
+
+/**
+ * Satırı klavyeye açar (A-4). Bu tabloda satır tıklaması işlemi düzenlemenin
+ * TEK yolu — Cüzdanlar/Kategoriler/Etiketler'deki gibi satır içi kalem butonu
+ * yok. `@click:row` fare olayı olduğu için klavye kullanıcısı hiçbir işlemi
+ * düzenleyemiyordu.
+ */
+const rowProps = keyboardRowProps(openTrn)
 </script>
 
 <template>
@@ -168,13 +182,14 @@ function onRowClick(_e: unknown, { item }: { item: TrnRow }) {
       fixed-header
       class="bg-transparent wallet-trns"
       :sort-by="[{ key: 'date', order: 'desc' }]"
+      :row-props="rowProps"
       @click:row="onRowClick"
     >
       <!-- #headers slot'u varsayılan başlık satırının YERİNE geçer; bu yüzden
            ilk satır burada elle çizilir. Sıralama slot'tan gelen toggleSort/
            isSorted/getSortIcon ile korunur — kendi sıralamamı yazmıyorum.
            İkinci satır süzgeçler: her girdi kendi kolonunun altında. -->
-      <template #headers="{ columns, toggleSort, isSorted, getSortIcon }">
+      <template #headers="{ columns, toggleSort, isSorted, getSortIcon, sortBy }">
         <tr>
           <th
             v-for="column in columns"
@@ -185,7 +200,11 @@ function onRowClick(_e: unknown, { item }: { item: TrnRow }) {
               `v-data-table-column--align-${column.align ?? 'start'}`,
             ]"
             :style="{ width: column.width ? `${column.width}px` : undefined }"
+            :aria-sort="ariaSort(column.key, column.sortable, sortBy)"
+            :tabindex="column.sortable ? 0 : undefined"
             @click="column.sortable && toggleSort(column)"
+            @keydown.enter.prevent="column.sortable && toggleSort(column)"
+            @keydown.space.prevent="column.sortable && toggleSort(column)"
           >
             <div class="v-data-table-header__content">
               <span>{{ column.title }}</span>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Tarih_Date Tarih="16.07.2026" Date="07/16/2026" Bulten_No="2026/130">
+	<Currency CrossOrder="0" Kod="USD" CurrencyCode="USD">
+		<Unit>1</Unit>
+		<Isim>ABD DOLARI</Isim>
+		<CurrencyName>US DOLLAR</CurrencyName>
+		<ForexBuying>46.9670</ForexBuying>
+		<ForexSelling>47.0517</ForexSelling>
+	</Currency>
+	<Currency CrossOrder="9" Kod="EUR" CurrencyCode="EUR">
+		<Unit>1</Unit>
+		<Isim>EURO</Isim>
+		<CurrencyName>EURO</CurrencyName>
+		<ForexBuying>53.8544</ForexBuying>
+		<ForexSelling>53.9514</ForexSelling>
+	</Currency>
+	<Currency CrossOrder="10" Kod="GBP" CurrencyCode="GBP">
+		<Unit>1</Unit>
+		<Isim>İNGİLİZ STERLİNİ</Isim>
+		<CurrencyName>POUND STERLING</CurrencyName>
+		<ForexBuying>63.3863</ForexBuying>
+		<ForexSelling>63.7168</ForexSelling>
+	</Currency>
+	<Currency CrossOrder="5" Kod="JPY" CurrencyCode="JPY">
+		<Unit>100</Unit>
+		<Isim>JAPON YENİ</Isim>
+		<CurrencyName>JAPENESE YEN</CurrencyName>
+		<ForexBuying>28.8977</ForexBuying>
+		<ForexSelling>29.0890</ForexSelling>
+	</Currency>
+	<Currency CrossOrder="99" Kod="XDR" CurrencyCode="XDR">
+		<Unit>1</Unit>
+		<ForexBuying></ForexBuying>
+		<ForexSelling></ForexSelling>
+	</Currency>
+</Tarih_Date>

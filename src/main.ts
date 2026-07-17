@@ -6,8 +6,15 @@ import App from './App.vue'
 import { i18n } from './plugins/i18n'
 import { vuetify } from './plugins/vuetify'
 import { router } from './router'
-import './plugins/echarts' // ECharts modül kaydı
 import './assets/app.css'
+
+// NOT: ECharts modül kaydı BİLİNÇLİ OLARAK burada DEĞİL.
+// Buradan import edilirse tüm ECharts (core + Bar/Line/Pie + Grid/Tooltip/
+// Legend/MarkLine + zrender) ana bundle'a girer; rotalar lazy olsa bile Panel'e
+// giren kullanıcı hiç grafik görmeden ~1 MB'ı indirmiş olur. Kayıt artık
+// grafiği gerçekten çizen iki bileşende (StatChart, WalletBalanceChart) —
+// ECharts onların lazy chunk'ına düşer. Modül ESM tekil olduğu için iki
+// bileşen de import etse `use([...])` bir kez çalışır.
 
 const app = createApp(App)
 

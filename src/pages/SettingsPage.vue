@@ -11,6 +11,7 @@ import SectionCard from '@/components/SectionCard.vue'
 import PinPad from '@/features/auth/PinPad.vue'
 import SetPinDialog from '@/features/auth/SetPinDialog.vue'
 import { useLockStore } from '@/features/auth/useLockStore'
+import RatesPanel from '@/features/currencies/components/RatesPanel.vue'
 import { allCurrencies } from '@/features/currencies/list'
 import { clearAllData, seedDemoData } from '@/features/demo/seed'
 import { MAX_RADIUS, MIN_RADIUS, neutralKeys, neutralPalettes, primaryPalette } from '@/features/theme/palette'
@@ -32,6 +33,7 @@ const tabItems = computed(() => [
   { value: 'appearance', icon: 'mdi-palette-outline', label: t('settings.appearance'), desc: t('settings.tabDesc.appearance') },
   { value: 'profile', icon: 'mdi-account-outline', label: t('settings.profile'), desc: t('settings.tabDesc.profile') },
   { value: 'localization', icon: 'mdi-translate', label: t('settings.localization'), desc: t('settings.tabDesc.localization') },
+  { value: 'rates', icon: 'mdi-swap-horizontal-bold', label: t('settings.tabRates'), desc: t('settings.tabDesc.rates') },
   { value: 'data', icon: 'mdi-database-outline', label: t('settings.data'), desc: t('settings.tabDesc.data') },
 ])
 
@@ -331,6 +333,12 @@ async function onClearData() {
           </v-tabs-window-item>
 
           <!-- Veri / Yedekleme -->
+          <!-- Kurlar: kaynak seçimi + güncellik. Ayrı bileşende — bu sayfa
+               zaten 450+ satır ve kur ekranı kendi başına bir özellik. -->
+          <v-tabs-window-item value="rates">
+            <RatesPanel />
+          </v-tabs-window-item>
+
           <v-tabs-window-item value="data">
             <SectionCard
               :title="t('settings.groupData')"

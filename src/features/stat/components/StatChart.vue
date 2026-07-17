@@ -3,9 +3,12 @@ import type { Period } from '@/features/date/types'
 import type { ChartInterval } from '@/features/stat/store'
 import { format } from 'date-fns'
 import VChart from 'vue-echarts'
-
 import { useI18n } from 'vue-i18n'
+
 import { useTheme } from 'vuetify'
+// ECharts modül kaydı (use([...])). Burada import edilir ki ECharts bu
+// bileşenin lazy chunk'ına düşsün — main.ts'ten alınırsa ana bundle'a girer.
+import '@/plugins/echarts'
 
 const props = defineProps<{ series: ChartInterval[], period: Period }>()
 

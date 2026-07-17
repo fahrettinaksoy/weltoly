@@ -1,5 +1,6 @@
 import type { Transaction, Transfer, TrnFormValues } from '@/features/trns/types'
 
+import { TRANSFER_ID } from '@/features/categories/pseudoCategories'
 import { TrnType } from '@/features/trns/types'
 
 function formatTransaction(props: TrnFormValues): Transaction | false {
@@ -29,7 +30,7 @@ function formatTransfer(props: TrnFormValues): Transfer | false {
     return false
 
   const data: Transfer = {
-    categoryId: 'transfer' as const,
+    categoryId: TRANSFER_ID,
     // `|| Date.now()` ŞART (O-9): formatTransaction ile AYNI davranış. Yoksa
     // date 0/undefined geldiğinde transfer sessizce 1970'e düşerdi — aynı formun
     // iki dalı iki farklı kurala uyuyordu.

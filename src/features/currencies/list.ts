@@ -1,5 +1,7 @@
 // Tam ISO 4217 para birimi listesi (+ yaygın kripto). Cüzdan para birimi seçici için.
 
+import { cryptoCurrencyOptions } from '@/features/currencies/crypto'
+
 export interface CurrencyInfo { code: string, name: string }
 
 export const allCurrencies: CurrencyInfo[] = [
@@ -153,16 +155,9 @@ export const allCurrencies: CurrencyInfo[] = [
   { code: 'ERN', name: 'Eritrean Nakfa' },
   { code: 'MVR', name: 'Maldivian Rufiyaa' },
   { code: 'BTN', name: 'Bhutanese Ngultrum' },
-  { code: 'BTC', name: 'Bitcoin' },
-  { code: 'ETH', name: 'Ethereum' },
-  { code: 'USDT', name: 'Tether' },
-  { code: 'BNB', name: 'BNB' },
-  { code: 'XRP', name: 'XRP' },
-  { code: 'SOL', name: 'Solana' },
-  { code: 'ADA', name: 'Cardano' },
-  { code: 'DOGE', name: 'Dogecoin' },
-  { code: 'TON', name: 'Toncoin' },
-  { code: 'LTC', name: 'Litecoin' },
+  // Kripto TEK KAYNAKTAN türetilir (crypto.ts): burada elle tekrarlanırsa
+  // fiyat çekilen liste ile seçilebilen liste sessizce ayrışır.
+  ...cryptoCurrencyOptions,
 ]
 
 // Hızlı erişim için sık kullanılanlar (üstte gösterilir).

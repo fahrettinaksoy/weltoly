@@ -5,13 +5,14 @@ import type { StatType } from '@/features/stat/store'
 import { format } from 'date-fns'
 import { useI18n } from 'vue-i18n'
 import AppEmptyState from '@/components/AppEmptyState.vue'
+import KpiCard from '@/components/KpiCard.vue'
 import SectionCard from '@/components/SectionCard.vue'
 import { useFormat } from '@/composables/useFormat'
 import { useCategoriesStore } from '@/features/categories/store'
 import { useCurrenciesStore } from '@/features/currencies/store'
 import CategoryBreakdown from '@/features/stat/components/CategoryBreakdown.vue'
 import StatChart from '@/features/stat/components/StatChart.vue'
-import { changeRatio, deltaTone } from '@/features/stat/lib/periodCompare'
+import { changeRatio } from '@/features/stat/lib/periodCompare'
 import { useStatStore } from '@/features/stat/store'
 import { useTagsStore } from '@/features/tags/store'
 import { useWalletsStore } from '@/features/wallets/store'
@@ -106,31 +107,18 @@ const tagFilterLabel = computed(() => {
       <div class="flex-1-1 stat-main">
         <!-- Sayaçlar -->
         <div class="d-flex ga-3 mb-4 flex-wrap">
-          <v-sheet
+          <KpiCard
             v-for="card in factCards"
             :key="card.key"
-            color="surface-light"
-            class="pa-4 flex-1-1 stat-kpi"
-          >
-            <div class="d-flex align-center ga-2">
-              <div class="text-h5 font-weight-bold text-truncate" :class="card.tone">
-                {{ card.money ? fmt.money(card.value, currenciesStore.base) : fmt.number(card.value) }}
-              </div>
-              <v-chip
-                v-if="card.delta !== null"
-                :color="deltaTone(card.delta, card.positiveIsGood)"
-                :prepend-icon="card.delta >= 0 ? 'mdi-arrow-up' : 'mdi-arrow-down'"
-                size="x-small"
-                variant="tonal"
-                :title="t('stat.vsPrevRange')"
-              >
-                {{ fmt.percent(Math.abs(card.delta)) }}
-              </v-chip>
-            </div>
-            <div class="text-caption text-medium-emphasis">
-              {{ card.label }}
-            </div>
-          </v-sheet>
+            :value="card.value"
+            :money="card.money"
+            :currency="currenciesStore.base"
+            :tone="card.tone"
+            :delta="card.delta"
+            :positive-is-good="card.positiveIsGood"
+            :label="card.label"
+            :delta-title="t('stat.vsPrevRange')"
+          />
         </div>
 
         <!-- Seyir grafiği -->
@@ -338,10 +326,6 @@ const tagFilterLabel = computed(() => {
 }
 
 /* Sayaçlar dar ekranda ikişerli sarsın; dörde bölünce rakamlar okunmuyordu. */
-.stat-kpi {
-  min-width: 150px;
-}
-
 .stat-tagbars {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));

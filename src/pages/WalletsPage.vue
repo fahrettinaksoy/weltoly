@@ -6,11 +6,13 @@ import { useRouter } from 'vue-router'
 import AppEmptyState from '@/components/AppEmptyState.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { useAppBarAction } from '@/composables/useAppBarAction'
+import { ADJUSTMENT_ID } from '@/features/categories/pseudoCategories'
 import { useCurrenciesStore } from '@/features/currencies/store'
 import { useTrnsStore } from '@/features/trns/store'
 import { TrnType } from '@/features/trns/types'
 import { useUserStore } from '@/features/user/store'
 import WalletFormDialog from '@/features/wallets/components/WalletFormDialog.vue'
+import { toBaseAmount } from '@/features/wallets/lib/baseAmount'
 import { useWalletsStore } from '@/features/wallets/store'
 import { walletIdsOfTrn } from '@/features/wallets/trnLink'
 import { walletIcon } from '@/features/wallets/walletMeta'
@@ -64,16 +66,22 @@ interface WalletRow {
   currency: string
   /** Cüzdanın kendi para birimindeki bakiye (ekranda bu gösterilir). */
   amount: number
-  /** Temel para birimine çevrilmiş karşılığı — sıralama ve toplamlar bunu kullanır. */
-  base: number
-  /** Toplam varlık içindeki pay (%). Negatif bakiyelerde 0. */
+  /**
+   * Temel para birimine çevrilmiş karşılığı — sıralama, pay ve pasta bunu kullanır.
+   * null = kur eksik, karşılık BİLİNMİYOR (Y-1: uydurma 1:1 yok).
+   */
+  base: number | null
+  /** Toplam varlık içindeki pay (%). Negatif bakiyede ve kur eksikken 0. */
   share: number
   /** Gelir/gider toplamı, cüzdanın kendi para biriminde (ekranda bu görünür). */
   income: number
   expense: number
-  /** Temel para birimi karşılıkları — SIRALAMA bunları kullanır. */
-  incomeBase: number
-  expenseBase: number
+  /**
+   * Temel para birimi karşılıkları — SIRALAMA bunları kullanır.
+   * null = kur eksik, karşılık bilinmiyor (Y-1: uydurma 1:1 yok).
+   */
+  incomeBase: number | null
+  expenseBase: number | null
   /** Bu cüzdanı ilgilendiren TÜM işlem adedi (transfer + düzeltme dahil). */
   trnCount: number
   withdrawal: boolean
@@ -95,7 +103,7 @@ const flowsByWallet = computed(() => {
     return map
   for (const trnId in trns) {
     const trn = trns[trnId]!
-    if (trn.type === TrnType.Transfer || trn.categoryId === 'adjustment')
+    if (trn.type === TrnType.Transfer || trn.categoryId === ADJUSTMENT_ID)
       continue
     const entry = map.get(trn.walletId) ?? { income: 0, expense: 0 }
     if (trn.type === TrnType.Income)
@@ -128,7 +136,9 @@ const baseRows = computed(() => walletsStore.sortedIds.flatMap((id) => {
   const w = walletsStore.itemsComputed[id]
   if (!w)
     return []
-  const rate = w.rate ?? 1
+  // Kur eksikse base karşılığı YOK (toBaseAmount null döner) — pay çubuğu ve
+  // pasta onu atlar, store.totals da net'e katmıyor. Kural tek kaynakta.
+  const toBase = (v: number) => toBaseAmount(v, w.rate)
   const flow = flowsByWallet.value.get(id) ?? { income: 0, expense: 0 }
   return [{
     id,
@@ -139,11 +149,11 @@ const baseRows = computed(() => walletsStore.sortedIds.flatMap((id) => {
     desc: w.desc,
     currency: w.currency,
     amount: w.amount,
-    base: w.amount * rate,
+    base: toBase(w.amount),
     income: flow.income,
     expense: flow.expense,
-    incomeBase: flow.income * rate,
-    expenseBase: flow.expense * rate,
+    incomeBase: toBase(flow.income),
+    expenseBase: toBase(flow.expense),
     trnCount: trnCountByWallet.value.get(id) ?? 0,
     withdrawal: w.isWithdrawal,
     excluded: w.isExcludeInTotal,
@@ -161,7 +171,7 @@ const debtRatio = computed(() => walletsStore.debtRatio)
 
 const rows = computed<WalletRow[]>(() => baseRows.value.map(r => ({
   ...r,
-  share: r.base > 0 && totals.value.assets ? (r.base / totals.value.assets) * 100 : 0,
+  share: r.base != null && r.base > 0 && totals.value.assets ? (r.base / totals.value.assets) * 100 : 0,
 })))
 
 /** Özet sayaçları: cüzdanlarda anlamlı olan para, adet değil. */
@@ -180,8 +190,10 @@ const PIE_LIMIT = 6
  * Borç, yandaki sayaçta ve borç oranı halkasında okunur.
  */
 const pieItems = computed(() => {
+  // Kuru olmayan cüzdan pastaya giremez: dilim büyüklüğü base karşılığıdır,
+  // bilinmiyorsa çizmek uydurmak olur (store.totals da onu net'e katmıyor).
   const assets = rows.value
-    .filter(r => !r.excluded && r.base > 0)
+    .filter((r): r is typeof r & { base: number } => !r.excluded && r.base != null && r.base > 0)
     .toSorted((a, b) => b.base - a.base)
 
   const items = assets.slice(0, PIE_LIMIT).map(r => ({
@@ -280,7 +292,17 @@ function onRowClick(_event: unknown, { item }: { item: WalletRow }) {
 
 <template>
   <div class="wallets-page pa-4">
-    <template v-if="walletsStore.hasItems">
+    <!-- Yükleniyor: boş durumdan ÖNCE. Store'lar items=null ile başlıyor ve ilk
+         SQLite turu dönene kadar öyle kalıyor; bu null "kayıt yok" sanılıp
+         yükleme sırasında "henüz cüzdan yok + Ekle" gösteriliyordu. `isLoaded`
+         dört store'da vardı ama hiçbir bileşende okunmuyordu. -->
+    <v-skeleton-loader
+      v-if="!walletsStore.isLoaded"
+      type="heading, table-heading, list-item-two-line@6"
+      class="bg-transparent"
+    />
+
+    <template v-else-if="walletsStore.hasItems">
       <!-- Özet şeridi: tek satır. Asıl içerik tablo — özet ekranı yemesin.
            Donutun legend'i yok: tablo zaten renk rozeti + pay çubuğu gösteriyor. -->
       <v-sheet color="surface-light" class="d-flex align-center ga-6 pa-4 mb-3 flex-wrap flex-0-0">

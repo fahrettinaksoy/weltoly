@@ -56,7 +56,7 @@ function onAdd() {
 <template>
   <!-- Masaüstü: yan gezinme rayı (ikon) -->
   <v-navigation-drawer v-if="!mobile" rail permanent>
-    <v-list nav aria-label="Ana menü">
+    <v-list nav :aria-label="t('a11y.mainNav')">
       <v-list-item
         v-for="item in navItems"
         :key="item.key"

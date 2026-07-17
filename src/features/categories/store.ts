@@ -5,12 +5,14 @@ import type { TrnId } from '@/features/trns/types'
 import type { Row, WatchHandle } from '@/services/db'
 import { defineStore } from 'pinia'
 
+import { ADJUSTMENT_ID, isPseudoCategoryId, TRANSFER_ID } from '@/features/categories/pseudoCategories'
 import { compareCategoryIds, computeChildrenDiff, getTransactibleCategoriesIds } from '@/features/categories/utils'
 import { useTrnsStore } from '@/features/trns/store'
 import { TrnType } from '@/features/trns/types'
 import {
   categoryToRow,
-  deleteRow,
+  deleteRows,
+  isTauriRuntime,
   resolveWriteUid,
   rowToCategory,
   upsertRows,
@@ -44,7 +46,15 @@ export const useCategoriesStore = defineStore('categories', () => {
   const hasItems = computed(() =>
     Object.keys(items.value).some(id => id !== 'transfer' && id !== 'adjustment'),
   )
-  const isLoaded = ref(false)
+  /**
+   * İlk DB okuması döndü mü? UI bunu "veri yok" ile karıştırmamak için okur:
+   * yüklenirken skeleton, yüklendikten sonra veri ya da dürüst boş durum.
+   *
+   * Başlangıç `!isTauriRuntime()`: saf tarayıcıda (npm run dev) SQLite yoktur,
+   * store hiç init edilmez → yükleme baştan bitmiştir. `false` bırakılsaydı
+   * tarayıcıda skeleton SONSUZA DEK dönerdi.
+   */
+  const isLoaded = ref(!isTauriRuntime())
 
   let watchController: WatchHandle | null = null
 
@@ -116,7 +126,7 @@ export const useCategoriesStore = defineStore('categories', () => {
     const latestDateByCategory = new Map<CategoryId, number>()
     for (const trnId in trnsItems) {
       const trn = trnsItems[trnId]
-      if (!trn || trn.type === TrnType.Transfer || trn.categoryId === 'adjustment')
+      if (!trn || trn.type === TrnType.Transfer || trn.categoryId === ADJUSTMENT_ID)
         continue
       const categoryId = trn.categoryId
       const existing = latestDateByCategory.get(categoryId)
@@ -130,7 +140,7 @@ export const useCategoriesStore = defineStore('categories', () => {
       if (recentIds.length >= maxCategories)
         break
       const category = items.value[categoryId]
-      if (!category || !category.showInLastUsed || categoryId === 'transfer' || favoriteIds.has(categoryId))
+      if (!category || !category.showInLastUsed || categoryId === TRANSFER_ID || favoriteIds.has(categoryId))
         continue
       recentIds.push(categoryId)
     }
@@ -228,7 +238,8 @@ export const useCategoriesStore = defineStore('categories', () => {
   }
 
   function saveCategory({ id, isUpdateChildCategoriesColor, nextChildIds, values }: AddCategoryParams) {
-    if (id === 'transfer' || id === 'adjustment')
+    // Sentetik kategoriler kullanıcı verisi değil; kaydedilemez/silinemez.
+    if (isPseudoCategoryId(id))
       return
 
     const prev = items.value
@@ -289,7 +300,7 @@ export const useCategoriesStore = defineStore('categories', () => {
 
   /** Kategoriyi ve ona bağlı işlemleri siler; sonucu merkezî kuyrukta bildirir. */
   function deleteCategory(id: CategoryId, trnsIds: TrnId[] = referencingTrnIds(id)) {
-    if (id === 'transfer' || id === 'adjustment')
+    if (isPseudoCategoryId(id))
       return
 
     const prevCategories = items.value
@@ -301,12 +312,12 @@ export const useCategoriesStore = defineStore('categories', () => {
     if (trnsIds.length)
       trnsStore.removeTrnsFromStore(trnsIds)
 
-    const writes: Promise<void>[] = [deleteRow('categories', id)]
-    if (trnsIds.length) {
-      for (const trnId of trnsIds) writes.push(deleteRow('trns', trnId))
-    }
-
-    return Promise.all(writes).then(() => {
+    // TEK transaction: kategori + işlemleri ya hep ya hiç (bkz. deleteRows).
+    // İşlemler kategoriden ÖNCE — FK açıldığında bu sıra şart olacak.
+    return deleteRows([
+      ...trnsIds.map(trnId => ({ table: 'trns', id: trnId })),
+      { table: 'categories', id },
+    ]).then(() => {
       showSuccessToast('categories.deleted')
     }).catch((e) => {
       setCategories(prevCategories)

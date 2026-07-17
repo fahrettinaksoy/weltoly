@@ -3,11 +3,11 @@ export { emitTableChange, onTableChange } from './bus'
 export { getDb, isTauriRuntime, resolveWriteUid } from './client'
 export {
   deleteRow,
-  deleteTrnsReferencing,
+  deleteRows,
+  type RowRef,
   upsertRow,
   upsertRows,
 } from './mutations'
-export { type OutboxOp, recordOutbox } from './outbox'
 export {
   categoryToRow,
   type Row,

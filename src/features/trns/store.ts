@@ -15,6 +15,7 @@ import { TrnType } from '@/features/trns/types'
 import { useWalletsStore } from '@/features/wallets/store'
 import {
   deleteRow,
+  isTauriRuntime,
   resolveWriteUid,
   trnToRow,
   upsertRow,
@@ -30,7 +31,15 @@ export const useTrnsStore = defineStore('trns', () => {
   const walletsStore = useWalletsStore()
 
   const items = shallowRef<Trns | null>(null)
-  const isLoaded = ref(false)
+  /**
+   * İlk DB okuması döndü mü? UI bunu "veri yok" ile karıştırmamak için okur:
+   * yüklenirken skeleton, yüklendikten sonra veri ya da dürüst boş durum.
+   *
+   * Başlangıç `!isTauriRuntime()`: saf tarayıcıda (npm run dev) SQLite yoktur,
+   * store hiç init edilmez → yükleme baştan bitmiştir. `false` bırakılsaydı
+   * tarayıcıda skeleton SONSUZA DEK dönerdi.
+   */
+  const isLoaded = ref(!isTauriRuntime())
 
   let watchController: WatchHandle | null = null
 

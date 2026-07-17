@@ -14,6 +14,7 @@ import { changeRatio, deltaTone } from '@/features/stat/lib/periodCompare'
 import { useTagsStore } from '@/features/tags/store'
 import { TrnType } from '@/features/trns/types'
 import WalletBalanceChart from '@/features/wallets/components/WalletBalanceChart.vue'
+import { toBaseAmount } from '@/features/wallets/lib/baseAmount'
 import { buildTagBreakdown, UNTAGGED_KEY } from '@/features/wallets/lib/tagBreakdown'
 
 /**
@@ -112,12 +113,20 @@ const factCards = computed(() => {
   ]
 })
 
-/** Temel para birimi karşılığı — cüzdan farklı bir birimdeyse gösterilir. */
+/**
+ * Temel para birimi karşılığı — cüzdan farklı bir birimdeyse gösterilir.
+ * null = gösterme (aynı birim YA DA kur eksik).
+ *
+ * Kur eksikken `?? 1` ile 1:1 varsaymak Y-1 politikasını deliyordu: 3,15 ETH
+ * "≈ 3,15 $" diye yazılıyordu. Üstelik Panel'deki net varlık o cüzdanı zaten
+ * hariç tutuyor → aynı veri iki ekranda çelişiyordu. Kur yoksa uydurma yok,
+ * satır hiç çizilmez.
+ */
 const baseEquivalent = computed(() => {
   const w = props.wallet
   if (!w || w.currency === currenciesStore.base)
     return null
-  return w.amount * (w.rate ?? 1)
+  return toBaseAmount(w.amount, w.rate) // kur eksikse null → satır çizilmez
 })
 
 // --- Kredi kartı limiti -------------------------------------------------

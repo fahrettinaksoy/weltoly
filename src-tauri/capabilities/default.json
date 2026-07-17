@@ -2,7 +2,9 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
     "opener:default",
@@ -16,24 +18,46 @@
     {
       "identifier": "fs:allow-write-text-file",
       "allow": [
-        { "path": "$DOCUMENT/**" },
-        { "path": "$DOWNLOAD/**" },
-        { "path": "$DESKTOP/**" }
+        {
+          "path": "$DOCUMENT/**"
+        },
+        {
+          "path": "$DOWNLOAD/**"
+        },
+        {
+          "path": "$DESKTOP/**"
+        }
       ]
     },
     {
       "identifier": "fs:allow-read-text-file",
       "allow": [
-        { "path": "$DOCUMENT/**" },
-        { "path": "$DOWNLOAD/**" },
-        { "path": "$DESKTOP/**" }
+        {
+          "path": "$DOCUMENT/**"
+        },
+        {
+          "path": "$DOWNLOAD/**"
+        },
+        {
+          "path": "$DESKTOP/**"
+        }
       ]
     },
     {
       "identifier": "http:default",
       "allow": [
-        { "url": "https://open.er-api.com/" },
-        { "url": "https://api.coingecko.com/" }
+        {
+          "url": "https://open.er-api.com/"
+        },
+        {
+          "url": "https://api.coingecko.com/"
+        },
+        {
+          "url": "https://api.frankfurter.dev/"
+        },
+        {
+          "url": "https://www.tcmb.gov.tr/"
+        }
       ]
     }
   ]

@@ -1,9 +1,14 @@
+import type { RateSourceKey } from '@/features/currencies/sources'
 import type { Rates } from '@/features/currencies/types'
+import type { ParsedRates } from '@/services/rates/sources/parse'
 import { fetch } from '@tauri-apps/plugin-http'
 
 import { format } from 'date-fns'
+import { CRYPTO_IDS } from '@/features/currencies/crypto'
+import { DEFAULT_RATE_SOURCE, isRateSourceKey } from '@/features/currencies/sources'
 import { sanitizeRates } from '@/features/currencies/types'
 import { getDb, isTauriRuntime, upsertRow } from '@/services/db'
+import { domXmlParse, parseErApi, parseFrankfurter, parseTcmb } from '@/services/rates/sources/parse'
 
 // Uzak API asılırsa sonsuz beklememek için üst sınır.
 const FETCH_TIMEOUT_MS = 10_000
@@ -20,38 +25,76 @@ async function fetchWithTimeout(url: string): Promise<Response> {
   }
 }
 
-// Fiat: ücretsiz, anahtarsız (USD tabanlı). rates[code] = 1 USD kaç birim.
-const FIAT_URL = 'https://open.er-api.com/v6/latest/USD'
+/**
+ * FİAT kaynakları: url + saf ayrıştırıcı. Üçü de anahtarsız.
+ * Hepsi aynı sözleşmeye normalize eder: rates[KOD] = 1 USD kaç birim KOD.
+ * Yeni kaynak eklerken capabilities/default.json http allow-list'i de güncelle —
+ * yoksa istek SESSİZCE başarısız olur.
+ */
+const FIAT_SOURCES: Record<RateSourceKey, { url: string, parse: (text: string) => ParsedRates }> = {
+  'frankfurter': {
+    url: 'https://api.frankfurter.dev/v1/latest?base=USD',
+    parse: parseFrankfurter,
+  },
+  'tcmb': {
+    url: 'https://www.tcmb.gov.tr/kurlar/today.xml',
+    parse: text => parseTcmb(text, domXmlParse),
+  },
+  'open-er-api': {
+    url: 'https://open.er-api.com/v6/latest/USD',
+    parse: parseErApi,
+  },
+}
 
 // Kripto: CoinGecko simple price (USD). rates[CODE] = 1/price (getAmountInRate ile uyumlu).
-const CRYPTO_IDS: Record<string, string> = {
-  BTC: 'bitcoin',
-  ETH: 'ethereum',
-  USDT: 'tether',
-  BNB: 'binancecoin',
-  XRP: 'ripple',
-  SOL: 'solana',
-  ADA: 'cardano',
-  DOGE: 'dogecoin',
-  TON: 'the-open-network',
-  LTC: 'litecoin',
-}
 const CRYPTO_URL = `https://api.coingecko.com/api/v3/simple/price?ids=${Object.values(CRYPTO_IDS).join(',')}&vs_currencies=usd`
 
-async function fetchFiat(): Promise<Rates | null> {
+/**
+ * Seçili kaynaktan fiat kurları. Ayrıştırma SAF (sources/parse.ts, testli);
+ * burada yalnız ağ + hata yüzeyi var.
+ *
+ * `res.text()` kullanılır, `res.json()` DEĞİL: TCMB XML döner. Her ayrıştırıcı
+ * kendi biçimini bilir.
+ */
+async function fetchFiat(source: RateSourceKey): Promise<ParsedRates | null> {
+  const { url, parse } = FIAT_SOURCES[source]
   try {
-    const res = await fetchWithTimeout(FIAT_URL)
-    if (!res.ok)
+    const res = await fetchWithTimeout(url)
+    if (!res.ok) {
+      console.warn(`[rates] fiat çekilemedi (${source}) — HTTP ${res.status}`)
       return null
-    const data = await res.json() as { result?: string, rates?: unknown }
-    if (data.result !== 'success')
+    }
+    const out = parse(await res.text())
+    if (!Object.keys(out.rates).length) {
+      console.warn(`[rates] fiat yanıtı ayrıştırılamadı/boş (${source})`)
       return null
-    // Yanıt tip-cast'le kabul edilmez: sadece sayı/pozitif/sonlu kurları geçir (Y-2).
-    const clean = sanitizeRates(data.rates)
-    return Object.keys(clean).length ? clean : null
+    }
+    return out
+  }
+  catch (e) {
+    console.warn(`[rates] fiat isteği başarısız (${source})`, e)
+    return null
+  }
+}
+
+/**
+ * Seçili kaynağı DB'den DOĞRUDAN okur — Pinia'dan değil.
+ *
+ * Neden: `initUserSettings` watch'ı asenkron dolar ve ilk `run()` await
+ * edilmiyor; açılışta `refreshRates` store'a sorsaydı ayar henüz gelmemiş olur,
+ * sessizce varsayılan kaynaktan çekerdi. DB tek gerçek kaynak.
+ */
+async function readRateSource(): Promise<RateSourceKey> {
+  try {
+    const db = await getDb()
+    const rows = await db.select<{ rateSource: string | null }[]>(
+      'SELECT rateSource FROM user_settings LIMIT 1',
+    )
+    const v = rows[0]?.rateSource
+    return isRateSourceKey(v) ? v : DEFAULT_RATE_SOURCE
   }
   catch {
-    return null
+    return DEFAULT_RATE_SOURCE
   }
 }
 
@@ -107,48 +150,77 @@ function safeParse(s: string): unknown {
  * Günlük fiat + kripto kurlarını çeker, birleştirir ve `rates` tablosuna yazar.
  * Offline'da sessizce başarısız; son kurlar kullanılır.
  *
- * GÜN ATLAMA KURALI: bugünün satırı olsa BİLE, içinde kripto yoksa yeniden
- * denenir. Eskiden yalnız tarihe bakılıyordu; kripto isteği tek seferlik bir
- * 429/timeout ile düşse satır yine yazılıyor ve gün "tamamlandı" sayılıyordu —
- * kurlar o gün BİR DAHA denenmiyordu. Sonuç: kripto cüzdanlar günlerce
- * toplamların dışında kalıyor ve durum kendiliğinden HİÇ düzelmiyordu
- * (gerçek veride 2 gün boyunca böyle kalmış). Fiat zaten yazılı olduğu için
- * yeniden deneme ucuz: en kötü ihtimalle aynı fiat üzerine yazılır.
+ * GÜN ATLAMA KURALI — bugünün satırı varsa bile şu üç durumda YENİDEN çekilir:
+ *  1. `force` (kullanıcı "Şimdi yenile" dedi),
+ *  2. kayıtlı satır BAŞKA bir kaynaktan (kullanıcı kaynağı değiştirdi),
+ *  3. kripto eksik.
+ *
+ * (3) neden var: kripto isteği tek seferlik bir 429/timeout ile düşse satır yine
+ * yazılıyor ve gün "tamamlandı" sayılıyordu — kurlar o gün BİR DAHA
+ * denenmiyordu. Sonuç: kripto cüzdanlar günlerce toplamların dışında kalıyor,
+ * durum kendiliğinden HİÇ düzelmiyordu (gerçek veride 2 gün böyle kalmış).
+ *
+ * Gün başına TEK satır tutulur (id = tarih). Kaynak değişince satır üzerine
+ * yazılır — aynı gün için iki kaynağın kuru saklanmaz; "şu an geçerli kur seti"
+ * tek olmalı, yoksa hangisinin okunacağı belirsizleşir.
+ *
+ * DÖNÜŞ: çağıranın sonucu BİLMESİ gerekir. Önce UI, başarıyı "store'daki
+ * updatedAt değişti mi" diye anlamaya çalışıyordu; ama store `watchTable`
+ * üzerinden 30ms throttle ile ASENKRON doluyor → `await nextTick()` yetmiyor ve
+ * BAŞARILI çekimde bile "çekilemedi" hatası basılıyordu (yanlış negatif).
+ * Sonucu buradan döndürmek yarışı tümden ortadan kaldırır.
  */
-export async function refreshRates(force = false): Promise<void> {
+export type RefreshResult = 'ok' | 'skipped' | 'error'
+
+export async function refreshRates(force = false): Promise<RefreshResult> {
   if (!isTauriRuntime())
-    return
+    return 'skipped'
 
   const today = format(new Date(), 'yyyy-MM-dd')
+  const source = await readRateSource()
 
   try {
     const db = await getDb()
     if (!force) {
-      const rows = await db.select<{ date: string, rates: string }[]>(
-        'SELECT date, rates FROM rates ORDER BY date DESC LIMIT 1',
+      const rows = await db.select<{ date: string, rates: string, source: string | null }[]>(
+        'SELECT date, rates, source FROM rates ORDER BY date DESC LIMIT 1',
       )
       const latest = rows[0]
-      if (latest?.date === today && hasCryptoRates(latest.rates))
-        return
-      if (latest?.date === today)
-        console.warn('[rates] bugünün kurlarında kripto eksik — yeniden deneniyor.')
+      if (latest?.date === today) {
+        if (latest.source !== sourceTag(source))
+          console.warn(`[rates] kaynak değişti (${latest.source} → ${sourceTag(source)}) — yeniden çekiliyor.`)
+        else if (!hasCryptoRates(latest.rates))
+          console.warn('[rates] bugünün kurlarında kripto eksik — yeniden deneniyor.')
+        else
+          return 'skipped' // aynı gün, aynı kaynak, kripto tam → iş yok
+      }
     }
 
-    const fiat = await fetchFiat()
+    const fiat = await fetchFiat(source)
     if (!fiat)
-      return // fiat olmadan yazma (kur temeli eksik)
+      return 'error' // fiat olmadan yazma (kur temeli eksik)
 
+    // Kripto fiat'ın ÜSTÜNE: USDT gibi bir kod iki kaynakta da varsa CoinGecko
+    // kazanır (piyasa fiyatı, fiat listesindeki sabit değil).
     const crypto = await fetchCrypto()
-    const merged: Rates = { ...fiat, ...crypto }
+    const merged: Rates = { ...fiat.rates, ...crypto }
 
     await upsertRow('rates', today, {
       date: today,
+      rateDate: fiat.rateDate, // KAYNAĞIN kur tarihi — bizim çekme günümüz değil
       rates: JSON.stringify(merged),
-      source: 'open-er-api+coingecko',
+      source: sourceTag(source),
       updatedAt: Date.now(),
     })
+    return 'ok'
   }
   catch (e) {
     console.error('[rates] refresh failed', e)
+    return 'error'
   }
+}
+
+/** Satıra yazılan kaynak etiketi. Kripto her zaman CoinGecko'dan geldiği için birleşik. */
+function sourceTag(source: RateSourceKey): string {
+  return `${source}+coingecko`
 }

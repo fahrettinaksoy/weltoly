@@ -29,3 +29,20 @@ tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+# Transactional outbox (Y-3) için: tauri-plugin-sql'in KENDİ havuzunu ödünç alıp
+# tek bir sqlx::Transaction içinde çok-adımlı yazma yapıyoruz.
+#
+# Sürüm plugin'inkiyle AYNI OLMAK ZORUNDA (şu an 0.8.6, Cargo.lock'ta tek sqlx
+# var). Ayrışırsa `Pool<Sqlite>` iki FARKLI tip olur ve plugin'in havuzu bizim
+# imzalarımıza uymaz — hata da kafa karıştırıcı olur ("expected Pool, found
+# Pool"). Özellikler plugin'inkiyle hizalı: bundled SQLite + tokio-rustls.
+sqlx = { version = "0.8", default-features = false, features = ["sqlite", "runtime-tokio-rustls"] }
+
+[dev-dependencies]
+# tx.rs testleri: sqlx async, bir runtime gerekiyor.
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+# "test": tauri::test::{mock_builder, mock_context, MockRuntime} — run_tx'i GERÇEK
+# bir AppHandle ve GERÇEK sql plugin'i ile çalıştırmak için. Bu olmadan komutun
+# kendisi (havuz araması, serde, plugin uyumu) hiç test edilemez; yalnız içindeki
+# sqlx akışı test edilebilir ki asıl risk orada DEĞİL.
+tauri = { version = "2", features = ["test"] }
