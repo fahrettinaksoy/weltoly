@@ -1,0 +1,36 @@
+# Otomatik bağımlılık güncellemeleri — üç ekosistem de kapsanır.
+# Elle güncelleme, bilinen CVE'li bir sürümü aylarca gizleyebilir (bkz. CI'daki
+# vuetify v3/v4 ayrışma notu). Dependabot bunları haftalık PR olarak açar; CI
+# kalite + audit kapıları PR'ı ayrıca doğrular.
+version: 2
+updates:
+  # Frontend (package.json)
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      # Yamalar/minor'lar tek PR'da — gürültüyü azaltır, major'lar ayrı kalır.
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # Rust arka uç (src-tauri/Cargo.toml)
+  - package-ecosystem: cargo
+    directory: /src-tauri
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # GitHub Actions sürümleri (actions/checkout, setup-node, tauri-action…)
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

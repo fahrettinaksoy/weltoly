@@ -1,10 +1,11 @@
 import type { Row } from '@/services/db'
 import { documentDir, join } from '@tauri-apps/api/path'
 import { open, save } from '@tauri-apps/plugin-dialog'
-
 import { readTextFile, writeTextFile } from '@tauri-apps/plugin-fs'
+
 import { emitTableChange, getDb, isTauriRuntime } from '@/services/db'
 import { BACKUP_TABLES, isKnownColumn, isKnownTable } from '@/services/db/schema'
+import { logger } from '@/shared/lib/logger'
 
 // Yedek dosya biçim sürümü. Şema (migration) sürümünden AYRI: dosya düzeni değişince artar.
 const BACKUP_VERSION = 1
@@ -58,7 +59,7 @@ export async function exportBackup(): Promise<BackupResult> {
     return 'ok'
   }
   catch (e) {
-    console.error('[backup] export failed', e)
+    logger.error('[backup] export failed', e)
     return 'error'
   }
 }
@@ -144,7 +145,7 @@ export async function importBackup(): Promise<BackupResult> {
       await writeTextFile(`${picked}.pre-import-${stamp}.bak.json`, safety)
     }
     catch (e) {
-      console.warn('[backup] otomatik güvenlik yedeği alınamadı, yine de devam ediliyor', e)
+      logger.warn('[backup] otomatik güvenlik yedeği alınamadı, yine de devam ediliyor', e)
     }
 
     await db.execute('BEGIN')
@@ -177,7 +178,7 @@ export async function importBackup(): Promise<BackupResult> {
         await db.execute('ROLLBACK')
       }
       catch (rollbackErr) {
-        console.error('[backup] ROLLBACK başarısız', rollbackErr)
+        logger.error('[backup] ROLLBACK başarısız', rollbackErr)
       }
       throw e
     }
@@ -186,7 +187,7 @@ export async function importBackup(): Promise<BackupResult> {
     return 'ok'
   }
   catch (e) {
-    console.error('[backup] import failed', e)
+    logger.error('[backup] import failed', e)
     return 'error'
   }
 }

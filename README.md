@@ -1,22 +1,30 @@
 # Weltoly
 
-Kişisel finans uygulaması — [finapp](https://github.com/ilkome/finapp)'in **Tauri v2** ile tüm platformlara (Windows / macOS / Linux / iOS / Android) taşınmış hâli.
+Kişisel finans uygulaması — [finapp](https://github.com/ilkome/finapp)'in **Tauri v2**
+ile tüm platformlara (Windows / macOS / Linux / iOS / Android) taşınmış hâli.
+**Yerel-önce, offline, uzak telemetri yok** — tüm veri cihazında SQLite'ta durur.
 
-**Yığın:** Tauri v2 · Vite · Vue 3 · Vue Router · Pinia · VueUse · **Vuetify 3** · vue-i18n
-**Veritabanı (Faz 1):** SQLite (`tauri-plugin-sql`, bundled)
+**Yığın:** Tauri v2 · Vite · Vue 3 · Vue Router · Pinia · VueUse · **Vuetify 4** · vue-i18n · ECharts · Zod
+**Veritabanı:** SQLite (`tauri-plugin-sql`, bundled)
 
-## Dokümanlar
-- `finapp-analiz-ve-tauri-plani.md` — kaynak analizi + mimari kararlar
-- `finapp-tauri-gelistirme-plani.md` — faz faz geliştirme planı
+## Özellikler
+
+- Cüzdanlar, işlemler, kategoriler, etiketler ve harcama istatistikleri
+- Çoklu para birimi — seçilebilir kur kaynağı (er-api / Frankfurter / TCMB / CoinGecko) + güncellik paneli
+- PIN kilidi, açık/koyu/sistem tema, özelleştirilebilir renk/palet
+- Yedek dışa/içe aktarma
+- tr / en / ru dil desteği (RTL-hazır)
 
 ## Gereksinimler
-- Node.js ≥ 20, npm
-- Rust (rustup) + cargo
+
+- **Node.js ≥ 20** (`.nvmrc` → `nvm use`), npm
+- **Rust** — araç zinciri `src-tauri/rust-toolchain.toml` ile sabittir, `rustup` otomatik kurar
 - Masaüstü: platform WebView bağımlılıkları · Mobil: Android SDK+NDK / Xcode
 
 ## Komutlar
+
 ```bash
-npm install          # bağımlılıklar
+npm install          # bağımlılıklar + git hook'ları
 npm run dev          # yalnız web (Vite) - http://localhost:1420
 npm run tauri:dev    # masaüstü uygulaması (native pencere)
 npm run build        # web build (typecheck + vite build)
@@ -28,5 +36,30 @@ npm run tauri android init && npm run tauri android dev
 npm run tauri ios init && npm run tauri ios dev
 ```
 
-## Durum
-**Faz 0 (iskelet) tamam** — 5 sayfa (Panel/Cüzdanlar/İstatistik/Ayarlar + Kategoriler), responsive navigasyon (mobil alt bar / masaüstü ray), açık-koyu-sistem tema, tr/en/ru dil desteği. Sonraki: **Faz 1 — SQLite veri katmanı**.
+## Kalite kapıları
+
+Her push/PR'da CI şunları zorunlu kılar (bkz. [.github/workflows/ci.yml](.github/workflows/ci.yml)):
+
+| Kapı | Komut |
+| ---- | ----- |
+| Tip | `npm run typecheck` |
+| Lint | `npm run lint` (@antfu) |
+| Frontend test | `npm test` (Vitest) |
+| Rust biçim/lint/test | `cargo fmt --check` · `cargo clippy -D warnings` · `cargo test` |
+| Tedarik zinciri | `npm audit` (prod) · `cargo audit` |
+
+Bağımlılıklar Dependabot ile haftalık güncellenir. Tanılama logları çalışma anında
+app log dizinindeki dönen dosyaya yazılır (Ayarlar → Veri → **Log klasörünü aç**).
+
+## Belgeler
+
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — katkı akışı ve mimari notlar
+- [`SECURITY.md`](SECURITY.md) — güvenlik politikası ve açık bildirimi
+- [`CHANGELOG.md`](CHANGELOG.md) — sürüm geçmişi
+- [`docs/RELEASE.md`](docs/RELEASE.md) — imzalama/notarization ve yayınlama
+- [`docs/`](docs/) — kod inceleme raporları
+- `finapp-analiz-ve-tauri-plani.md` · `finapp-tauri-gelistirme-plani.md` — kaynak analizi + faz planı
+
+## Lisans
+
+[MIT](LICENSE)

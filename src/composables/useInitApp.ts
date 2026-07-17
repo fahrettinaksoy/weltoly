@@ -6,6 +6,7 @@ import { useUserStore } from '@/features/user/store'
 import { useWalletsStore } from '@/features/wallets/store'
 import { isTauriRuntime } from '@/services/db'
 import { refreshRates } from '@/services/rates'
+import { logger } from '@/shared/lib/logger'
 
 /**
  * Uygulama açılışında tüm store watch'larını (yerel SQLite abonelikleri) başlatır.
@@ -21,7 +22,7 @@ export function useInitApp() {
 
   function init() {
     if (!isTauriRuntime()) {
-      console.warn('[app] Tauri dışı ortam - yerel SQLite atlandı (npm run tauri:dev ile çalıştırın).')
+      logger.warn('[app] Tauri dışı ortam - yerel SQLite atlandı (npm run tauri:dev ile çalıştırın).')
       return
     }
     userStore.initUserSettings()

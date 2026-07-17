@@ -27,7 +27,18 @@ tauri-plugin-store = "2"
 tauri-plugin-http = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
+# Gözlemlenebilirlik: JS ve Rust tarafındaki log'lar tek bir DÖNEN dosyaya yazılır
+# (app log dizini). Yerel-önce/gizlilik odaklı uygulamada uzak telemetri YOK;
+# kullanıcı çöküşü bildirdiğinde teşhis edilecek tek kaynak bu dosyadır.
+tauri-plugin-log = "2"
 serde = { version = "1", features = ["derive"] }
+
+# Otomatik güncelleme: imzalı sürümleri GitHub Releases'ten çeker/doğrular.
+# Public anahtar tauri.conf.json > plugins.updater.pubkey'de; özel anahtar CI
+# secret'ı (TAURI_SIGNING_PRIVATE_KEY). Masaüstüne özgü — mobilde derlenmez.
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
 serde_json = "1"
 # Transactional outbox (Y-3) için: tauri-plugin-sql'in KENDİ havuzunu ödünç alıp
 # tek bir sqlx::Transaction içinde çok-adımlı yazma yapıyoruz.

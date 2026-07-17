@@ -1,13 +1,14 @@
 import type { RateSourceKey } from '@/features/currencies/sources'
 import type { CurrencyCode } from '@/features/currencies/types'
 import type { WalletId } from '@/features/wallets/types'
-
 import type { Row, WatchHandle } from '@/services/db'
-import { useLocalStorage } from '@vueuse/core'
 
+import { useLocalStorage } from '@vueuse/core'
 import { defineStore } from 'pinia'
+
 import { DEFAULT_RATE_SOURCE, isRateSourceKey } from '@/features/currencies/sources'
 import { resolveWriteUid, upsertRow, watchTable } from '@/services/db'
+import { logger } from '@/shared/lib/logger'
 import { showErrorToast } from '@/stores/ui'
 
 // Yerel-önce: gerçek kimlik yok, sabit 'local' kullanıcı. user_settings tek satır ('local').
@@ -76,7 +77,7 @@ export const useUserStore = defineStore('user', () => {
 
   function saveUserBaseCurrency(value: CurrencyCode) {
     setUserBaseCurrency(value)
-    saveSettingsRow().catch(e => console.error('[user] saveUserBaseCurrency failed', e))
+    saveSettingsRow().catch(e => logger.error('[user] saveUserBaseCurrency failed', e))
   }
 
   /**
@@ -89,7 +90,7 @@ export const useUserStore = defineStore('user', () => {
     rateSource.value = value
     return saveSettingsRow().catch((e) => {
       rateSource.value = prev
-      console.error('[user] saveRateSource failed', e)
+      logger.error('[user] saveRateSource failed', e)
       showErrorToast('settings.rateSourceSaveFailed')
     })
   }
@@ -100,7 +101,7 @@ export const useUserStore = defineStore('user', () => {
     defaultWalletId.value = value
     saveSettingsRow().catch((e) => {
       defaultWalletId.value = prev
-      console.error('[user] saveDefaultWalletId failed', e)
+      logger.error('[user] saveDefaultWalletId failed', e)
       showErrorToast('wallets.errors.saveFailed')
     })
   }

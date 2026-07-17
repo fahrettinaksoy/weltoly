@@ -1,16 +1,16 @@
 import type { CurrencyCode } from '@/features/currencies/types'
-
 import type { TrnId } from '@/features/trns/types'
+
 import type { WalletId, WalletItem, WalletItemComputed, Wallets, WalletsComputed } from '@/features/wallets/types'
 import type { Row, WatchHandle } from '@/services/db'
 import { defineStore } from 'pinia'
 import { useCurrenciesStore } from '@/features/currencies/store'
-
 import { useTrnsStore } from '@/features/trns/store'
+
 import { TrnType } from '@/features/trns/types'
 import { useUserStore } from '@/features/user/store'
-
 import { walletIdsOfTrn } from '@/features/wallets/trnLink'
+
 import {
   deleteRows,
   isTauriRuntime,
@@ -22,6 +22,7 @@ import {
   watchTable,
 } from '@/services/db'
 import { getAmountInRate, getWalletsTotals } from '@/shared/lib/getTotal'
+import { logger } from '@/shared/lib/logger'
 import { addMoney, subMoney } from '@/shared/lib/money'
 import { uniqueElementsBy } from '@/shared/lib/simple'
 import { showErrorToast, showSuccessToast } from '@/stores/ui'
@@ -86,7 +87,7 @@ export const useWalletsStore = defineStore('wallets', () => {
       showSuccessToast(isNew ? 'wallets.added' : 'wallets.updated')
     }).catch((e) => {
       setWallets(prev)
-      console.error('[wallets] saveWallet failed', e)
+      logger.error('[wallets] saveWallet failed', e)
       showErrorToast('wallets.errors.saveFailed')
     })
   }
@@ -111,7 +112,7 @@ export const useWalletsStore = defineStore('wallets', () => {
         })),
     ).catch((e) => {
       setWallets(prev)
-      console.error('[wallets] saveWalletsOrder failed', e)
+      logger.error('[wallets] saveWalletsOrder failed', e)
       showErrorToast('wallets.errors.orderFailed')
     })
   }
@@ -274,7 +275,7 @@ export const useWalletsStore = defineStore('wallets', () => {
     catch (e) {
       setWallets(prevWallets)
       trnsStore.setTrns(prevTrns)
-      console.error('[wallets] deleteWallet failed', e)
+      logger.error('[wallets] deleteWallet failed', e)
       showErrorToast('wallets.errors.deleteFailed')
     }
   }

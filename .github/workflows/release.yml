@@ -37,9 +37,12 @@ jobs:
         with:
           node-version: 20
 
+      # Sürüm src-tauri/rust-toolchain.toml ile AYNI olmalı — release, CI ve yerel
+      # geliştirme tek bir sabit derleyiciyle üretim yapar (reproducible build).
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: 1.96.1
           targets: ${{ contains(matrix.platform, 'macos') && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: Install frontend dependencies

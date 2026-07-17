@@ -1,11 +1,11 @@
 import type { Range } from '@/features/date/types'
-
 import type { TrnId, TrnItem, TrnItemFull, Trns, TrnsGetterProps } from '@/features/trns/types'
 
 import type { Row, WatchHandle } from '@/services/db'
-import { defineStore } from 'pinia'
 
+import { defineStore } from 'pinia'
 import { ADJUSTMENT_ID } from '@/features/categories/pseudoCategories'
+
 import { resolvePseudoCategory } from '@/features/categories/pseudoCategoryItem'
 import { useCategoriesStore } from '@/features/categories/store'
 import { getEndOf, getStartOf } from '@/features/date/utils'
@@ -21,6 +21,7 @@ import {
   upsertRow,
   watchTable,
 } from '@/services/db'
+import { logger } from '@/shared/lib/logger'
 import { showErrorToast, showSuccessToast } from '@/stores/ui'
 
 // trns en büyük tablo; watch'ı 30ms varsayılandan daha agresif birleştirir.
@@ -137,7 +138,7 @@ export const useTrnsStore = defineStore('trns', () => {
       return true
     }).catch((e) => {
       setTrns(prev)
-      console.error('[trns] saveTrn failed', e)
+      logger.error('[trns] saveTrn failed', e)
       showErrorToast('trns.errors.saveFailed')
       return false
     })
@@ -151,7 +152,7 @@ export const useTrnsStore = defineStore('trns', () => {
 
     deleteRow('trns', id).catch((e) => {
       setTrns(prev)
-      console.error('[trns] deleteTrn failed', e)
+      logger.error('[trns] deleteTrn failed', e)
       showErrorToast('trns.errors.deleteFailed')
     })
   }

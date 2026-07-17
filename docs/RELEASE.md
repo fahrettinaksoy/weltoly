@@ -41,10 +41,31 @@ Bir kod imzalama sertifikası (OV/EV) gerekir.
 - `.AppImage` ve `.deb` imzasız dağıtılabilir. Flatpak/Snap isteğe bağlı.
 - `bundle.linux.deb.depends` gerekli kütüphaneleri listeler (WebKitGTK, GTK3).
 
-## 6. Otomatik güncelleme (isteğe bağlı)
-1. Anahtar üret: `npm run tauri signer generate -- -w ~/.tauri/weltoly.key`
-2. `tauri.conf.json`'a `plugins.updater` (public key + endpoints) ekleyin, `tauri-plugin-updater`'ı kurun.
-3. CI'ye `TAURI_SIGNING_PRIVATE_KEY` + `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` sırlarını ekleyin.
+## 6. Otomatik güncelleme (KURULU)
+
+Altyapı hazır — `tauri-plugin-updater` + `tauri-plugin-process` kurulu, public
+anahtar `tauri.conf.json` → `plugins.updater.pubkey`'de gömülü, endpoint GitHub
+Releases'e (`latest.json`) bakıyor. Uygulama içinde **Ayarlar → Veri →
+Güncellemeleri denetle** akışı `checkForUpdates()`'i çağırır.
+
+**İmza anahtarı** (`npm run tauri signer generate` ile üretildi):
+
+- Özel anahtar: `src-tauri/.tauri/weltoly-updater.key` — **gitignore'lu, ASLA
+  commit'lenmez**. Bu dosyayı güvenli bir yerde yedekleyin; kaybederseniz bir
+  daha imzalı güncelleme yayınlayamazsınız (yeni anahtar = tüm kullanıcılar için
+  otomatik güncelleme kopar).
+- Public anahtar: `...key.pub` (config'e zaten gömülü).
+
+**Yayın için tek yapılacak** — GitHub repo → Settings → Secrets:
+
+- `TAURI_SIGNING_PRIVATE_KEY` = özel anahtar dosyasının **içeriği**
+  (`cat src-tauri/.tauri/weltoly-updater.key`).
+- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` = boş (anahtar parolasız üretildi) veya
+  parola belirlediyseniz o.
+
+Bu sırlar ayarlıyken `tauri-action` her release'de `latest.json`'ı üretip imzalar
+ve release'e ekler; endpoint onu otomatik bulur. Sır YOKSA build yine çalışır,
+yalnız güncelleyici JSON'u üretilmez.
 
 ## 7. Android
 ```bash

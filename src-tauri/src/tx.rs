@@ -82,7 +82,9 @@ pub async fn run_tx<R: Runtime>(
     }
 
     tx.commit().await.map_err(|e| e.to_string())?;
-    Ok(TxResult { applied: statements.len() })
+    Ok(TxResult {
+        applied: statements.len(),
+    })
 }
 
 type SqliteQuery<'a> = sqlx::query::Query<'a, Sqlite, sqlx::sqlite::SqliteArguments<'a>>;
@@ -176,7 +178,11 @@ mod tests {
             assert!(err.is_err(), "PK çakışması hata vermeliydi");
             // tx burada commit edilmeden kapsam dışına çıkıyor → otomatik ROLLBACK
         }
-        assert_eq!(count(&pool).await, 0, "rollback sonrası hiçbir satır kalmamalı");
+        assert_eq!(
+            count(&pool).await,
+            0,
+            "rollback sonrası hiçbir satır kalmamalı"
+        );
     }
 
     /// Yarım uygulama OLMAMALI: 3 ifadenin 3.'sü patlarsa ilk ikisi de gitmeli.
@@ -218,7 +224,10 @@ mod app_tests {
     use super::{run_tx, Stmt};
 
     fn stmt(sql: &str, values: Vec<serde_json::Value>) -> Stmt {
-        Stmt { sql: sql.to_string(), values }
+        Stmt {
+            sql: sql.to_string(),
+            values,
+        }
     }
 
     /// `DB_URL` `tx.rs`'de sabit olduğu için test de AYNI url'yi kullanmak
@@ -297,10 +306,19 @@ mod app_tests {
     async fn command_commits_to_the_plugins_own_pool() {
         let app = fresh_app("commit");
 
-        let res = run_tx(app.handle().clone(), vec![
-            stmt("INSERT INTO t (id, n) VALUES ($1, $2)", vec![json_str("a"), json_num(1)]),
-            stmt("INSERT INTO t (id, n) VALUES ($1, $2)", vec![json_str("b"), json_num(2)]),
-        ])
+        let res = run_tx(
+            app.handle().clone(),
+            vec![
+                stmt(
+                    "INSERT INTO t (id, n) VALUES ($1, $2)",
+                    vec![json_str("a"), json_num(1)],
+                ),
+                stmt(
+                    "INSERT INTO t (id, n) VALUES ($1, $2)",
+                    vec![json_str("b"), json_num(2)],
+                ),
+            ],
+        )
         .await
         .expect("run_tx hata verdi");
 
@@ -317,17 +335,29 @@ mod app_tests {
     async fn command_rolls_back_on_failure() {
         let app = fresh_app("rollback");
 
-        let err = run_tx(app.handle().clone(), vec![
-            stmt("INSERT INTO t (id, n) VALUES ($1, $2)", vec![json_str("a"), json_num(1)]),
-            stmt("INSERT INTO nonexistent (id) VALUES ($1)", vec![json_str("b")]),
-        ])
+        let err = run_tx(
+            app.handle().clone(),
+            vec![
+                stmt(
+                    "INSERT INTO t (id, n) VALUES ($1, $2)",
+                    vec![json_str("a"), json_num(1)],
+                ),
+                stmt(
+                    "INSERT INTO nonexistent (id) VALUES ($1)",
+                    vec![json_str("b")],
+                ),
+            ],
+        )
         .await
         .expect_err("hatalı SQL başarılı dönmemeliydi");
 
         // Hata mesajı hangi ifadenin patladığını söylemeli, yoksa teşhis edilemez.
         assert!(err.contains("nonexistent"), "hata SQL'i içermeli: {err}");
         // İlk INSERT geri alınmalı — eski kodda kalıcı olurdu.
-        assert!(rows(&app).await.is_empty(), "rollback sonrası satır kalmamalı");
+        assert!(
+            rows(&app).await.is_empty(),
+            "rollback sonrası satır kalmamalı"
+        );
     }
 
     /// `bind_value`'nun gerçek komut yolundaki davranışı: tamsayı INTEGER kalmalı.
@@ -343,16 +373,19 @@ mod app_tests {
 
         let app = fresh_app("types");
 
-        run_tx(app.handle().clone(), vec![stmt(
-            "INSERT INTO t (id, n, f, s, b) VALUES ($1, $2, $3, $4, $5)",
-            vec![
-                json_str("x"),
-                json_num(1_752_000_000_000_i64), // zaman damgası
-                serde_json::json!(1.5),
-                json_str("merhaba"),
-                serde_json::json!(true),
-            ],
-        )])
+        run_tx(
+            app.handle().clone(),
+            vec![stmt(
+                "INSERT INTO t (id, n, f, s, b) VALUES ($1, $2, $3, $4, $5)",
+                vec![
+                    json_str("x"),
+                    json_num(1_752_000_000_000_i64), // zaman damgası
+                    serde_json::json!(1.5),
+                    json_str("merhaba"),
+                    serde_json::json!(true),
+                ],
+            )],
+        )
         .await
         .expect("run_tx hata verdi");
 
@@ -364,7 +397,11 @@ mod app_tests {
             .await
             .unwrap();
 
-        assert_eq!(row.get::<String, _>("tn"), "integer", "zaman damgası REAL'e düşmemeli");
+        assert_eq!(
+            row.get::<String, _>("tn"),
+            "integer",
+            "zaman damgası REAL'e düşmemeli"
+        );
         assert_eq!(row.get::<String, _>("tf"), "real");
         assert_eq!(row.get::<String, _>("ts"), "text");
         assert_eq!(row.get::<i64, _>("n"), 1_752_000_000_000);
@@ -380,10 +417,13 @@ mod app_tests {
     async fn command_binds_null() {
         let app = fresh_app("null");
 
-        run_tx(app.handle().clone(), vec![stmt(
-            "INSERT INTO t (id, n) VALUES ($1, $2)",
-            vec![json_str("x"), serde_json::Value::Null],
-        )])
+        run_tx(
+            app.handle().clone(),
+            vec![stmt(
+                "INSERT INTO t (id, n) VALUES ($1, $2)",
+                vec![json_str("x"), serde_json::Value::Null],
+            )],
+        )
         .await
         .expect("run_tx hata verdi");
 

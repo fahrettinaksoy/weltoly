@@ -1,8 +1,8 @@
 import type { TagId, TagItem, Tags } from '@/features/tags/types'
-
 import type { Row, WatchHandle } from '@/services/db'
 
 import { defineStore } from 'pinia'
+
 import { useTrnsStore } from '@/features/trns/store'
 import {
   deleteRow,
@@ -13,6 +13,7 @@ import {
   upsertRow,
   watchTable,
 } from '@/services/db'
+import { logger } from '@/shared/lib/logger'
 import { showErrorToast, showSuccessToast } from '@/stores/ui'
 
 export const useTagsStore = defineStore('tags', () => {
@@ -72,7 +73,7 @@ export const useTagsStore = defineStore('tags', () => {
       showSuccessToast(isNew ? 'tags.added' : 'tags.updated')
     }).catch((e) => {
       setTags(prev)
-      console.error('[tags] saveTag failed', e)
+      logger.error('[tags] saveTag failed', e)
       showErrorToast('tags.errors.saveFailed')
     })
   }
@@ -127,7 +128,7 @@ export const useTagsStore = defineStore('tags', () => {
     catch (e) {
       setTags(prev)
       trnsStore.setTrns(prevTrns)
-      console.error('[tags] deleteTag failed', e)
+      logger.error('[tags] deleteTag failed', e)
       showErrorToast('tags.errors.deleteFailed')
     }
   }

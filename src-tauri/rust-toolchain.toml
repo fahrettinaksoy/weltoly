@@ -1,0 +1,11 @@
+# Rust araç zinciri SABİTLENDİ — yerel geliştirme, CI ve release AYNI derleyiciyi kullanır.
+#
+# Neden sabit patch: `channel = "stable"` her makinede farklı bir sürüm çekerdi;
+# o zaman "bende derleniyor, CI'da clippy patlıyor" ayrışması mümkün olur. Sabit
+# sürümle üç ortam da bit-bit aynı davranır (P1 — reproducible build).
+#
+# Sürüm yükseltme: burayı ve .github/workflows/release.yml'deki `toolchain:` değerini
+# BİRLİKTE güncelle (dependabot Rust toolchain'i güncelleyemez, elle yapılır).
+[toolchain]
+channel = "1.96.1"
+components = ["rustfmt", "clippy"]

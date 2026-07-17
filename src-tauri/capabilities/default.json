@@ -15,6 +15,7 @@
     "store:default",
     "dialog:default",
     "fs:default",
+    "log:default",
     {
       "identifier": "fs:allow-write-text-file",
       "allow": [

@@ -1,0 +1,14 @@
+# cargo-audit yapılandırması — `cargo audit` bu dosyayı OTOMATİK okur.
+#
+# Buradaki her ignore, güvenlik duruşunun BİLİNÇLİ ve BELGELİ bir istisnasıdır;
+# kapı geri kalan her advisory için AÇIK kalır. Yeni bir ignore eklerken mutlaka
+# gerekçe yaz — aksi halde bu dosya sessiz bir "hepsini görmezden gel"e döner.
+[advisories]
+ignore = [
+  # RUSTSEC-2023-0071 — `rsa` 0.9.x, Marvin timing side-channel (medium 5.9).
+  # ULAŞILAMAZ: `rsa`, `sqlx-mysql` üzerinden TRANSİTİF geliyor. Biz sqlx'i yalnız
+  # `sqlite` feature'ıyla kullanıyoruz (Cargo.toml); MySQL kimlik doğrulama kod
+  # yolu (rsa'yı çağıran tek yer) derlemede var ama ÇALIŞMA ANINDA hiç yürümez.
+  # Upstream'de düzeltilmiş sürüm YOK. sqlx MySQL'i rsa'dan ayırınca kaldırılacak.
+  "RUSTSEC-2023-0071",
+]

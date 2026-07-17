@@ -146,6 +146,11 @@ vite.config.ts.timestamp-*
 src-tauri/target/
 src-tauri/gen/
 
+# Updater imza ÖZEL anahtarı — ASLA commit'lenmez. Public anahtar (.pub) tauri.conf'ta
+# gömülüdür; özel anahtar CI'da TAURI_SIGNING_PRIVATE_KEY secret'ı olarak durur.
+src-tauri/.tauri/*.key
+src-tauri/.tauri/*.key.pub
+
 # Vuetify/unplugin üretilen tip dosyaları (vite.config: dts -> src/...)
 src/auto-imports.d.ts
 src/components.d.ts
