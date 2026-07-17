@@ -3,16 +3,19 @@ import { endOfMonth, startOfMonth, subMonths } from 'date-fns'
 import { useI18n } from 'vue-i18n'
 
 import AppEmptyState from '@/components/AppEmptyState.vue'
+import KpiCard from '@/components/KpiCard.vue'
 import SectionCard from '@/components/SectionCard.vue'
 import { useFormat } from '@/composables/useFormat'
+import { ADJUSTMENT_ID } from '@/features/categories/pseudoCategories'
 import { useCategoriesStore } from '@/features/categories/store'
 import { useCurrenciesStore } from '@/features/currencies/store'
-import { changeRatio, deltaTone } from '@/features/stat/lib/periodCompare'
+import { changeRatio } from '@/features/stat/lib/periodCompare'
 import { useTagsStore } from '@/features/tags/store'
 import TrnList from '@/features/trns/components/TrnList.vue'
 import { useTrnsStore } from '@/features/trns/store'
 import { TrnType } from '@/features/trns/types'
 import { useUserStore } from '@/features/user/store'
+import { toBaseAmount } from '@/features/wallets/lib/baseAmount'
 import { useWalletsStore } from '@/features/wallets/store'
 import { walletTypes } from '@/features/wallets/types'
 import { walletTypeIcon } from '@/features/wallets/walletMeta'
@@ -46,9 +49,15 @@ const totals = computed(() => walletsStore.totals)
  * Karşılaştırma TAKVİM AYIYLA: aylar eşit uzunlukta değil, 30 gün geriye gitmek
  * Şubat'ta yanlış pencere verirdi.
  */
-const thisMonth = computed(() => ({ from: startOfMonth(Date.now()).getTime(), to: endOfMonth(Date.now()).getTime() }))
+// `today` REAKTİF bağımlılıktır (A-5). Doğrudan Date.now() yazılırsa computed'in
+// hiçbir bağımlılığı olmaz: bir kez hesaplanıp donar ve uygulama gece yarısını
+// geçince "Bu ay" eski ayı göstermeye devam eder. startOfMonth zaten günü
+// budadığı için gün granülerliği yeterli — davranış değişmez, yalnız tazelenir.
+const today = useCurrentDay()
+
+const thisMonth = computed(() => ({ from: startOfMonth(today.value).getTime(), to: endOfMonth(today.value).getTime() }))
 const lastMonth = computed(() => {
-  const d = subMonths(Date.now(), 1)
+  const d = subMonths(today.value, 1)
   return { from: startOfMonth(d).getTime(), to: endOfMonth(d).getTime() }
 })
 
@@ -61,20 +70,29 @@ function flowIn(range: { from: number, to: number }) {
   let income = 0
   let expense = 0
   let count = 0
+  let hasMissingRates = false
   for (const id of trnsStore.getStoreTrnsIds({ sort: false })) {
     const trn = trnsStore.items?.[id]
     if (!trn || trn.date < range.from || trn.date > range.to)
       continue
-    if (trn.type === TrnType.Transfer || trn.categoryId === 'adjustment')
+    if (trn.type === TrnType.Transfer || trn.categoryId === ADJUSTMENT_ID)
       continue
     const wallet = walletsStore.itemsComputed[trn.walletId]
-    const amount = trn.amount * (wallet?.rate ?? 1)
+    // Y-1: kur eksikse tutarın temel karşılığı BİLİNMİYOR. Eskiden `?? 1` ile
+    // 1:1 sayılıyordu — 0,4 BTC'lik bir gider "0,40 $" olarak akışa giriyordu.
+    // Bu sayfa aynı anda "Kur eksik: toplama katılmadı" rozetini gösterdiği için
+    // kendi kendisiyle çelişiyordu. Artık hariç tutulur ve rozet bunu da kapsar.
+    const amount = toBaseAmount(trn.amount, wallet?.rate)
+    if (amount === null) {
+      hasMissingRates = true
+      continue
+    }
     count++
     if (trn.type === TrnType.Income)
       income += amount
     else expense += amount
   }
-  return { income, expense, net: income - expense, count }
+  return { income, expense, net: income - expense, count, hasMissingRates }
 }
 
 const monthFlow = computed(() => flowIn(thisMonth.value))
@@ -105,8 +123,11 @@ const assetsByType = computed(() => {
   for (const wallet of Object.values(walletsStore.itemsComputed)) {
     if (wallet.isExcludeInTotal)
       continue
-    const value = wallet.amount * (wallet.rate ?? 1)
-    if (value <= 0)
+    // Y-1: kuru eksik cüzdanı 1:1 saymak burada İKİ KAT yanlıştı — yüzdeler
+    // `totals.assets`'e bölünüyor ve o toplam bu cüzdanları ZATEN hariç tutuyor.
+    // Pay onları sayarken payda saymıyordu → yüzdeler %100'ü aşabiliyordu.
+    const value = toBaseAmount(wallet.amount, wallet.rate)
+    if (value === null || value <= 0)
       continue
     sums.set(wallet.type, (sums.get(wallet.type) ?? 0) + value)
   }
@@ -159,15 +180,37 @@ const creditCards = computed(() =>
 const creditTotal = computed(() => {
   let limit = 0
   let used = 0
+  let hasMissingRates = false
   for (const card of Object.values(walletsStore.itemsComputed)) {
     if (card.type !== 'credit' || card.isArchived)
       continue
-    const rate = card.rate ?? 1
+    // Y-1: kuru eksik kartı 1:1 saymak doluluk ORANINI bozardı (limit ve
+    // kullanım farklı oranda sapar). Kartı tamamen dışarıda bırakmak dürüst.
+    const rate = card.rate
+    if (rate == null) {
+      hasMissingRates = true
+      continue
+    }
     limit += (('creditLimit' in card ? card.creditLimit : 0) ?? 0) * rate
     used += Math.max(0, -card.amount) * rate
   }
-  return { limit, used, ratio: limit > 0 ? Math.min(100, (used / limit) * 100) : 0 }
+  return { limit, used, hasMissingRates, ratio: limit > 0 ? Math.min(100, (used / limit) * 100) : 0 }
 })
+
+/**
+ * Bu sayfadaki HERHANGİ bir hesap kur eksikliğinden etkilendi mi?
+ *
+ * Rozet eskiden yalnız store'un `totals`'ına bakıyordu, ama aylık kartlar ve
+ * kredi doluluğu KENDİ hesaplarını yapıyor. Yalnız net varlık etkilendiğinde
+ * uyarıp diğerlerini sessizce eksik göstermek, uyarmamaktan beter olurdu:
+ * kullanıcı rozeti görmeyip rakamı tam sanardı.
+ */
+const anyMissingRates = computed(() =>
+  totals.value.hasMissingRates
+  || monthFlow.value.hasMissingRates
+  || prevMonthFlow.value.hasMissingRates
+  || creditTotal.value.hasMissingRates,
+)
 
 /** Doluluk rengi: %80 üstü kırmızı, %50 üstü sarı. Cüzdan detayıyla aynı eşik. */
 function usageTone(ratio: number) {
@@ -260,8 +303,18 @@ const recentIds = computed(() =>
 
 <template>
   <div class="pa-4">
+    <!-- Cüzdanlar gelmeden net varlık HESAPLANMAZ.
+         Aksi halde şerit bir an "0,00 $" yazıp sonra gerçek rakama sıçrıyordu:
+         bir finans uygulamasında "net varlığın sıfır" demek, en kötü ilk izlenim.
+         Skeleton, rakam bilinene kadar hiçbir iddiada bulunmaz. -->
+    <v-skeleton-loader
+      v-if="!walletsStore.isLoaded"
+      type="heading@2"
+      class="mb-4 bg-transparent"
+    />
+
     <!-- Net varlık şeridi: tek rakam yerine üçlü. Net tek başına dengeyi gizler. -->
-    <v-sheet color="primary" class="pa-5 mb-4 dash-hero">
+    <v-sheet v-else color="primary" class="pa-5 mb-4 dash-hero">
       <div class="d-flex align-center ga-6 flex-wrap">
         <div class="dash-hero-main">
           <div class="text-caption dash-hero-label">
@@ -270,14 +323,21 @@ const recentIds = computed(() =>
           <div class="text-h4 font-weight-bold">
             {{ fmt.money(totals.net, base) }}
           </div>
-          <!-- Kur eksik: bazı cüzdanlar net'ten çıkarıldı (sessiz 1:1 yerine dürüst uyarı) — Y-1. -->
+          <!-- Kur eksik: bazı cüzdanlar net'ten çıkarıldı (sessiz 1:1 yerine dürüst uyarı) — Y-1.
+               tabindex ŞART (B-7): ipucu tooltip'te duruyor ve tooltip yalnız
+               AKTİVATÖRÜ odaklanabilirse klavyeyle açılır. Çip varsayılan olarak
+               odaklanamaz → net varlığın NEDEN eksik olduğunu yalnız fareyle
+               üzerine gelen görebiliyordu; klavye ve dokunmatik kullanıcı hiç
+               öğrenemiyordu. Vuetify'ın useActivator'ı focus olaylarını zaten
+               bağlıyor, odaklanabilirlik yeterli. -->
           <v-chip
-            v-if="totals.hasMissingRates"
+            v-if="anyMissingRates"
             size="x-small" color="warning" variant="flat" class="mt-1"
             prepend-icon="mdi-alert-outline"
+            tabindex="0"
           >
             {{ t('common.rateMissing') }}
-            <v-tooltip activator="parent" location="bottom">
+            <v-tooltip activator="parent" location="bottom" open-on-focus>
               {{ t('common.rateMissingHint') }}
             </v-tooltip>
           </v-chip>
@@ -319,31 +379,22 @@ const recentIds = computed(() =>
 
     <!-- Bu ay -->
     <div class="d-flex ga-3 mb-4 flex-wrap">
-      <v-sheet
+      <KpiCard
         v-for="card in monthCards"
         :key="card.key"
-        color="surface-light"
-        class="pa-4 flex-1-1 dash-kpi"
+        :value="card.value"
+        :money="card.money"
+        :currency="base"
+        :tone="card.tone"
+        :delta="card.delta"
+        :positive-is-good="card.positiveIsGood"
+        :label="card.label"
+        :delta-title="t('dashboard.vsPrevMonth')"
       >
-        <div class="d-flex align-center ga-2">
-          <div class="text-h5 font-weight-bold text-truncate" :class="card.tone">
-            {{ card.money ? fmt.money(card.value, base) : fmt.number(card.value) }}
-          </div>
-          <v-chip
-            v-if="card.delta !== null"
-            :color="deltaTone(card.delta, card.positiveIsGood)"
-            :prepend-icon="card.delta >= 0 ? 'mdi-arrow-up' : 'mdi-arrow-down'"
-            size="x-small"
-            variant="tonal"
-            :title="t('dashboard.vsPrevMonth')"
-          >
-            {{ fmt.percent(Math.abs(card.delta)) }}
-          </v-chip>
-        </div>
-        <div class="text-caption text-medium-emphasis">
+        <template #label>
           {{ t('dashboard.thisMonth') }} · {{ card.label }}
-        </div>
-      </v-sheet>
+        </template>
+      </KpiCard>
     </div>
 
     <div class="d-flex ga-4 align-stretch flex-wrap mb-4">
@@ -533,10 +584,6 @@ const recentIds = computed(() =>
 }
 
 /* Dörde bölününce rakamlar okunmuyordu; dar ekranda ikişerli sarsın. */
-.dash-kpi {
-  min-width: 150px;
-}
-
 /* İki kart yan yana; min-width kırılma noktasını verir, altında alt alta iner. */
 .dash-col {
   min-width: 280px;

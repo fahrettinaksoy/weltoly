@@ -6,6 +6,7 @@ import { defineStore } from 'pinia'
 import { useTrnsStore } from '@/features/trns/store'
 import {
   deleteRow,
+  isTauriRuntime,
   resolveWriteUid,
   rowToTag,
   tagToRow,
@@ -16,7 +17,15 @@ import { showErrorToast, showSuccessToast } from '@/stores/ui'
 
 export const useTagsStore = defineStore('tags', () => {
   const items = ref<Tags>({})
-  const isLoaded = ref(false)
+  /**
+   * İlk DB okuması döndü mü? UI bunu "veri yok" ile karıştırmamak için okur:
+   * yüklenirken skeleton, yüklendikten sonra veri ya da dürüst boş durum.
+   *
+   * Başlangıç `!isTauriRuntime()`: saf tarayıcıda (npm run dev) SQLite yoktur,
+   * store hiç init edilmez → yükleme baştan bitmiştir. `false` bırakılsaydı
+   * tarayıcıda skeleton SONSUZA DEK dönerdi.
+   */
+  const isLoaded = ref(!isTauriRuntime())
 
   let watchController: WatchHandle | null = null
 

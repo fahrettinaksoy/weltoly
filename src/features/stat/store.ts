@@ -81,11 +81,24 @@ export const useStatStore = defineStore('stat', () => {
   const activeWalletIds = computed(() => filterWalletIds.value.length ? filterWalletIds.value : undefined)
   const activeTagIds = computed(() => filterTagIds.value.length ? filterTagIds.value : undefined)
 
-  function totalsForRange(range: Range) {
+  /**
+   * Bir aralığın toplamları + işlem adedi — TEK süzmeyle (A-5).
+   *
+   * Eskiden `totalsForRange` ve `countForRange` ayrı fonksiyonlardı ve ikisi de
+   * `filterTrnsIds`'i AYNI argümanlarla çağırıyordu; `summary` ikisini birden
+   * kullandığı için her aralık İKİ KEZ süzülüyordu. `prevSummary` ile birlikte
+   * aralık başına 4 tam süzme ediyordu. Süzgeç sonucu bir kez hesaplanıp
+   * paylaşılır.
+   *
+   * Adet, gelir/gider tanımıyla AYNI kümeden sayılır: transfer ve düzeltme
+   * hariç — yoksa "12 işlem" derken toplamlara girmeyenleri sayardı.
+   */
+  function summaryForRange(range: Range) {
     const items = trnsStore.items ?? {}
     const walletsIds = activeWalletIds.value
     const ids = filterTrnsIds({ trnsItems: items, dates: range, walletsIds, tagsIds: activeTagIds.value })
-    return getTotal({
+
+    const totals = getTotal({
       baseCurrencyCode: currenciesStore.base,
       rates: currenciesStore.rates,
       trnsItems: items,
@@ -93,25 +106,18 @@ export const useStatStore = defineStore('stat', () => {
       walletsIds,
       walletsItems: walletsStore.items ?? {},
     })
-  }
 
-  /**
-       Aralıktaki işlem adedi. Gelir/gider tanımıyla AYNI küme: transfer ve
-      düzeltme hariç — yoksa "12 işlem" derken toplamlara girmeyenleri sayardı.
-   */
-  function countForRange(range: Range) {
-    const items = trnsStore.items ?? {}
-    const ids = filterTrnsIds({ trnsItems: items, dates: range, walletsIds: activeWalletIds.value, tagsIds: activeTagIds.value })
-    let n = 0
+    let count = 0
     for (const id of ids) {
       const trn = items[id]
       if (trn && trn.type !== TrnType.Transfer && trn.categoryId !== ADJUSTMENT_ID)
-        n++
+        count++
     }
-    return n
+
+    return { ...totals, count }
   }
 
-  const summary = computed(() => ({ ...totalsForRange(currentRange.value), count: countForRange(currentRange.value) }))
+  const summary = computed(() => summaryForRange(currentRange.value))
 
   /**
    * Bir ÖNCEKİ aynı uzunluktaki aralık — kıyas için.
@@ -121,7 +127,7 @@ export const useStatStore = defineStore('stat', () => {
    * (gün sayısı çıkarmak Şubat'ta yanlış olurdu).
    */
   const prevRange = computed<Range>(() => rangeForPeriod(period.value, offset.value - 1, settings.weekStart))
-  const prevSummary = computed(() => ({ ...totalsForRange(prevRange.value), count: countForRange(prevRange.value) }))
+  const prevSummary = computed(() => summaryForRange(prevRange.value))
 
   /** Grafik için son N aralığın gelir/gider toplamları (güncel aralık en sonda). */
   const series = computed<ChartInterval[]>(() => {
@@ -129,7 +135,7 @@ export const useStatStore = defineStore('stat', () => {
     const list: ChartInterval[] = []
     for (let i = offset.value - (n - 1); i <= offset.value; i++) {
       const range = rangeForPeriod(period.value, i, settings.weekStart)
-      const totals = totalsForRange(range)
+      const totals = summaryForRange(range)
       list.push({ range, income: totals.income, expense: totals.expense })
     }
     return list

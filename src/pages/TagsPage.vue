@@ -133,7 +133,17 @@ const headers = computed(() => [
 
 <template>
   <div class="tags-page pa-4">
-    <template v-if="tagsStore.hasItems">
+    <!-- Yükleniyor: boş durumdan ÖNCE. Store'lar items=null ile başlıyor ve ilk
+         SQLite turu dönene kadar öyle kalıyor; bu null "kayıt yok" sanılıp
+         yükleme sırasında "henüz etiket yok + Ekle" gösteriliyordu. `isLoaded`
+         dört store'da vardı ama hiçbir bileşende okunmuyordu. -->
+    <v-skeleton-loader
+      v-if="!tagsStore.isLoaded"
+      type="heading, table-heading, list-item-two-line@6"
+      class="bg-transparent"
+    />
+
+    <template v-else-if="tagsStore.hasItems">
       <!-- Özet: TEK satırlık şerit. Sayfanın asıl içeriği tablo — özet ekranı
            yemesin. Donutun legend'i yok: tablo kullanıma göre sıralı ve her
            satırda renk rozeti + pay çubuğu var, legend'i o üstleniyor. -->

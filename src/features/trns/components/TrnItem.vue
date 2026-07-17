@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useFormat } from '@/composables/useFormat'
+import { ADJUSTMENT_ID } from '@/features/categories/pseudoCategories'
 import { useTagsStore } from '@/features/tags/store'
 import { useTrnsFormStore } from '@/features/trnForm/store'
 import { useTrnsStore } from '@/features/trns/store'
@@ -25,7 +26,7 @@ const amountColor = computed(() => {
     return undefined
   if (f.type === TrnType.Transfer)
     return 'medium-emphasis'
-  if (f.categoryId === 'adjustment')
+  if (f.categoryId === ADJUSTMENT_ID)
     return 'medium-emphasis'
   return f.type === TrnType.Income ? 'success' : 'error'
 })

@@ -220,7 +220,17 @@ function onRowClick(_event: unknown, { item }: { item: CategoryRow }) {
 
 <template>
   <div class="categories-page pa-4">
-    <template v-if="categoriesStore.hasItems">
+    <!-- Yükleniyor: boş durumdan ÖNCE. Store'lar items=null ile başlıyor ve ilk
+         SQLite turu dönene kadar öyle kalıyor; bu null "kayıt yok" sanılıp
+         yükleme sırasında "henüz kategori yok + Ekle" gösteriliyordu. `isLoaded`
+         dört store'da vardı ama hiçbir bileşende okunmuyordu. -->
+    <v-skeleton-loader
+      v-if="!categoriesStore.isLoaded"
+      type="heading, table-heading, list-item-two-line@6"
+      class="bg-transparent"
+    />
+
+    <template v-else-if="categoriesStore.hasItems">
       <!-- Özet şeridi: tek satır. Asıl içerik tablo — özet ekranı yemesin.
            Donutun legend'i yok: tablo zaten renk rozeti + pay çubuğu gösteriyor. -->
       <v-sheet color="surface-light" class="d-flex align-center ga-6 pa-4 mb-3 flex-wrap flex-0-0">

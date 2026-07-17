@@ -3,10 +3,12 @@ import type { TrnId, TrnItem } from '@/features/trns/types'
 import { format } from 'date-fns'
 import VChart from 'vue-echarts'
 import { useI18n } from 'vue-i18n'
-
 import { useTheme } from 'vuetify'
+
 import AppEmptyState from '@/components/AppEmptyState.vue'
 import { buildBalanceSeries } from '@/features/wallets/lib/balanceSeries'
+// ECharts modül kaydı — bkz. StatChart.vue'daki not (lazy chunk'a düşsün).
+import '@/plugins/echarts'
 
 const props = defineProps<{
   trns: { id: TrnId, trn: TrnItem }[]

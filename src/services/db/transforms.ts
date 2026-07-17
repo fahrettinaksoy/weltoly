@@ -3,6 +3,7 @@ import type { Rates } from '@/features/currencies/types'
 import type { TagItem } from '@/features/tags/types'
 import type { TrnItem } from '@/features/trns/types'
 import type { WalletItem, WalletType } from '@/features/wallets/types'
+import { TRANSFER_ID } from '@/features/categories/pseudoCategories'
 import { sanitizeRates } from '@/features/currencies/types'
 
 import { TrnType } from '@/features/trns/types'
@@ -49,7 +50,7 @@ export function rowToTrn(row: Row): TrnItem {
   if (type === TrnType.Transfer) {
     return {
       ...base,
-      categoryId: 'transfer',
+      categoryId: TRANSFER_ID,
       expenseAmount: Number(row.expenseAmount),
       expenseWalletId: row.expenseWalletId,
       incomeAmount: Number(row.incomeAmount),
@@ -143,7 +144,7 @@ export function trnToRow(item: TrnItem, userId: string): Record<string, unknown>
   if (item.type === TrnType.Transfer) {
     return {
       ...base,
-      categoryId: 'transfer',
+      categoryId: TRANSFER_ID,
       expenseAmount: item.expenseAmount,
       expenseWalletId: item.expenseWalletId,
       incomeAmount: item.incomeAmount,

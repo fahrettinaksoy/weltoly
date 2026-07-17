@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import type { CalculatorKey } from '@/features/trnForm/utils/calculate'
+import { useI18n } from 'vue-i18n'
 
 const emit = defineEmits<{ key: [CalculatorKey] }>()
+
+// Silme tuşunun etiketi ikon olduğu için ekran okuyucuya METİN gerekir; bu metin
+// çeviriden gelmeli — sabit 'Sil' yazılınca en/ru kullanıcısı Türkçe duyuyordu.
+const { t } = useI18n()
 
 interface Btn { k: CalculatorKey, label?: string, icon?: string, color?: string }
 
@@ -23,7 +28,7 @@ const rows: Btn[][] = [
           :key="btn.k"
           :color="btn.color"
           class="calc-btn"
-          :aria-label="btn.k === 'c' ? 'Sil' : (btn.label ?? btn.k)"
+          :aria-label="btn.k === 'c' ? t('a11y.calcDelete') : (btn.label ?? btn.k)"
           @click="emit('key', btn.k)"
         >
           <v-icon v-if="btn.icon" :icon="btn.icon" />

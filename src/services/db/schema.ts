@@ -54,8 +54,8 @@ export const TABLE_COLUMNS = {
     'tagIds',
   ],
   tags: ['id', 'name', 'color', 'updatedAt', 'userId', 'desc'],
-  user_settings: ['id', 'baseCurrency', 'locale', 'userId', 'defaultWalletId'],
-  rates: ['id', 'date', 'rates', 'source', 'updatedAt'],
+  user_settings: ['id', 'baseCurrency', 'locale', 'userId', 'defaultWalletId', 'rateSource'],
+  rates: ['id', 'date', 'rates', 'source', 'updatedAt', 'rateDate'],
 } as const
 
 export type TableName = keyof typeof TABLE_COLUMNS

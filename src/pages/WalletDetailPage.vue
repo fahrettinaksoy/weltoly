@@ -89,9 +89,19 @@ useAppBarAction(() => [
 // --- Dönem süzgeci ------------------------------------------------------
 type PeriodKey = '30' | '90' | '365' | 'all'
 const period = ref<PeriodKey>('90')
-const periodStart = computed(() =>
-  period.value === 'all' ? 0 : Date.now() - Number(period.value) * 86_400_000,
-)
+const today = useCurrentDay()
+
+/**
+ * Dönemin başlangıcı. `today` yalnız REAKTİF BAĞIMLILIK için okunur (A-5):
+ * hesap Date.now() ile TAM ZAMAN üzerinden yapılmaya devam eder ("son 90 gün"
+ * = tam 90×24s), ama gün dönünce pencere tazelenir. Yalnız Date.now() olsaydı
+ * computed'in bağımlılığı `period` ile sınırlı kalır, dokunulmadıkça saat
+ * donardı ve uygulama açık kaldıkça pencere kayardı.
+ */
+const periodStart = computed(() => {
+  void today.value
+  return period.value === 'all' ? 0 : Date.now() - Number(period.value) * 86_400_000
+})
 
 // --- Bu cüzdanın işlemleri ---------------------------------------------
 /** Cüzdana dokunan tüm işlemler, yeniden eskiye. Kural: walletIdsOfTrn (tek kaynak). */
@@ -138,8 +148,20 @@ function remove() {
 
 <template>
   <div class="wallet-detail pa-4" :class="{ 'wallet-detail--table': tab === 'trns' }">
-    <!-- Cüzdan silinmiş/bilinmeyen id: sessizce boş sayfa yerine açık mesaj. -->
-    <AppEmptyState v-if="!wallet" icon="mdi-wallet-outline" :title="t('walletDetail.notFound')">
+    <!-- Yükleniyor: "bulunamadı"dan ÖNCE gelmeli.
+         Cüzdanlar SQLite'tan asenkron geliyor; o ana kadar items null olduğu için
+         `!wallet` doğru oluyordu ve VAR OLAN bir cüzdan için "cüzdan bulunamadı"
+         + "Cüzdanlar'a dön" yazıyordu — kullanıcıya kaydı silinmiş gibi
+         görünüyordu. `isLoaded` ile "henüz gelmedi" ile "gerçekten yok" ayrılır. -->
+    <v-skeleton-loader
+      v-if="!walletsStore.isLoaded"
+      type="heading, subtitle, table-heading, list-item-two-line@4"
+      class="bg-transparent"
+    />
+
+    <!-- Cüzdan silinmiş/bilinmeyen id: sessizce boş sayfa yerine açık mesaj.
+         Artık YALNIZ yükleme bittikten sonra gösterilir. -->
+    <AppEmptyState v-else-if="!wallet" icon="mdi-wallet-outline" :title="t('walletDetail.notFound')">
       <template #action>
         <v-btn-primary to="/wallets" prepend-icon="mdi-arrow-left">
           {{ t('nav.wallets') }}

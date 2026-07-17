@@ -12,7 +12,8 @@ import { useUserStore } from '@/features/user/store'
 
 import { walletIdsOfTrn } from '@/features/wallets/trnLink'
 import {
-  deleteRow,
+  deleteRows,
+  isTauriRuntime,
   resolveWriteUid,
   rowToWallet,
   upsertRow,
@@ -40,7 +41,15 @@ export const useWalletsStore = defineStore('wallets', () => {
 
   const items = shallowRef<Wallets | null>(null)
   const hasItems = computed(() => Object.keys(items.value ?? {}).length > 0)
-  const isLoaded = ref(false)
+  /**
+   * İlk DB okuması döndü mü? UI bunu "veri yok" ile karıştırmamak için okur:
+   * yüklenirken skeleton, yüklendikten sonra veri ya da dürüst boş durum.
+   *
+   * Başlangıç `!isTauriRuntime()`: saf tarayıcıda (npm run dev) SQLite yoktur,
+   * store hiç init edilmez → yükleme baştan bitmiştir. `false` bırakılsaydı
+   * tarayıcıda skeleton SONSUZA DEK dönerdi.
+   */
+  const isLoaded = ref(!isTauriRuntime())
 
   let watchController: WatchHandle | null = null
 
@@ -243,9 +252,15 @@ export const useWalletsStore = defineStore('wallets', () => {
       trnsStore.removeTrnsFromStore(trnsIds)
 
     try {
-      await Promise.all([
-        deleteRow('wallets', id),
-        ...trnsIds.map(trnId => deleteRow('trns', trnId)),
+      // TEK transaction: cüzdan + işlemleri ya hep ya hiç. Eskiden `Promise.all`
+      // ile N+1 ayrı yazma vardı; biri patlarsa diğerleri kalıcı oluyor, catch
+      // bloğu ise UI'ı tamamen geri alıyordu → ekran cüzdanı geri getiriyor ama
+      // işlemler diskten gerçekten silinmiş oluyordu.
+      //
+      // İşlemler cüzdandan ÖNCE: FK açıldığında bu sıra şart olacak.
+      await deleteRows([
+        ...trnsIds.map(trnId => ({ table: 'trns', id: trnId })),
+        { table: 'wallets', id },
       ])
 
       // Silinen cüzdan varsayılansa işaretçiyi temizle: FK yok, dangling
