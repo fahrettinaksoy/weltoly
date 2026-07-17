@@ -9,9 +9,14 @@ updates:
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
+    # Major'lar kırıcı olabilir → otomatik PR AÇILMAZ; bilinçli, elle yükseltilir.
+    # (Bu kural eklenince dependabot mevcut major PR'ları bir sonraki koşuda kapatır.)
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
     groups:
-      # Yamalar/minor'lar tek PR'da — gürültüyü azaltır, major'lar ayrı kalır.
+      # Yamalar/minor'lar tek PR'da — gürültüyü azaltır.
       minor-and-patch:
         update-types:
           - minor
@@ -22,7 +27,10 @@ updates:
     directory: /src-tauri
     schedule:
       interval: weekly
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
     groups:
       minor-and-patch:
         update-types:
