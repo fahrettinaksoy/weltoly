@@ -1,12 +1,17 @@
+import type { TagId, TagItem, Tags } from '@/features/tags/types'
+
+import type { Row, WatchHandle } from '@/services/db'
+
 import { defineStore } from 'pinia'
-
-import {
-  deleteRow, resolveWriteUid, rowToTag, tagToRow, upsertRow,
-  watchTable, type Row, type WatchHandle,
-} from '@/services/db'
-
-import type { Tags, TagId, TagItem } from '@/features/tags/types'
 import { useTrnsStore } from '@/features/trns/store'
+import {
+  deleteRow,
+  resolveWriteUid,
+  rowToTag,
+  tagToRow,
+  upsertRow,
+  watchTable,
+} from '@/services/db'
 import { showErrorToast, showSuccessToast } from '@/stores/ui'
 
 export const useTagsStore = defineStore('tags', () => {
@@ -27,7 +32,7 @@ export const useTagsStore = defineStore('tags', () => {
   function initTags(): void {
     watchController?.abort()
     isLoaded.value = false
-    watchController = watchTable<Row>('SELECT * FROM tags', [], (rows) => {
+    watchController = watchTable<Row>(['tags'], 'SELECT * FROM tags', [], (rows) => {
       isLoaded.value = true
       const map: Tags = {}
       for (const row of rows)
@@ -63,33 +68,59 @@ export const useTagsStore = defineStore('tags', () => {
     })
   }
 
-  function deleteTag(id: TagId) {
+  /**
+   * Etiketi siler ve onu kullanan işlemlerden referansını temizler.
+   *
+   * SIRA ŞART (O-7): eskiden N adet `saveTrn` ateşlenip BEKLENMEDEN
+   * `deleteRow` çağrılıyordu. İki sonucu vardı:
+   *  - Yarış: etiket satırı, referanslar temizlenmeden silinebiliyordu.
+   *  - Sessiz sapma: bir saveTrn başarısız olsa bile etiket yine siliniyor,
+   *    geriye var olmayan bir etikete işaret eden tagId'ler kalıyordu.
+   * Artık: önce TÜM referans temizlikleri beklenir, hepsi başarılıysa silinir.
+   */
+  async function deleteTag(id: TagId) {
     const trnsStore = useTrnsStore()
     const prev = items.value
+    const prevTrns = trnsStore.items
     const next = { ...items.value }
     delete next[id]
     setTags(next)
 
-    // Bu etiketi kullanan işlemlerden temizle (dangling ref bırakma).
+    // 1) Referansları temizle — hepsini BEKLE.
     const trns = trnsStore.items
+    const updates: Promise<boolean>[] = []
     if (trns) {
       for (const trnId in trns) {
         const trn = trns[trnId]
         if (trn?.tagIds?.includes(id)) {
           const tagIds = trn.tagIds.filter(t => t !== id)
           // silent: bu kullanıcının "işlem kaydet"i değil, silinen etiketin temizliği
-          trnsStore.saveTrn({ id: trnId, values: { ...trn, tagIds }, silent: true })
+          updates.push(trnsStore.saveTrn({ id: trnId, values: { ...trn, tagIds }, silent: true }))
         }
       }
     }
 
-    return deleteRow('tags', id).then(() => {
-      showSuccessToast('tags.deleted')
-    }).catch((e) => {
+    const results = await Promise.all(updates)
+    if (results.includes(false)) {
+      // Temizlik eksik kaldı → etiketi SİLME, dangling referans bırakmaktansa
+      // her şeyi geri al.
       setTags(prev)
+      trnsStore.setTrns(prevTrns)
+      showErrorToast('tags.errors.deleteFailed')
+      return
+    }
+
+    // 2) Referanslar temiz — şimdi sil.
+    try {
+      await deleteRow('tags', id)
+      showSuccessToast('tags.deleted')
+    }
+    catch (e) {
+      setTags(prev)
+      trnsStore.setTrns(prevTrns)
       console.error('[tags] deleteTag failed', e)
       showErrorToast('tags.errors.deleteFailed')
-    })
+    }
   }
 
   return {

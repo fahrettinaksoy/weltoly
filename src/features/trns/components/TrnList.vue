@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { format, isToday, isYesterday } from 'date-fns'
 
-import { useTrnsStore } from '@/features/trns/store'
 import { useFormat } from '@/composables/useFormat'
 import TrnItem from '@/features/trns/components/TrnItem.vue'
+import { useTrnsStore } from '@/features/trns/store'
 
 const props = defineProps<{
   ids: string[]
@@ -11,8 +11,10 @@ const props = defineProps<{
   maxGroups?: number
 }>()
 
-/** Açık başlayan gün sayısı: yalnız en yeni gün. Kalanlar kapalı — düz liste
-    kartı ekranın çok ötesine uzatıyordu. */
+/**
+     Açık başlayan gün sayısı: yalnız en yeni gün. Kalanlar kapalı — düz liste
+    kartı ekranın çok ötesine uzatıyordu.
+ */
 const OPEN_BY_DEFAULT = 1
 
 const trnsStore = useTrnsStore()

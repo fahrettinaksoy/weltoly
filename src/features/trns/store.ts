@@ -1,18 +1,25 @@
-import { defineStore } from 'pinia'
-
-import {
-  deleteRow, resolveWriteUid, trnToRow, upsertRow, watchTable, type Row, type WatchHandle,
-} from '@/services/db'
-
 import type { Range } from '@/features/date/types'
+
 import type { TrnId, TrnItem, TrnItemFull, Trns, TrnsGetterProps } from '@/features/trns/types'
 
+import type { Row, WatchHandle } from '@/services/db'
+import { defineStore } from 'pinia'
+
+import { ADJUSTMENT_ID } from '@/features/categories/pseudoCategories'
+import { resolvePseudoCategory } from '@/features/categories/pseudoCategoryItem'
 import { useCategoriesStore } from '@/features/categories/store'
 import { getEndOf, getStartOf } from '@/features/date/utils'
 import { filterTrnsIds } from '@/features/trns/getTrns'
 import { reconcileTrns, rowsToTrns } from '@/features/trns/reconcile'
 import { TrnType } from '@/features/trns/types'
 import { useWalletsStore } from '@/features/wallets/store'
+import {
+  deleteRow,
+  resolveWriteUid,
+  trnToRow,
+  upsertRow,
+  watchTable,
+} from '@/services/db'
 import { showErrorToast, showSuccessToast } from '@/stores/ui'
 
 // trns en büyük tablo; watch'ı 30ms varsayılandan daha agresif birleştirir.
@@ -70,7 +77,7 @@ export const useTrnsStore = defineStore('trns', () => {
     let latestDate = -1
     for (const trnId of Object.keys(items.value!)) {
       const trn = items.value![trnId]
-      if (!trn || trn.type === TrnType.Transfer || trn.categoryId === 'adjustment')
+      if (!trn || trn.type === TrnType.Transfer || trn.categoryId === ADJUSTMENT_ID)
         continue
       if (trn.date > latestDate) {
         latestDate = trn.date
@@ -91,7 +98,7 @@ export const useTrnsStore = defineStore('trns', () => {
   function initTrns(): void {
     watchController?.abort()
     isLoaded.value = false
-    watchController = watchTable<Row>('SELECT * FROM trns', [], (rows) => {
+    watchController = watchTable<Row>(['trns'], 'SELECT * FROM trns', [], (rows) => {
       isLoaded.value = true
       const prev = items.value
       const next = prev ? reconcileTrns(prev, rows) : rowsToTrns(rows)
@@ -101,11 +108,15 @@ export const useTrnsStore = defineStore('trns', () => {
   }
 
   /**
-   * @param silent Bildirim gösterme. Kullanıcı eylemi olmayan iç yazımlar için
-   * ŞART: örn. bir etiket silinince onu kullanan her işlem güncellenir — sessiz
-   * olmasa tek silme işlemi onlarca snackbar patlatırdı.
+   * İşlemi kaydeder (iyimser). `silent`: bildirim gösterme — kullanıcı eylemi
+   * olmayan iç yazımlar için ŞART: örn. bir etiket silinince onu kullanan her
+   * işlem güncellenir; sessiz olmasa tek silme onlarca snackbar patlatırdı.
+   *
+   * DÖNÜŞ (O-7): başarı bayrağı. Hata burada YUTULUR (rollback + toast) ama
+   * çağıranın sonucu görmesi gerekir — örn. tags.deleteTag, referans temizliği
+   * başarısızsa etiketi SİLMEMELİ, yoksa dangling tagId kalır.
    */
-  function saveTrn({ id, values, silent = false }: { id: TrnId, values: TrnItem, silent?: boolean }) {
+  function saveTrn({ id, values, silent = false }: { id: TrnId, values: TrnItem, silent?: boolean }): Promise<boolean> {
     const valuesWithEditDate = { ...values, updatedAt: Date.now() }
     const prev = items.value
     const isNew = !items.value?.[id]
@@ -114,10 +125,12 @@ export const useTrnsStore = defineStore('trns', () => {
     return upsertRow('trns', id, trnToRow(valuesWithEditDate, resolveWriteUid(null))).then(() => {
       if (!silent)
         showSuccessToast(isNew ? 'trns.added' : 'trns.updated')
+      return true
     }).catch((e) => {
       setTrns(prev)
       console.error('[trns] saveTrn failed', e)
       showErrorToast('trns.errors.saveFailed')
+      return false
     })
   }
 
@@ -156,14 +169,12 @@ export const useTrnsStore = defineStore('trns', () => {
     let categoryParent: typeof category | undefined
 
     if (!category) {
-      if (trn.categoryId === 'transfer' || trn.categoryId === 'adjustment') {
-        category = trn.categoryId === 'transfer'
-          ? { color: '', desc: '', icon: 'mdi-swap-horizontal', name: 'Transfer', parentId: 0, showInLastUsed: false, showInQuickSelector: false }
-          : { color: '', desc: '', icon: 'mdi-scale-balance', name: 'Adjustment', parentId: 0, showInLastUsed: false, showInQuickSelector: false }
-      }
-      else {
+      // Sentetik kategoriler (transfer/adjustment) categories tablosunda YOK —
+      // tek kaynaktan üretilir; adları i18n'den gelir (O-10).
+      const pseudo = resolvePseudoCategory(trn.categoryId)
+      if (!pseudo)
         return null
-      }
+      category = pseudo
     }
     else if (category.parentId) {
       categoryParent = categoriesStore.items[category.parentId]

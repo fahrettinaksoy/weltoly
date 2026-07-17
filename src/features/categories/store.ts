@@ -1,25 +1,40 @@
-import { defineStore } from 'pinia'
-
-import {
-  categoryToRow, deleteRow, resolveWriteUid, rowToCategory, upsertRows,
-  watchTable, type Row, type WatchHandle,
-} from '@/services/db'
-
 import type { AddCategoryParams, Categories, CategoryId, CategoryItem } from '@/features/categories/types'
+
 import type { TrnId } from '@/features/trns/types'
 
+import type { Row, WatchHandle } from '@/services/db'
+import { defineStore } from 'pinia'
+
 import { compareCategoryIds, computeChildrenDiff, getTransactibleCategoriesIds } from '@/features/categories/utils'
-import { TrnType } from '@/features/trns/types'
 import { useTrnsStore } from '@/features/trns/store'
+import { TrnType } from '@/features/trns/types'
+import {
+  categoryToRow,
+  deleteRow,
+  resolveWriteUid,
+  rowToCategory,
+  upsertRows,
+  watchTable,
+} from '@/services/db'
 import { showErrorToast, showSuccessToast } from '@/stores/ui'
 
 const adjustment: CategoryItem = {
-  color: '', desc: '', icon: 'mdi-plus-minus', name: 'Adjustment', parentId: 0,
-  showInLastUsed: false, showInQuickSelector: false,
+  color: '',
+  desc: '',
+  icon: 'mdi-plus-minus',
+  name: 'Adjustment',
+  parentId: 0,
+  showInLastUsed: false,
+  showInQuickSelector: false,
 }
 const transfer: CategoryItem = {
-  color: '', desc: '', icon: 'mdi-swap-horizontal', name: 'Transfer', parentId: 0,
-  showInLastUsed: false, showInQuickSelector: false,
+  color: '',
+  desc: '',
+  icon: 'mdi-swap-horizontal',
+  name: 'Transfer',
+  parentId: 0,
+  showInLastUsed: false,
+  showInQuickSelector: false,
 }
 
 export const useCategoriesStore = defineStore('categories', () => {
@@ -129,7 +144,7 @@ export const useCategoriesStore = defineStore('categories', () => {
   function initCategories(): void {
     watchController?.abort()
     isLoaded.value = false
-    watchController = watchTable<Row>('SELECT * FROM categories', [], (rows) => {
+    watchController = watchTable<Row>(['categories'], 'SELECT * FROM categories', [], (rows) => {
       isLoaded.value = true
       if (!rows.length) {
         setCategories(null)

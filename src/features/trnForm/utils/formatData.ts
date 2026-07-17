@@ -30,7 +30,10 @@ function formatTransfer(props: TrnFormValues): Transfer | false {
 
   const data: Transfer = {
     categoryId: 'transfer' as const,
-    date: props.date,
+    // `|| Date.now()` ŞART (O-9): formatTransaction ile AYNI davranış. Yoksa
+    // date 0/undefined geldiğinde transfer sessizce 1970'e düşerdi — aynı formun
+    // iki dalı iki farklı kurala uyuyordu.
+    date: props.date || Date.now(),
     expenseAmount: props.amount[1],
     expenseWalletId: props.expenseWalletId,
     incomeAmount: props.amount[2],

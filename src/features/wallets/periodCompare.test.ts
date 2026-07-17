@@ -1,25 +1,20 @@
 import { describe, expect, it } from 'vitest'
+import { changeRatio, deltaTone } from '@/features/stat/lib/periodCompare'
 
 /**
- * WalletDetailPage'deki dönem karşılaştırmasının aynı mantığı.
+ * ÜRETİM dönem-karşılaştırma modülünü test eder (Y-5).
  *
- * Neden ayrı test: hata SESSİZDİR — rozet yine çizilir, sadece yanlış yön/renk
- * gösterir; ne build ne typecheck fark eder. Kolay ters çevrilen kurallar:
+ * Eskiden bu dosya kendi içinde changeRatio/deltaTone KOPYASI taşıyordu; aynı
+ * mantık ayrıca StatPage, DashboardPage ve WalletDetailPage içinde birebir
+ * kopyalanmıştı. Beş kopyadan biri değişse test yeşil kalırdı — yanlış güven.
+ * Artık tek kaynak: features/stat/lib/periodCompare.ts.
+ *
+ * Neden bu kurallar kilitli — hata SESSİZDİR: rozet yine çizilir, sadece yanlış
+ * yön/renk gösterir; ne build ne typecheck fark eder. Kolay ters çevrilenler:
  * - önceki dönem 0 iken yüzde TANIMSIZDIR (0'a bölme → Infinity/NaN),
  * - gider ARTIŞI kötü, gelir artışı iyi — renk yöne bakarak verilemez,
  * - önceki dönem penceresi mevcut dönemle ÇAKIŞMAMALI (yarı açık aralık).
  */
-function changeRatio(current: number, previous: number): number | null {
-  if (previous === 0)
-    return null
-  return ((current - previous) / Math.abs(previous)) * 100
-}
-
-function deltaTone(delta: number, positiveIsGood: boolean): string | undefined {
-  if (Math.abs(delta) < 1)
-    return undefined
-  return (delta > 0) === positiveIsGood ? 'success' : 'error'
-}
 
 const DAY = 86_400_000
 const NOW = new Date('2026-07-15T12:00:00Z').getTime()

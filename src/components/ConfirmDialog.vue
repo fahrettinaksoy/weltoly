@@ -18,9 +18,8 @@ withDefaults(defineProps<{
   confirmColor: 'error',
 })
 
-const model = defineModel<boolean>({ required: true })
 const emit = defineEmits<{ confirm: [] }>()
-
+const model = defineModel<boolean>({ required: true })
 const { t } = useI18n()
 
 /**
@@ -38,11 +37,17 @@ function onConfirm() {
 <template>
   <v-dialog v-model="model" max-width="400">
     <v-card>
-      <v-card-title v-if="title" class="text-h6">{{ title }}</v-card-title>
-      <v-card-text class="text-body-2">{{ message }}</v-card-text>
+      <v-card-title v-if="title" class="text-h6">
+        {{ title }}
+      </v-card-title>
+      <v-card-text class="text-body-2">
+        {{ message }}
+      </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn variant="text" @click="model = false">{{ t('common.cancel') }}</v-btn>
+        <v-btn variant="text" @click="model = false">
+          {{ t('common.cancel') }}
+        </v-btn>
         <v-btn :color="confirmColor" variant="flat" @click="onConfirm">
           {{ confirmText ?? t('common.delete') }}
         </v-btn>

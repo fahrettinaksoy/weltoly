@@ -1,23 +1,24 @@
+export { emitTableChange, onTableChange } from './bus'
 // Veri katmanı genel API'si (Faz 2 store'ları buradan import eder).
-export { getDb, resolveWriteUid, isTauriRuntime } from './client'
-export { onTableChange, emitTableChange } from './bus'
-export { watchTable, type WatchHandle } from './watch'
+export { getDb, isTauriRuntime, resolveWriteUid } from './client'
 export {
-  upsertRow,
-  upsertRows,
   deleteRow,
   deleteTrnsReferencing,
+  upsertRow,
+  upsertRows,
 } from './mutations'
-export { recordOutbox, type OutboxOp } from './outbox'
+export { type OutboxOp, recordOutbox } from './outbox'
 export {
+  categoryToRow,
   type Row,
-  rowToTrn,
-  rowToWallet,
   rowToCategory,
   rowToRates,
   rowToTag,
-  trnToRow,
-  walletToRow,
-  categoryToRow,
+  rowToTrn,
+  rowToWallet,
   tagToRow,
+  trnToRow,
+  ts,
+  walletToRow,
 } from './transforms'
+export { type WatchHandle, watchTable } from './watch'

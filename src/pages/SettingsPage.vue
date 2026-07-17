@@ -1,20 +1,24 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
+import type { CurrencyCode } from '@/features/currencies/types'
 
-import { useSettingsStore, type ThemeMode } from '@/stores/settings'
-import { useUiStore } from '@/stores/ui'
-import { MAX_RADIUS, MIN_RADIUS, neutralKeys, neutralPalettes, primaryPalette, type NeutralKey } from '@/features/theme/palette'
+import type { NeutralKey } from '@/features/theme/palette'
+import type { LocaleCode } from '@/i18n/messages'
+import type { DateFormatKey, NumberFormatKey, WeekStart } from '@/shared/lib/format'
+import type { ThemeMode } from '@/stores/settings'
+import { useI18n } from 'vue-i18n'
 import ColorSwatches from '@/components/ColorSwatches.vue'
 import SectionCard from '@/components/SectionCard.vue'
-import { exportBackup, importBackup } from '@/services/backup'
-import { clearAllData, seedDemoData } from '@/features/demo/seed'
-import { useUserStore } from '@/features/user/store'
-import { useLockStore } from '@/features/auth/useLockStore'
+import PinPad from '@/features/auth/PinPad.vue'
 import SetPinDialog from '@/features/auth/SetPinDialog.vue'
+import { useLockStore } from '@/features/auth/useLockStore'
 import { allCurrencies } from '@/features/currencies/list'
-import { DATE_FORMATS, NUMBER_FORMATS, type DateFormatKey, type NumberFormatKey, type WeekStart } from '@/shared/lib/format'
-import type { CurrencyCode } from '@/features/currencies/types'
-import type { LocaleCode } from '@/i18n/messages'
+import { clearAllData, seedDemoData } from '@/features/demo/seed'
+import { MAX_RADIUS, MIN_RADIUS, neutralKeys, neutralPalettes, primaryPalette } from '@/features/theme/palette'
+import { useUserStore } from '@/features/user/store'
+import { exportBackup, importBackup } from '@/services/backup'
+import { DATE_FORMATS, NUMBER_FORMATS } from '@/shared/lib/format'
+import { useSettingsStore } from '@/stores/settings'
+import { useUiStore } from '@/stores/ui'
 
 const { t } = useI18n()
 const settings = useSettingsStore()
@@ -36,9 +40,28 @@ const activeTab = computed(() => tabItems.value.find(i => i.value === tab.value)
 
 const showSetPin = ref(false)
 
-function onRemovePin() {
-  lock.removePin()
-  ui.showToast(t('settings.pinRemoved'), 'success')
+// PIN kaldırma: önce mevcut PIN doğrulanır (O-13).
+const showRemovePin = ref(false)
+const removePad = ref<InstanceType<typeof PinPad>>()
+const removeError = ref(false)
+
+function askRemovePin() {
+  removeError.value = false
+  showRemovePin.value = true
+}
+
+async function onRemovePinConfirm(pin: string) {
+  if (await lock.matchesPin(pin)) {
+    lock.removePin()
+    showRemovePin.value = false
+    ui.showToast(t('settings.pinRemoved'), 'success')
+    return
+  }
+  removeError.value = true
+  setTimeout(() => {
+    removeError.value = false
+    removePad.value?.reset()
+  }, 400)
 }
 
 const themeOptions = computed<{ value: ThemeMode, label: string, icon: string }[]>(() => [
@@ -135,21 +158,27 @@ async function onClearData() {
             <v-icon :icon="activeTab.icon" size="22" />
           </v-avatar>
           <div class="overflow-hidden">
-            <div class="text-subtitle-1 font-weight-bold">{{ activeTab.label }}</div>
-            <div class="text-caption text-medium-emphasis">{{ activeTab.desc }}</div>
+            <div class="text-subtitle-1 font-weight-bold">
+              {{ activeTab.label }}
+            </div>
+            <div class="text-caption text-medium-emphasis">
+              {{ activeTab.desc }}
+            </div>
           </div>
         </div>
         <v-divider class="mb-4" />
 
         <v-tabs-window v-model="tab">
-        <!-- Görünüm -->
-        <v-tabs-window-item value="appearance">
-          <SectionCard
-            :title="t('settings.groupTheme')"
-            :subtitle="t('settings.groupThemeDesc')"
-            icon="mdi-palette-outline"
-          >
-              <div class="text-body-2 text-medium-emphasis mb-2">{{ t('settings.theme') }}</div>
+          <!-- Görünüm -->
+          <v-tabs-window-item value="appearance">
+            <SectionCard
+              :title="t('settings.groupTheme')"
+              :subtitle="t('settings.groupThemeDesc')"
+              icon="mdi-palette-outline"
+            >
+              <div class="text-body-2 text-medium-emphasis mb-2">
+                {{ t('settings.theme') }}
+              </div>
               <v-btn-toggle
                 :model-value="settings.themeMode"
                 color="primary" density="comfortable" mandatory class="mb-4"
@@ -160,7 +189,9 @@ async function onClearData() {
                 </v-btn>
               </v-btn-toggle>
 
-              <div class="text-body-2 text-medium-emphasis mb-2">{{ t('settings.primaryColor') }}</div>
+              <div class="text-body-2 text-medium-emphasis mb-2">
+                {{ t('settings.primaryColor') }}
+              </div>
               <ColorSwatches
                 :model-value="settings.primaryColor"
                 :colors="primaryPalette"
@@ -168,7 +199,9 @@ async function onClearData() {
                 @update:model-value="settings.setPrimaryColor($event)"
               />
 
-              <div class="text-body-2 text-medium-emphasis mb-2">{{ t('settings.neutral') }}</div>
+              <div class="text-body-2 text-medium-emphasis mb-2">
+                {{ t('settings.neutral') }}
+              </div>
               <div class="d-flex flex-wrap ga-2 mb-4">
                 <button
                   v-for="n in neutralKeys" :key="n" type="button" class="neutral-swatch"
@@ -181,23 +214,25 @@ async function onClearData() {
                 </button>
               </div>
 
-              <div class="text-body-2 text-medium-emphasis mb-1">{{ t('settings.radius') }} ({{ settings.radius }}px)</div>
+              <div class="text-body-2 text-medium-emphasis mb-1">
+                {{ t('settings.radius') }} ({{ settings.radius }}px)
+              </div>
               <v-slider
                 :model-value="settings.radius"
                 :min="MIN_RADIUS" :max="MAX_RADIUS" :step="1"
                 color="primary" hide-details density="compact"
                 @update:model-value="settings.setRadius($event)"
               />
-          </SectionCard>
-        </v-tabs-window-item>
+            </SectionCard>
+          </v-tabs-window-item>
 
-        <!-- Profil ve güvenlik -->
-        <v-tabs-window-item value="profile">
-          <SectionCard
-            :title="t('settings.groupAccount')"
-            :subtitle="t('settings.groupAccountDesc')"
-            icon="mdi-shield-account-outline"
-          >
+          <!-- Profil ve güvenlik -->
+          <v-tabs-window-item value="profile">
+            <SectionCard
+              :title="t('settings.groupAccount')"
+              :subtitle="t('settings.groupAccountDesc')"
+              icon="mdi-shield-account-outline"
+            >
               <v-text-field
                 :model-value="userStore.displayName"
                 :label="t('settings.displayName')"
@@ -213,24 +248,29 @@ async function onClearData() {
                   <v-btn variant="tonal" prepend-icon="mdi-lock-reset" @click="showSetPin = true">
                     {{ t('settings.changePin') }}
                   </v-btn>
-                  <v-btn variant="tonal" color="error" prepend-icon="mdi-lock-open-variant-outline" @click="onRemovePin">
+                  <v-btn variant="tonal" color="error" prepend-icon="mdi-lock-open-variant-outline" @click="askRemovePin">
                     {{ t('settings.removePin') }}
                   </v-btn>
                 </template>
               </div>
-          </SectionCard>
-        </v-tabs-window-item>
+              <div class="text-caption text-medium-emphasis mt-2">
+                <v-icon icon="mdi-information-outline" size="14" class="mr-1" />{{ t('lock.notEncryptedNote') }}
+              </div>
+            </SectionCard>
+          </v-tabs-window-item>
 
-        <!-- Yerelleştirme: 2 kart (dil & para birimi + biçimlendirme) -->
-        <v-tabs-window-item value="localization">
-          <!-- Kart 1: Dil ve para birimi -->
-          <SectionCard
-            :title="t('settings.groupLang')"
-            :subtitle="t('settings.groupLangDesc')"
-            icon="mdi-translate"
-            class="mb-4"
-          >
-              <div class="text-body-2 text-medium-emphasis mb-2">{{ t('settings.language') }}</div>
+          <!-- Yerelleştirme: 2 kart (dil & para birimi + biçimlendirme) -->
+          <v-tabs-window-item value="localization">
+            <!-- Kart 1: Dil ve para birimi -->
+            <SectionCard
+              :title="t('settings.groupLang')"
+              :subtitle="t('settings.groupLangDesc')"
+              icon="mdi-translate"
+              class="mb-4"
+            >
+              <div class="text-body-2 text-medium-emphasis mb-2">
+                {{ t('settings.language') }}
+              </div>
               <v-select
                 :model-value="settings.locale"
                 :items="localeOptions" item-title="label" item-value="value" hide-details
@@ -238,22 +278,23 @@ async function onClearData() {
                 @update:model-value="settings.setAppLocale($event as LocaleCode)"
               />
 
-              <div class="text-body-2 text-medium-emphasis mb-2">{{ t('settings.currency') }}</div>
+              <div class="text-body-2 text-medium-emphasis mb-2">
+                {{ t('settings.currency') }}
+              </div>
               <v-select
                 :model-value="userStore.baseCurrency"
                 :items="currencyOptions" item-title="label" item-value="value" hide-details
                 prepend-inner-icon="mdi-currency-usd"
                 @update:model-value="userStore.saveUserBaseCurrency($event as CurrencyCode)"
               />
-          </SectionCard>
+            </SectionCard>
 
-          <!-- Kart 2: Biçimlendirme -->
-          <SectionCard
-            :title="t('settings.formatting')"
-            :subtitle="t('settings.formattingHint')"
-            icon="mdi-numeric"
-          >
-
+            <!-- Kart 2: Biçimlendirme -->
+            <SectionCard
+              :title="t('settings.formatting')"
+              :subtitle="t('settings.formattingHint')"
+              icon="mdi-numeric"
+            >
               <v-row dense>
                 <v-col cols="12" sm="4">
                   <v-select
@@ -286,16 +327,16 @@ async function onClearData() {
                 :label="t('settings.hideDecimals')" hide-details density="comfortable" class="mt-2"
                 @update:model-value="settings.setHideDecimals(!!$event)"
               />
-          </SectionCard>
-        </v-tabs-window-item>
+            </SectionCard>
+          </v-tabs-window-item>
 
-        <!-- Veri / Yedekleme -->
-        <v-tabs-window-item value="data">
-          <SectionCard
-            :title="t('settings.groupData')"
-            :subtitle="t('settings.groupDataDesc')"
-            icon="mdi-database-outline"
-          >
+          <!-- Veri / Yedekleme -->
+          <v-tabs-window-item value="data">
+            <SectionCard
+              :title="t('settings.groupData')"
+              :subtitle="t('settings.groupDataDesc')"
+              icon="mdi-database-outline"
+            >
               <div class="d-flex ga-2 flex-wrap">
                 <v-btn variant="tonal" prepend-icon="mdi-export" :loading="busy" @click="onExport">
                   {{ t('settings.exportBackup') }}
@@ -310,8 +351,8 @@ async function onClearData() {
                   {{ t('settings.clearData') }}
                 </v-btn>
               </div>
-          </SectionCard>
-        </v-tabs-window-item>
+            </SectionCard>
+          </v-tabs-window-item>
         </v-tabs-window>
       </div>
 
@@ -341,13 +382,36 @@ async function onClearData() {
         <v-card-text>{{ t('settings.clearConfirm') }}</v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="confirmClear = false">{{ t('common.cancel') }}</v-btn>
-          <v-btn color="error" variant="flat" @click="onClearData">{{ t('settings.clearData') }}</v-btn>
+          <v-btn variant="text" @click="confirmClear = false">
+            {{ t('common.cancel') }}
+          </v-btn>
+          <v-btn color="error" variant="flat" @click="onClearData">
+            {{ t('settings.clearData') }}
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <SetPinDialog v-model="showSetPin" />
+
+    <!-- PIN kaldırma: mevcut PIN doğrulanmadan kaldırılamaz (O-13). -->
+    <v-dialog v-model="showRemovePin" max-width="380">
+      <v-card class="pa-4">
+        <PinPad
+          ref="removePad"
+          :title="t('lock.enterCurrent')"
+          :length="lock.pinLength"
+          :error="removeError"
+          @complete="onRemovePinConfirm"
+        />
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="showRemovePin = false">
+            {{ t('common.cancel') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 

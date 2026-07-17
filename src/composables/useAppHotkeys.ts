@@ -1,5 +1,5 @@
-import { useHotkey } from 'vuetify'
 import { useRouter } from 'vue-router'
+import { useHotkey } from 'vuetify'
 
 import { useTrnsFormStore } from '@/features/trnForm/store'
 
@@ -22,7 +22,9 @@ export function useAppHotkeys() {
   useHotkey('g-c', () => router.push('/categories'))
   useHotkey('g-s', () => router.push('/stat'))
   useHotkey('g-e', () => router.push('/settings'))
-  useHotkey('shift+/', () => { showHelp.value = !showHelp.value })
+  useHotkey('shift+/', () => {
+    showHelp.value = !showHelp.value
+  })
 
   return { showHelp }
 }

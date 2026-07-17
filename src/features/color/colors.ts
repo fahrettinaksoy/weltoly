@@ -1,4 +1,3 @@
-/* eslint-disable perfectionist/sort-objects */
 const colors = {
   slate: {
     50: '#f8fafc',

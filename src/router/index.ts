@@ -1,4 +1,5 @@
-import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
+import type { RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
 // Faz 0: temel sayfa iskeletleri. Faz 2+ ile alt rotalar (wallets/:id, stat/categories/:id vb.) eklenecek.
 const routes: RouteRecordRaw[] = [

@@ -87,6 +87,33 @@ export function formatNumber(value: number, o: FormatOptions): string {
   return new Intl.NumberFormat(loc, { maximumFractionDigits: digits }).format(value)
 }
 
+/**
+ * Yüzde biçimi (O-5). Girdi YÜZDE BİRİMİNDEDİR (42 → "%42" / "42%").
+ *
+ * Neden Intl: yüzde işaretinin YERİ dile göre değişir — tr'de "%42" (önde),
+ * en'de "42%" (arkada), ru'da "42 %" (bölünmez boşlukla). Şablonlarda sabit
+ * `%{{ }}` ön eki yazmak tr dışındaki dillerde yanlış çıktı veriyordu.
+ *
+ * DİKKAT — burada `numberLocale()` KULLANILMAZ, doğrudan UYGULAMA DİLİ (o.locale)
+ * kullanılır. Sebep: numberLocale, kullanıcının BİNLİK/ONDALIK AYRACI tercihini
+ * temsilî bir locale'e eşler (space_comma → fr-FR). Yüzdeyi o locale ile
+ * biçimlendirmek işaretin YERİNİ de o dilden alır: Türkçe arayüzde
+ * "Kullanım oranı: 57 %" (Fransız stili) çıkıyordu — oysa "%57" olmalı.
+ * İşaretin yeri sayı biçimi tercihinin değil, DİLİN bir özelliğidir.
+ *
+ * Ondalık ayracın dilden gelmesi kabul edilebilir: yüzdeler varsayılan olarak
+ * 0 ondalıkla basılır, ayraç neredeyse hiç görünmez.
+ *
+ * Intl `style: 'percent'` oranla çalışır (0–1), bu yüzden 100'e bölünür.
+ */
+export function formatPercent(value: number, o: FormatOptions, fractionDigits = 0): string {
+  return new Intl.NumberFormat(o.locale, {
+    style: 'percent',
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  }).format(value / 100)
+}
+
 /** Sayısal tarih biçimi (MM/DD/YYYY vb.); 'auto' dile göre. */
 export function formatDate(ts: number | Date, o: FormatOptions): string {
   const pattern = DATE_FORMATS.find(f => f.key === o.dateFormat)?.pattern

@@ -2,8 +2,25 @@ import type { CurrencyCode, Rates } from '@/features/currencies/types'
 import type { TrnId, TrnItem, Trns } from '@/features/trns/types'
 import type { WalletId, WalletItem, Wallets } from '@/features/wallets/types'
 
+import { ADJUSTMENT_ID } from '@/features/categories/pseudoCategories'
 import { TrnType } from '@/features/trns/types'
+import { addMoney, subMoney } from '@/shared/lib/money'
 
+function validRate(v: unknown): v is number {
+  return typeof v === 'number' && Number.isFinite(v) && v > 0
+}
+
+/**
+ * Tutarı base para birimine çevirir.
+ *
+ * DÖNÜŞ: eksik/geçersiz kur olduğunda `null` — çağıran cüzdanı toplamdan AÇIKÇA
+ * hariç tutabilsin diye. Eskiden burada `?? 1` sessiz 1:1 fallback vardı (Y-1):
+ * 10.000 EUR, EUR kuru yokken 10.000 USD gibi net'e giriyordu. Artık uydurma yok.
+ *
+ * Pass-through (çevirmeden aynen döndürme) YALNIZ güvenli iki durumda:
+ *  - Dönüşüm bağlamı yok (base ya da rates tanımsız) → henüz kur yüklenmemiş.
+ *  - base === currency → dönüşüm gerekmez.
+ */
 export function getAmountInRate({
   amount,
   baseCurrencyCode,
@@ -14,17 +31,22 @@ export function getAmountInRate({
   baseCurrencyCode?: CurrencyCode
   currencyCode: CurrencyCode
   rates?: Rates
-}): number {
+}): number | null {
   if (!baseCurrencyCode || !rates)
     return amount
 
-  if (baseCurrencyCode !== currencyCode)
-    return amount / (rates[currencyCode] ?? 1) * (rates[baseCurrencyCode] ?? 1)
+  if (baseCurrencyCode === currencyCode)
+    return amount
 
-  return amount
+  const from = rates[currencyCode]
+  const to = rates[baseCurrencyCode]
+  if (!validRate(from) || !validRate(to))
+    return null // eksik/geçersiz kur → sessizce 1:1 varsayma
+
+  return amount / from * to
 }
 
-type TotalProps = {
+interface TotalProps {
   baseCurrencyCode?: CurrencyCode
   rates?: Rates
   trnsIds?: TrnId[]
@@ -33,7 +55,7 @@ type TotalProps = {
   walletsItems: Record<WalletId, WalletItem>
 }
 
-export type TotalReturns = {
+export interface TotalReturns {
   adjustment: number
   expense: number
   expenseTransfers: number
@@ -41,19 +63,22 @@ export type TotalReturns = {
   incomeTransfers: number
   sum: number
   sumTransfers: number
+  // Kuru eksik olduğu için toplamdan hariç tutulan işlem oldu mu? UI "kur eksik" rozeti gösterir.
+  hasMissingRates: boolean
 }
 
 export function getTotal(props: TotalProps): TotalReturns {
   const { baseCurrencyCode, rates, trnsIds, trnsItems, walletsIds, walletsItems } = props
   const walletsSet = walletsIds?.length ? new Set(walletsIds) : null
 
-  function getAmount(amount: number, currencyCode: CurrencyCode) {
-    return getAmountInRate({
-      amount,
-      baseCurrencyCode,
-      currencyCode,
-      rates,
-    })
+  let hasMissingRates = false
+
+  // Kuru çözülemeyen tutar null döner → hariç tut ve bayrağı kaldır.
+  function getAmount(amount: number, currencyCode: CurrencyCode): number | null {
+    const v = getAmountInRate({ amount, baseCurrencyCode, currencyCode, rates })
+    if (v === null)
+      hasMissingRates = true
+    return v
   }
 
   let income = 0
@@ -68,19 +93,22 @@ export function getTotal(props: TotalProps): TotalReturns {
       continue
 
     if (trn.type === TrnType.Income || trn.type === TrnType.Expense) {
-      if (trn.categoryId === 'adjustment') {
+      if (trn.categoryId === ADJUSTMENT_ID) {
         const wallet = walletsItems[trn.walletId]
         const amount = getAmount(trn.amount, wallet?.currency ?? 'USD')
-        adjustment += trn.type === TrnType.Income ? amount : -amount
+        if (amount !== null)
+          adjustment = trn.type === TrnType.Income ? addMoney(adjustment, amount) : subMoney(adjustment, amount)
         continue
       }
       const wallet = walletsItems[trn.walletId]
       const sum = getAmount(trn.amount, wallet?.currency ?? 'USD')
+      if (sum === null)
+        continue
 
       if (trn.type === TrnType.Income)
-        income += sum
+        income = addMoney(income, sum)
       else
-        expense += sum
+        expense = addMoney(expense, sum)
     }
 
     else if (trn.type === TrnType.Transfer && 'incomeWalletId' in trn) {
@@ -93,21 +121,23 @@ export function getTotal(props: TotalProps): TotalReturns {
       const expenseAmount = getAmount(trn.expenseAmount, expenseWallet.currency)
 
       if (walletsSet) {
-        if (walletsSet.has(trn.incomeWalletId))
-          incomeTransfers += incomeAmount
+        if (incomeAmount !== null && walletsSet.has(trn.incomeWalletId))
+          incomeTransfers = addMoney(incomeTransfers, incomeAmount)
 
-        if (walletsSet.has(trn.expenseWalletId))
-          expenseTransfers += expenseAmount
+        if (expenseAmount !== null && walletsSet.has(trn.expenseWalletId))
+          expenseTransfers = addMoney(expenseTransfers, expenseAmount)
       }
       else {
-        incomeTransfers += incomeAmount
-        expenseTransfers += expenseAmount
+        if (incomeAmount !== null)
+          incomeTransfers = addMoney(incomeTransfers, incomeAmount)
+        if (expenseAmount !== null)
+          expenseTransfers = addMoney(expenseTransfers, expenseAmount)
       }
     }
   }
 
-  const sum = income - expense
-  const sumTransfers = incomeTransfers - expenseTransfers
+  const sum = subMoney(income, expense)
+  const sumTransfers = subMoney(incomeTransfers, expenseTransfers)
 
   return {
     adjustment,
@@ -117,6 +147,7 @@ export function getTotal(props: TotalProps): TotalReturns {
     incomeTransfers,
     sum,
     sumTransfers,
+    hasMissingRates,
   }
 }
 
@@ -132,7 +163,7 @@ export function getWalletsTotals(props: {
   const totals = new Map<WalletId, number>()
 
   function addToWallet(walletId: WalletId, amount: number) {
-    totals.set(walletId, (totals.get(walletId) ?? 0) + amount)
+    totals.set(walletId, addMoney(totals.get(walletId) ?? 0, amount))
   }
 
   for (const trnId of Object.keys(trnsItems)) {

@@ -1,5 +1,5 @@
-import Database from '@tauri-apps/plugin-sql'
 import { isTauri } from '@tauri-apps/api/core'
+import Database from '@tauri-apps/plugin-sql'
 
 // Migration anahtarıyla (lib.rs) AYNI olmalı.
 const DB_URL = 'sqlite:weltoly.db'

@@ -1,3 +1,3 @@
-export type TrnFormUi = {
+export interface TrnFormUi {
   isShow: boolean
 }

@@ -1,18 +1,20 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { format } from 'date-fns'
-
-import { useStatStore, type StatType } from '@/features/stat/store'
-import { useCurrenciesStore } from '@/features/currencies/store'
-import { useWalletsStore } from '@/features/wallets/store'
-import { useCategoriesStore } from '@/features/categories/store'
-import { useTagsStore } from '@/features/tags/store'
 import type { Period } from '@/features/date/types'
-import StatChart from '@/features/stat/components/StatChart.vue'
-import CategoryBreakdown from '@/features/stat/components/CategoryBreakdown.vue'
-import SectionCard from '@/components/SectionCard.vue'
+import type { StatType } from '@/features/stat/store'
+
+import { format } from 'date-fns'
+import { useI18n } from 'vue-i18n'
 import AppEmptyState from '@/components/AppEmptyState.vue'
+import SectionCard from '@/components/SectionCard.vue'
 import { useFormat } from '@/composables/useFormat'
+import { useCategoriesStore } from '@/features/categories/store'
+import { useCurrenciesStore } from '@/features/currencies/store'
+import CategoryBreakdown from '@/features/stat/components/CategoryBreakdown.vue'
+import StatChart from '@/features/stat/components/StatChart.vue'
+import { changeRatio, deltaTone } from '@/features/stat/lib/periodCompare'
+import { useStatStore } from '@/features/stat/store'
+import { useTagsStore } from '@/features/tags/store'
+import { useWalletsStore } from '@/features/wallets/store'
 
 const { t } = useI18n()
 const stat = useStatStore()
@@ -37,37 +39,18 @@ const periods: { value: Period, label: string }[] = [
   { value: 'year', label: t('stat.year') },
 ]
 
-const rangeLabel = computed(() => {
+const rangeLabel = computed<string>(() => {
   const { start, end } = stat.currentRange
   switch (stat.period) {
     case 'day': return format(start, 'd MMMM yyyy')
     case 'week': return `${format(start, 'd MMM')} – ${format(end, 'd MMM')}`
     case 'month': return format(start, 'MMMM yyyy')
     case 'year': return format(start, 'yyyy')
+    // Period birliği yukarıdakilerle tükeniyor; default yalnız TS'in dönüş
+    // tipini daraltabilmesi için (computed asla undefined dönmemeli).
+    default: return format(start, 'd MMMM yyyy')
   }
 })
-
-/**
- * Değişim oranı. null = kıyaslanamaz, rozet gösterilmez.
- * Önceki aralık 0 ise yüzde TANIMSIZDIR (0'a bölme) — "%Infinity arttı" yazmak
- * yerine rozet hiç çizilmez; sıfırdan artış oransal bir artış değildir.
- */
-function changeRatio(current: number, previous: number): number | null {
-  if (previous === 0)
-    return null
-  return ((current - previous) / Math.abs(previous)) * 100
-}
-
-/**
- * Rozet rengi. Yön TEK BAŞINA renk belirlemez: gider artışı KÖTÜ, gelir artışı
- * İYİ — ikisini de yeşil yapmak kullanıcıyı yanıltırdı. %1'in altındaki sapmalar
- * nötr: olmayan bir eğilimi varmış gibi boyamamak için.
- */
-function deltaTone(delta: number, positiveIsGood: boolean): string | undefined {
-  if (Math.abs(delta) < 1)
-    return undefined
-  return (delta > 0) === positiveIsGood ? 'success' : 'error'
-}
 
 /**
  * Sayaç kartları — her biri bir ÖNCEKİ aynı aralıkla kıyaslı.
@@ -141,10 +124,12 @@ const tagFilterLabel = computed(() => {
                 variant="tonal"
                 :title="t('stat.vsPrevRange')"
               >
-                %{{ fmt.number(Math.abs(Math.round(card.delta))) }}
+                {{ fmt.percent(Math.abs(card.delta)) }}
               </v-chip>
             </div>
-            <div class="text-caption text-medium-emphasis">{{ card.label }}</div>
+            <div class="text-caption text-medium-emphasis">
+              {{ card.label }}
+            </div>
           </v-sheet>
         </div>
 
@@ -185,8 +170,12 @@ const tagFilterLabel = computed(() => {
               density="compact"
               @update:model-value="stat.setStatType($event as StatType)"
             >
-              <v-btn value="expense" size="small">{{ t('trnForm.expense') }}</v-btn>
-              <v-btn value="income" size="small">{{ t('trnForm.income') }}</v-btn>
+              <v-btn value="expense" size="small">
+                {{ t('trnForm.expense') }}
+              </v-btn>
+              <v-btn value="income" size="small">
+                {{ t('trnForm.income') }}
+              </v-btn>
             </v-btn-toggle>
           </template>
 
@@ -225,7 +214,7 @@ const tagFilterLabel = computed(() => {
                   {{ fmt.money(tg.amount, currenciesStore.base) }}
                 </span>
                 <span class="text-caption text-medium-emphasis stat-tagbar-pct">
-                  %{{ fmt.number(Math.round(tg.percent)) }}
+                  {{ fmt.percent(tg.percent) }}
                 </span>
               </div>
               <v-progress-linear
@@ -237,7 +226,9 @@ const tagFilterLabel = computed(() => {
           </div>
           <!-- Bu not şart: çubukların toplamı %100 etmez ve bu bir hata değil.
                Açıklanmazsa kullanıcı rakamların bozuk olduğunu düşünür. -->
-          <div class="text-caption text-medium-emphasis mt-3">{{ t('stat.byTagNote') }}</div>
+          <div class="text-caption text-medium-emphasis mt-3">
+            {{ t('stat.byTagNote') }}
+          </div>
         </SectionCard>
       </div>
 

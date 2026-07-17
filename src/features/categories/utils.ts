@@ -38,11 +38,27 @@ export function getTransactibleCategoriesIds(items: Categories, ids?: CategoryId
   return result
 }
 
+/**
+ * Kategorinin KÖKÜNÜ verir; kök zaten kendisiyse ya da üst kategori
+ * çözülemiyorsa kategorinin kendisine düşer.
+ *
+ * O-11: eskiden `category.parentId` doğrudan döndürülüyordu. Üst kategori
+ * SİLİNMİŞSE (FK yok, dangling referans mümkün) geriye artık var olmayan bir id
+ * dönüyordu; çağıran onu `items[id]` ile arayınca `undefined` buluyor ve pastada
+ * İSİMSİZ bir dilim çiziliyordu. Hata sessiz: grafik yine çizilir, sadece
+ * anlamsız bir dilim taşır. Artık üst kategorinin GERÇEKTEN var olduğu
+ * doğrulanır; yoksa yaprağın kendisi kök sayılır.
+ */
 export function getParentCategoryIdOrReturnSame(items: Categories, categoryId: CategoryId): CategoryId {
   const category = items[categoryId]
   if (!category || category.parentId === 0)
     return categoryId
-  return category.parentId ?? categoryId
+
+  const parentId = category.parentId
+  if (!parentId)
+    return categoryId
+
+  return items[parentId] ? parentId : categoryId
 }
 
 export function compareCategoriesByParentAndName(a: CategoryItem, b: CategoryItem, items: Categories): number {

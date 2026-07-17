@@ -47,8 +47,12 @@ const drawerWidth = computed(() => (mobile.value ? viewportWidth.value : props.w
           <v-icon :icon="icon" color="primary" size="20" />
         </v-avatar>
         <div class="overflow-hidden flex-1-1">
-          <div class="text-subtitle-1 font-weight-bold text-truncate">{{ title }}</div>
-          <div v-if="subtitle" class="text-caption form-drawer-subtitle text-truncate">{{ subtitle }}</div>
+          <div class="text-subtitle-1 font-weight-bold text-truncate">
+            {{ title }}
+          </div>
+          <div v-if="subtitle" class="text-caption form-drawer-subtitle text-truncate">
+            {{ subtitle }}
+          </div>
         </div>
         <v-btn
           icon="mdi-close"
@@ -83,7 +87,9 @@ const drawerWidth = computed(() => (mobile.value ? viewportWidth.value : props.w
           {{ t('common.delete') }}
         </v-btn>
         <v-spacer />
-        <v-btn variant="text" @click="model = false">{{ t('common.cancel') }}</v-btn>
+        <v-btn variant="text" @click="model = false">
+          {{ t('common.cancel') }}
+        </v-btn>
         <v-btn color="primary" variant="flat" :disabled="saveDisabled" @click="emit('save')">
           {{ t('common.save') }}
         </v-btn>

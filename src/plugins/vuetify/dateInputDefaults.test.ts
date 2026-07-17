@@ -2,7 +2,8 @@
 import { describe, expect, it } from 'vitest'
 import { createApp, h } from 'vue'
 import { createVuetify } from 'vuetify'
-import { VDateInput } from 'vuetify/labs/VDateInput'
+// Vuetify 4: VDateInput labs'tan çıkıp stable bileşen oldu (v3'te 'vuetify/labs/VDateInput').
+import { VDateInput } from 'vuetify/components/VDateInput'
 
 import { defaults } from '@/plugins/vuetify/defaults'
 
@@ -19,7 +20,7 @@ import { defaults } from '@/plugins/vuetify/defaults'
  * alanı sessizce dolgulu görünüme döner. Sessiz görsel regresyon = testle
  * yakalanmalı.
  */
-describe('VDateInput varsayılanları', () => {
+describe('vDateInput varsayılanları', () => {
   function mountDateInput() {
     const vuetify = createVuetify({ defaults })
     const el = document.createElement('div')

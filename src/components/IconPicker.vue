@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n'
 
 import { categoryIcons } from '@/features/categories/iconList'
 
+defineProps<{ title: string }>()
 /**
  * Paylaşılan ikon seçici dialogu (kategori + cüzdan formları).
  * Tek bileşen: kopyalansaydı arama/ızgara davranışı zamanla ayrışırdı.
@@ -11,8 +12,6 @@ import { categoryIcons } from '@/features/categories/iconList'
  */
 const model = defineModel<boolean>({ required: true })
 const icon = defineModel<string>('icon', { required: true })
-
-defineProps<{ title: string }>()
 
 const { t } = useI18n()
 const search = ref('')

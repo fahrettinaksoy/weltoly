@@ -1,7 +1,4 @@
-import { describe, expect, it } from 'vitest'
-
-import { getParentCategoryIdOrReturnSame } from './utils'
-import type { Categories, CategoryItem } from './types'
+import type { Categories, CategoryId, CategoryItem } from './types'
 
 /**
  * Cüzdan detayındaki pasta, gideri KÖK kategoriye toplar (WalletDetailPage
@@ -11,7 +8,9 @@ import type { Categories, CategoryItem } from './types'
  * dilimler gösterir. Özellikle "kök kendine toplanır" ve "sentetik kategoriler
  * (transfer/adjustment) kaybolmaz" durumları kolay bozulur.
  */
-import type { CategoryId } from './types'
+import { describe, expect, it } from 'vitest'
+
+import { getParentCategoryIdOrReturnSame } from './utils'
 
 /** Testin ilgilendiği tek alan parentId; gerisi ağaç için anlamsız. */
 function cat(name: string, parentId: CategoryId | 0): CategoryItem {
@@ -58,6 +57,22 @@ describe('kategori kök toplama', () => {
   it('bilinmeyen kategori kendi id\'sini verir — çökmez', () => {
     // Kategori silinmiş ama işlem duruyor olabilir.
     expect(root('silinmis-kategori')).toBe('silinmis-kategori')
+  })
+
+  /**
+   * O-11: FK yok → bir çocuk, SİLİNMİŞ bir üst kategoriye işaret edebilir.
+   * Eskiden o dangling id kök olarak dönüyordu; çağıran `items[id]` ile arayınca
+   * undefined buluyor ve pastada İSİMSİZ dilim çiziliyordu. Artık yaprağın
+   * kendisine düşülür.
+   */
+  it('üst kategori silinmişse yaprağın kendisine düşer (isimsiz dilim yok)', () => {
+    const orphanItems: Categories = {
+      ...items,
+      orphan: cat('Yetim', 'silinmis-ust'), // 'silinmis-ust' items içinde YOK
+    }
+    const r = getParentCategoryIdOrReturnSame(orphanItems, 'orphan')
+    expect(r).toBe('orphan')
+    expect(orphanItems[r]).toBeDefined() // dönen id HER ZAMAN çözülebilir olmalı
   })
 
   it('gerçek toplama: 13 yaprak → kök başına tek dilim', () => {

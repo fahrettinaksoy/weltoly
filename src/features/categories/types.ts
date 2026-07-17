@@ -1,8 +1,8 @@
 import { z } from 'zod'
 
-import { random } from '@/shared/lib/random'
-import icons from '@/shared/icons'
 import { colorsArray } from '@/features/color/colors'
+import icons from '@/shared/icons'
+import { random } from '@/shared/lib/random'
 
 export type CategoryId = string
 
@@ -28,7 +28,7 @@ export type CategoryItemWithId = CategoryItem & {
 
 export type Categories = Record<CategoryId, CategoryItem> & Record<'transfer', CategoryItem>
 
-export type AddCategoryParams = {
+export interface AddCategoryParams {
   id: CategoryId
   isUpdateChildCategoriesColor: boolean
   nextChildIds?: CategoryId[]

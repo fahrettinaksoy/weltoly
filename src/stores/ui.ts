@@ -11,7 +11,7 @@ export type SnackColor = 'error' | 'success' | 'info' | 'warning'
  * import etmek yerine ihtiyacımız olan dar şekli burada tanımlıyoruz.
  *
  */
-type SnackbarMessage = {
+interface SnackbarMessage {
   text: string
   /** Zemin: duruma göre. Metin/ikon rengini Vuetify on-color olarak kendi çözer. */
   color: SnackColor

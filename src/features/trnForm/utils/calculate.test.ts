@@ -1,24 +1,34 @@
 import { describe, expect, it } from 'vitest'
 
-import { createExpressionString, evaluateExpression, formatAmountResult, formatInput, padDisplayCents } from './calculate'
+import { createExpressionString, evaluateAbsExpression, formatAmountResult, formatInput, padDisplayCents } from './calculate'
 
-describe('evaluateExpression', () => {
+describe('evaluateAbsExpression', () => {
   it('işlem önceliğini uygular', () => {
-    expect(evaluateExpression('2+2*3')).toBe(8)
-    expect(evaluateExpression('10/2')).toBe(5)
-    expect(evaluateExpression('100-40')).toBe(60)
+    expect(evaluateAbsExpression('2+2*3')).toBe(8)
+    expect(evaluateAbsExpression('10/2')).toBe(5)
+    expect(evaluateAbsExpression('100-40')).toBe(60)
   })
 
   it('sona takılı operatörü yok sayar', () => {
-    expect(evaluateExpression('10+')).toBe(10)
+    expect(evaluateAbsExpression('10+')).toBe(10)
   })
 
   it('ondalık sonucu döndürür', () => {
-    expect(evaluateExpression('1/4')).toBe(0.25)
+    expect(evaluateAbsExpression('1/4')).toBe(0.25)
   })
 
   it('boş/geçersiz girdide 0 döner', () => {
-    expect(evaluateExpression('')).toBe(0)
+    expect(evaluateAbsExpression('')).toBe(0)
+  })
+
+  /**
+   * O-8: sonuç MUTLAK DEĞERDİR — bilinçli. Tutarlar pozitif büyüklük olarak
+   * saklanır, işareti işlemin türü taşır. Ad ("Abs") bunu duyurur; bu test
+   * davranışı kilitler ki "işaret kayboluyor" diye sessizce düzeltilmesin.
+   */
+  it('sonuç her zaman mutlak değerdir (100-150 → 50, -50 DEĞİL)', () => {
+    expect(evaluateAbsExpression('100-150')).toBe(50)
+    expect(evaluateAbsExpression('0-7')).toBe(7)
   })
 })
 

@@ -8,7 +8,7 @@ import { onScopeDispose, shallowRef } from 'vue'
  * useAppBarAction ile aynı desen: sayfa kurar, scope kapanınca temizlenir —
  * listeye dönünce bant kendiliğinden varsayılana düşer.
  */
-export type PageHeaderDef = {
+export interface PageHeaderDef {
   title: string
   desc?: string
   icon?: string

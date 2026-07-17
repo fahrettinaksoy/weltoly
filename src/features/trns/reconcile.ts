@@ -1,6 +1,7 @@
-import { rowToTrn, type Row } from '@/services/db'
-
 import type { Trns } from '@/features/trns/types'
+
+import type { Row } from '@/services/db'
+import { rowToTrn, ts } from '@/services/db'
 
 /** Tam satır anlık görüntüsünden yeni bir trns haritası kur (ilk yükleme). */
 export function rowsToTrns(rows: Row[]): Trns | null {
@@ -24,7 +25,7 @@ export function reconcileTrns(prev: Trns, rows: Row[]): Trns | null {
   if (!dirty) {
     for (const row of rows) {
       const existing = prev[row.id]
-      if (!existing || existing.updatedAt !== Number(row.updatedAt)) {
+      if (!existing || existing.updatedAt !== ts(row.updatedAt)) {
         dirty = true
         break
       }
@@ -39,7 +40,7 @@ export function reconcileTrns(prev: Trns, rows: Row[]): Trns | null {
   const next: Trns = {}
   for (const row of rows) {
     const existing = prev[row.id]
-    next[row.id] = existing && existing.updatedAt === Number(row.updatedAt)
+    next[row.id] = existing && existing.updatedAt === ts(row.updatedAt)
       ? existing
       : rowToTrn(row)
   }

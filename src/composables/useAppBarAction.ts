@@ -5,7 +5,7 @@ import { onScopeDispose, shallowRef, watchEffect } from 'vue'
  * liste sayfalarında "Yeni cüzdan", detayda "Düzenle" / "Sil" gibi.
  * Başlık zaten hero bandında; kart şeridi yalnız eylemler içindir.
  */
-export type AppBarActionDef = {
+export interface AppBarActionDef {
   icon: string
   /** Buton metni. Dar ekranda gizlenir, aria-label olarak kalır. */
   label: string

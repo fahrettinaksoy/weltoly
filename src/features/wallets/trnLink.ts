@@ -1,6 +1,7 @@
-import { TrnType, type TrnItem } from '@/features/trns/types'
+import type { TrnItem } from '@/features/trns/types'
 
 import type { WalletId } from '@/features/wallets/types'
+import { TrnType } from '@/features/trns/types'
 
 /**
  * Bir işlemin dokunduğu cüzdan(lar).

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
+import type { BreakdownItem } from '@/features/stat/store'
 
+import { useI18n } from 'vue-i18n'
+import { useFormat } from '@/composables/useFormat'
 import { useCategoriesStore } from '@/features/categories/store'
 import { useCurrenciesStore } from '@/features/currencies/store'
-import { useFormat } from '@/composables/useFormat'
-import type { BreakdownItem } from '@/features/stat/store'
 
 /**
  * Sıralı kategori kırılımı.
@@ -49,7 +49,7 @@ const fmt = useFormat()
           {{ fmt.money(it.amount, currenciesStore.base) }}
         </span>
         <span class="text-caption text-medium-emphasis ms-2 stat-row-pct">
-          %{{ fmt.number(Math.round(it.percent)) }}
+          {{ fmt.percent(it.percent) }}
         </span>
         <!-- Yer her satırda ayrılır (visibility), yoksa inilebilen ve inilemeyen
              satırların yüzdeleri farklı hizalanırdı. -->

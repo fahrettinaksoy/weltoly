@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { buildTrns } from './seed'
 import { TrnType } from '@/features/trns/types'
 import { trnToRow } from '@/services/db'
+import { buildTrns } from './seed'
 
 /**
  * Örnek veride HER işlemin açıklaması dolu olmalı.
@@ -96,11 +96,14 @@ describe('örnek veri: işlem açıklamaları', () => {
     let bakiye = 0
     for (const { item } of trns) {
       if (item.type === TrnType.Transfer) {
-        if (item.expenseWalletId === 'demo-w-garanti') bakiye -= item.expenseAmount
-        if (item.incomeWalletId === 'demo-w-garanti') bakiye += item.incomeAmount
+        if (item.expenseWalletId === 'demo-w-garanti')
+          bakiye -= item.expenseAmount
+        if (item.incomeWalletId === 'demo-w-garanti')
+          bakiye += item.incomeAmount
         continue
       }
-      if (item.walletId !== 'demo-w-garanti') continue
+      if (item.walletId !== 'demo-w-garanti')
+        continue
       bakiye += item.type === TrnType.Income ? item.amount : -item.amount
     }
     expect(bakiye).toBeGreaterThan(0)

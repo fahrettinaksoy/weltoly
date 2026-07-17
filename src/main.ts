@@ -1,11 +1,11 @@
-import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import { createApp } from 'vue'
 import { createRulesPlugin } from 'vuetify/labs/rules'
 
 import App from './App.vue'
-import { router } from './router'
-import { vuetify } from './plugins/vuetify'
 import { i18n } from './plugins/i18n'
+import { vuetify } from './plugins/vuetify'
+import { router } from './router'
 import './plugins/echarts' // ECharts modül kaydı
 import './assets/app.css'
 

@@ -1,4 +1,5 @@
-import { walletTypes, type WalletType } from '@/features/wallets/types'
+import type { WalletType } from '@/features/wallets/types'
+import { walletTypes } from '@/features/wallets/types'
 
 /** Cüzdan tipi → MDI ikon. Etiketler i18n'den (wallets.types.*). */
 export const walletTypeIcon: Record<WalletType, string> = {

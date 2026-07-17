@@ -1,7 +1,7 @@
-import { z } from 'zod'
-
 import type { CategoryId, CategoryItem } from '@/features/categories/types'
+
 import type { WalletId, WalletItem } from '@/features/wallets/types'
+import { z } from 'zod'
 
 export enum TrnType {
   Expense = 0,
@@ -50,7 +50,7 @@ export const trnItemSchema = z.discriminatedUnion('type', [
 export type Transaction = z.infer<typeof transactionSchema>
 export type Transfer = z.infer<typeof transferSchema>
 export type TrnItem = z.infer<typeof trnItemSchema>
-type TrnItemFullBase = {
+interface TrnItemFullBase {
   category: CategoryItem
   categoryParent?: CategoryItem
   id: TrnId
@@ -73,7 +73,7 @@ export function isTransfer(trn: TrnItem | TrnItemFull | undefined): trn is Trans
 
 export type Trns = Record<TrnId, TrnItem>
 
-export type TrnsGetterProps = {
+export interface TrnsGetterProps {
   categoriesIds?: CategoryId[]
   dates?: {
     end: number
@@ -87,7 +87,7 @@ export type TrnsGetterProps = {
   walletsIds?: WalletId[]
 }
 
-export type TrnFormValues = {
+export interface TrnFormValues {
   // [transaction, expenseTransfer, incomeTransfer]
   amount: [number, number, number]
   // [transaction, expenseTransfer, incomeTransfer]

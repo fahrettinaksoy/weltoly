@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-
 import type { CalculatorKey } from '@/features/trnForm/utils/calculate'
-import { formatAmountResult, padDisplayCents } from '@/features/trnForm/utils/calculate'
-import { useTrnsFormStore } from '@/features/trnForm/store'
-import { useWalletsStore } from '@/features/wallets/store'
+
+import { useI18n } from 'vue-i18n'
+import FormDrawer from '@/components/FormDrawer.vue'
 import { useCategoriesStore } from '@/features/categories/store'
+import TagFormDialog from '@/features/tags/components/TagFormDialog.vue'
 import { useTagsStore } from '@/features/tags/store'
+import Calculator from '@/features/trnForm/components/Calculator.vue'
+import { useTrnsFormStore } from '@/features/trnForm/store'
+import { formatAmountResult, padDisplayCents } from '@/features/trnForm/utils/calculate'
 import { useTrnsStore } from '@/features/trns/store'
 import { TrnType } from '@/features/trns/types'
-import Calculator from '@/features/trnForm/components/Calculator.vue'
-import TagFormDialog from '@/features/tags/components/TagFormDialog.vue'
-import FormDrawer from '@/components/FormDrawer.vue'
+import { useWalletsStore } from '@/features/wallets/store'
 
 const { t } = useI18n()
 const store = useTrnsFormStore()
@@ -25,7 +25,10 @@ const confirmDelete = ref(false)
 
 const isShow = computed({
   get: () => store.ui.isShow,
-  set: (v: boolean) => { if (!v) store.onClose() },
+  set: (v: boolean) => {
+    if (!v)
+      store.onClose()
+  },
 })
 
 const isEditing = computed(() => !!store.values.trnId)
@@ -53,8 +56,10 @@ const walletItems = computed(() =>
 
 const categoryItems = computed(() =>
   categoriesStore.categoriesIdsForTrnValues.map(id => ({
-    id, name: categoriesStore.items[id]?.name ?? id,
-    icon: categoriesStore.items[id]?.icon, color: categoriesStore.items[id]?.color,
+    id,
+    name: categoriesStore.items[id]?.name ?? id,
+    icon: categoriesStore.items[id]?.icon,
+    color: categoriesStore.items[id]?.color,
   })),
 )
 
@@ -147,7 +152,7 @@ function onAmountKey(e: KeyboardEvent) {
   // ikisi de denk gelebiliyor.
   const decimalSep = store.separators.decimal
   const key = (e.key === decimalSep || e.key === ',' || e.key === '.') ? '.' : e.key
-  if (/^[0-9]$/.test(key) || ['.', '+', '-', '*', '/'].includes(key))
+  if (/^\d$/.test(key) || ['.', '+', '-', '*', '/'].includes(key))
     store.onClickCalculator(key as CalculatorKey)
   // Kalan tuşlar (harfler vb.) yukarıdaki preventDefault ile zaten yutuldu.
 }
@@ -187,7 +192,9 @@ function onDelete() {
       color="primary" mandatory class="w-100"
       @update:model-value="store.onChangeTrnType($event)"
     >
-      <v-btn v-for="it in typeItems" :key="it.value" :value="it.value" class="flex-grow-1">{{ it.label }}</v-btn>
+      <v-btn v-for="it in typeItems" :key="it.value" :value="it.value" class="flex-grow-1">
+        {{ it.label }}
+      </v-btn>
     </v-btn-toggle>
 
     <!-- Tutar: formun ana alanı.
@@ -235,14 +242,20 @@ function onDelete() {
         color="primary" mandatory class="w-100"
         @update:model-value="store.onChangeTransferType($event)"
       >
-        <v-btn value="expense" class="flex-grow-1">{{ t('trnForm.from') }}</v-btn>
-        <v-btn value="income" class="flex-grow-1">{{ t('trnForm.to') }}</v-btn>
+        <v-btn value="expense" class="flex-grow-1">
+          {{ t('trnForm.from') }}
+        </v-btn>
+        <v-btn value="income" class="flex-grow-1">
+          {{ t('trnForm.to') }}
+        </v-btn>
       </v-btn-toggle>
     </template>
 
     <!-- Gelir/Gider: cüzdan -->
     <template v-else>
-      <div v-if="!walletItems.length" class="text-medium-emphasis">{{ t('trnForm.noWallets') }}</div>
+      <div v-if="!walletItems.length" class="text-medium-emphasis">
+        {{ t('trnForm.noWallets') }}
+      </div>
       <v-autocomplete
         v-else
         v-model="store.values.walletId"
@@ -252,10 +265,12 @@ function onDelete() {
         <template #prepend-inner>
           <v-icon icon="mdi-wallet-outline" :color="walletsStore.items?.[store.values.walletId ?? '']?.color" size="20" />
         </template>
+        <!-- Vuetify 4: slot'un `item`'ı artık HAM öğedir (v3'teki ListItem değil);
+             ListItem `internalItem` olarak ayrı geçer. Bu yüzden `.raw` yok. -->
         <template #item="{ props: itemProps, item }">
-          <v-list-item v-bind="itemProps" :title="item.raw.name">
+          <v-list-item v-bind="itemProps" :title="item.name">
             <template #prepend>
-              <v-icon icon="mdi-wallet-outline" :color="item.raw.color" size="20" />
+              <v-icon icon="mdi-wallet-outline" :color="item.color" size="20" />
             </template>
           </v-list-item>
         </template>
@@ -269,7 +284,9 @@ function onDelete() {
 
     <!-- Kategori (transfer'de yok: kategori 'transfer' olarak sabitleniyor) -->
     <template v-if="!isTransfer">
-      <div v-if="!categoryItems.length" class="text-medium-emphasis">{{ t('trnForm.noCategories') }}</div>
+      <div v-if="!categoryItems.length" class="text-medium-emphasis">
+        {{ t('trnForm.noCategories') }}
+      </div>
       <v-autocomplete
         v-else
         v-model="store.values.categoryId"
@@ -284,9 +301,9 @@ function onDelete() {
           />
         </template>
         <template #item="{ props: itemProps, item }">
-          <v-list-item v-bind="itemProps" :title="item.raw.name">
+          <v-list-item v-bind="itemProps" :title="item.name">
             <template #prepend>
-              <v-icon :icon="item.raw.icon" :color="item.raw.color" size="20" />
+              <v-icon :icon="item.icon" :color="item.color" size="20" />
             </template>
           </v-list-item>
         </template>
@@ -301,12 +318,12 @@ function onDelete() {
       multiple chips closable-chips auto-select-first
     >
       <template #chip="{ props: chipProps, item }">
-        <v-chip v-bind="chipProps" :color="item.raw.color" size="small" :text="item.raw.name" />
+        <v-chip v-bind="chipProps" :color="item.color" size="small" :text="item.name" />
       </template>
       <template #item="{ props: itemProps, item }">
-        <v-list-item v-bind="itemProps" :title="item.raw.name">
+        <v-list-item v-bind="itemProps" :title="item.name">
           <template #prepend="{ isSelected }">
-            <v-icon :icon="isSelected ? 'mdi-check-circle' : 'mdi-circle-outline'" :color="item.raw.color" size="20" />
+            <v-icon :icon="isSelected ? 'mdi-check-circle' : 'mdi-circle-outline'" :color="item.color" size="20" />
           </template>
         </v-list-item>
       </template>
@@ -351,8 +368,12 @@ function onDelete() {
       <v-card-text>{{ t('trns.deleteConfirm') }}</v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn variant="text" @click="confirmDelete = false">{{ t('common.cancel') }}</v-btn>
-        <v-btn color="error" variant="flat" @click="onDelete">{{ t('common.delete') }}</v-btn>
+        <v-btn variant="text" @click="confirmDelete = false">
+          {{ t('common.cancel') }}
+        </v-btn>
+        <v-btn color="error" variant="flat" @click="onDelete">
+          {{ t('common.delete') }}
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

@@ -19,7 +19,17 @@ export async function recordOutbox(
     )
   }
   catch (e) {
-    // Best-effort: outbox hatası ana mutasyonu bloklamaz.
-    console.error('[db] outbox write failed:', e)
+    // Best-effort: outbox hatası ana mutasyonu BLOKLAMAZ ve bilinçli olarak
+    // yeniden fırlatılmaz — fırlatsaydık çağıran store iyimser güncellemeyi geri
+    // alır, oysa ana yazma BAŞARIYLA diske inmiş olurdu: kullanıcı kendi
+    // kaydettiği veriyi ekrandan kaybolurken görürdü (daha kötü bir hata).
+    //
+    // ⚠️ Ama bu, sapmanın SESSİZ olduğu anlamına gelir (Y-3): mutasyon var,
+    // kuyruk kaydı yok. Faz 5'te senkron motoru bu satırı hiç görmeyecek.
+    // Kalıcı çözüm mutations.ts'te anlatıldığı gibi tek Rust komutu +
+    // sqlx transaction'dır; o gelene kadar hata en azından GÜRÜLTÜLÜ:
+    // konsola tam bağlam basılır ki geliştirme sırasında fark edilsin.
+    console.error('[db] OUTBOX SAPMASI — mutasyon uygulandı ama kuyruğa yazılamadı.'
+      + ' Faz 5 senkronu bu değişikliği kaçıracak.', { table, rowId, op, error: e })
   }
 }

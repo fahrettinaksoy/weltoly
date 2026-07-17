@@ -1,11 +1,11 @@
+import { useCategoriesStore } from '@/features/categories/store'
+import { useCurrenciesStore } from '@/features/currencies/store'
+import { useTagsStore } from '@/features/tags/store'
+import { useTrnsStore } from '@/features/trns/store'
+import { useUserStore } from '@/features/user/store'
+import { useWalletsStore } from '@/features/wallets/store'
 import { isTauriRuntime } from '@/services/db'
 import { refreshRates } from '@/services/rates'
-import { useUserStore } from '@/features/user/store'
-import { useCurrenciesStore } from '@/features/currencies/store'
-import { useCategoriesStore } from '@/features/categories/store'
-import { useWalletsStore } from '@/features/wallets/store'
-import { useTrnsStore } from '@/features/trns/store'
-import { useTagsStore } from '@/features/tags/store'
 
 /**
  * Uygulama açılışında tüm store watch'larını (yerel SQLite abonelikleri) başlatır.
@@ -21,7 +21,7 @@ export function useInitApp() {
 
   function init() {
     if (!isTauriRuntime()) {
-      console.info('[app] Tauri dışı ortam - yerel SQLite atlandı (npm run tauri:dev ile çalıştırın).')
+      console.warn('[app] Tauri dışı ortam - yerel SQLite atlandı (npm run tauri:dev ile çalıştırın).')
       return
     }
     userStore.initUserSettings()

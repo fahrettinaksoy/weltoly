@@ -1,18 +1,24 @@
-import {
-  categoryToRow, emitTableChange, getDb, isTauriRuntime,
-  resolveWriteUid, tagToRow, trnToRow, upsertRow, walletToRow,
-} from '@/services/db'
-import { TrnType } from '@/features/trns/types'
-import type { WalletItem } from '@/features/wallets/types'
 import type { CategoryItem } from '@/features/categories/types'
 import type { TagItem } from '@/features/tags/types'
 import type { TrnItem } from '@/features/trns/types'
+import type { WalletItem } from '@/features/wallets/types'
+import { TrnType } from '@/features/trns/types'
+import {
+  categoryToRow,
+  emitTableChange,
+  getDb,
+  isTauriRuntime,
+  resolveWriteUid,
+  tagToRow,
+  trnToRow,
+  upsertRow,
+  walletToRow,
+} from '@/services/db'
 
 const uid = resolveWriteUid(null)
 const DAY = 86_400_000
 
-
-type WalletSeed = {
+interface WalletSeed {
   name: string
   type: WalletItem['type']
   currency: string
@@ -28,18 +34,22 @@ type WalletSeed = {
 
 function base(p: WalletSeed): WalletItem {
   const item = {
-    name: p.name, type: p.type as Exclude<WalletItem['type'], 'credit'>, currency: p.currency, color: p.color,
-    icon: p.icon ?? '', desc: p.desc ?? '',
+    name: p.name,
+    type: p.type as Exclude<WalletItem['type'], 'credit'>,
+    currency: p.currency,
+    color: p.color,
+    icon: p.icon ?? '',
+    desc: p.desc ?? '',
     isArchived: p.isArchived ?? false,
     isExcludeInTotal: p.isExcludeInTotal ?? false,
     isWithdrawal: p.isWithdrawal ?? false,
-    order: p.order, updatedAt: Date.now(),
+    order: p.order,
+    updatedAt: Date.now(),
   }
   return (p.type === 'credit'
     ? { ...item, type: 'credit', creditLimit: p.creditLimit ?? 0 }
     : item) as WalletItem
 }
-
 
 /**
  * Örnek cüzdanlar — sabit id'ler (yeniden yükleme çoğaltmaz, üzerine yazar).
@@ -255,11 +265,19 @@ const tagByCategory: Record<string, string[]> = {
 // Kategoriden türetilemeyen, işleme özgü nitelikler — dağılıma uzun kuyruk katar.
 // Deterministik: aynı seed her zaman aynı sonucu verir.
 const rotatingTags: string[] = [
-  'demo-tag-nakit', 'demo-tag-kredi-karti', 'demo-tag-havale', 'demo-tag-taksitli',
-  'demo-tag-planli', 'demo-tag-plansiz', 'demo-tag-indirimli', 'demo-tag-kisisel',
-  'demo-tag-aile', 'demo-tag-cocuk', 'demo-tag-tatil', 'demo-tag-tek-seferlik',
+  'demo-tag-nakit',
+  'demo-tag-kredi-karti',
+  'demo-tag-havale',
+  'demo-tag-taksitli',
+  'demo-tag-planli',
+  'demo-tag-plansiz',
+  'demo-tag-indirimli',
+  'demo-tag-kisisel',
+  'demo-tag-aile',
+  'demo-tag-cocuk',
+  'demo-tag-tatil',
+  'demo-tag-tek-seferlik',
 ]
-
 
 // [gün önce, kategori, cüzdan, tutar, açıklama] — yeni kategori ağacına göre, ~3 aya yayılmış.
 // Kira/fatura/taksit gibi kalemler 3 kez tekrarlanır (aylık gerçekçilik).
@@ -495,9 +513,15 @@ export function buildTrns(now: number): { id: string, item: TrnItem }[] {
     list.push({
       id: `demo-t-trf-${i}`,
       item: {
-        type: TrnType.Transfer, categoryId: 'transfer',
-        expenseWalletId: from, expenseAmount: out, incomeWalletId: to, incomeAmount: inn,
-        date: now - d * DAY, updatedAt: now, desc,
+        type: TrnType.Transfer,
+        categoryId: 'transfer',
+        expenseWalletId: from,
+        expenseAmount: out,
+        incomeWalletId: to,
+        incomeAmount: inn,
+        date: now - d * DAY,
+        updatedAt: now,
+        desc,
       },
     })
   })

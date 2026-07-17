@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { useTheme } from 'vuetify'
-import { useI18n } from 'vue-i18n'
+import type { Period } from '@/features/date/types'
+import type { ChartInterval } from '@/features/stat/store'
 import { format } from 'date-fns'
 import VChart from 'vue-echarts'
 
-import type { Period } from '@/features/date/types'
-import type { ChartInterval } from '@/features/stat/store'
+import { useI18n } from 'vue-i18n'
+import { useTheme } from 'vuetify'
 
 const props = defineProps<{ series: ChartInterval[], period: Period }>()
 
