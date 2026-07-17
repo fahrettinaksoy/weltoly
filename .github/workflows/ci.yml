@@ -25,6 +25,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # ŞART — typecheck'ten ÖNCE gelmeli.
+      # `computed`, `ref`, `useFormat` gibi isimler unplugin-auto-import ile
+      # global geliyor; TİPLERİ src/auto-imports.d.ts ve src/components.d.ts'te.
+      # Bu iki dosya ÜRETİLİR (vite.config: dts) ve git'te izlenmez — üretilmiş
+      # dosya commit'lenmez, yoksa kaynakla sessizce ayrışır (kök dizinde tam
+      # bunun olduğu iki stale kopya vardı, temizlendi).
+      # Vite'ın plugin'i dts'i buildStart'ta yazar; `vite optimize` yetmez.
+      # Temiz bir checkout'ta bu adım olmadan vue-tsc 400+ "Cannot find name"
+      # hatası verir. Build ~3sn ve bonus olarak paketlemeyi de doğrular.
+      - name: Generate auto-import types
+        run: npx vite build
+
       - name: Typecheck
         run: npm run typecheck
 
