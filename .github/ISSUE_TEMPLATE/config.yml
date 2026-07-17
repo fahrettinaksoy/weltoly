@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Güvenlik açığı
+    url: https://github.com/fahrettinaksoy/weltoly/security/advisories/new
+    about: Güvenlik açıklarını herkese açık issue olarak DEĞİL, buradan özel bildir.
+  - name: 💬 Soru / tartışma
+    url: https://github.com/fahrettinaksoy/weltoly/discussions
+    about: Hata değil de bir sorun/fikir ise tartışmalarda konuş.

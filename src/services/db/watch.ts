@@ -1,5 +1,6 @@
 import type { TableName } from './schema'
 import type { Row } from './transforms'
+import { logger } from '@/shared/lib/logger'
 import { onTableChange } from './bus'
 import { getDb } from './client'
 
@@ -40,7 +41,7 @@ export function watchTable<T = Row>(
     }
     catch (e) {
       // Tauri dışı ortamda (saf web) plugin yok; sessizce logla.
-      console.error('[db] watch query failed:', query, e)
+      logger.error('[db] watch query failed:', query, e)
     }
   }
 

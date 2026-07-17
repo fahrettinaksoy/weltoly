@@ -1,11 +1,11 @@
 import type { AddCategoryParams, Categories, CategoryId, CategoryItem } from '@/features/categories/types'
-
 import type { TrnId } from '@/features/trns/types'
 
 import type { Row, WatchHandle } from '@/services/db'
-import { defineStore } from 'pinia'
 
+import { defineStore } from 'pinia'
 import { ADJUSTMENT_ID, isPseudoCategoryId, TRANSFER_ID } from '@/features/categories/pseudoCategories'
+
 import { compareCategoryIds, computeChildrenDiff, getTransactibleCategoriesIds } from '@/features/categories/utils'
 import { useTrnsStore } from '@/features/trns/store'
 import { TrnType } from '@/features/trns/types'
@@ -18,6 +18,7 @@ import {
   upsertRows,
   watchTable,
 } from '@/services/db'
+import { logger } from '@/shared/lib/logger'
 import { showErrorToast, showSuccessToast } from '@/stores/ui'
 
 const adjustment: CategoryItem = {
@@ -276,7 +277,7 @@ export const useCategoriesStore = defineStore('categories', () => {
       showSuccessToast(isNew ? 'categories.added' : 'categories.updated')
     }).catch((e) => {
       setCategories(prev)
-      console.error('[categories] saveCategory failed', e)
+      logger.error('[categories] saveCategory failed', e)
       showErrorToast('categories.errors.saveFailed')
     })
   }
@@ -322,7 +323,7 @@ export const useCategoriesStore = defineStore('categories', () => {
     }).catch((e) => {
       setCategories(prevCategories)
       trnsStore.setTrns(prevTrns)
-      console.error('[categories] deleteCategory failed', e)
+      logger.error('[categories] deleteCategory failed', e)
       showErrorToast('categories.errors.deleteFailed')
     })
   }

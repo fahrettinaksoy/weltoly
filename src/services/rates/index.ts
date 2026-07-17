@@ -2,13 +2,14 @@ import type { RateSourceKey } from '@/features/currencies/sources'
 import type { Rates } from '@/features/currencies/types'
 import type { ParsedRates } from '@/services/rates/sources/parse'
 import { fetch } from '@tauri-apps/plugin-http'
-
 import { format } from 'date-fns'
+
 import { CRYPTO_IDS } from '@/features/currencies/crypto'
 import { DEFAULT_RATE_SOURCE, isRateSourceKey } from '@/features/currencies/sources'
 import { sanitizeRates } from '@/features/currencies/types'
 import { getDb, isTauriRuntime, upsertRow } from '@/services/db'
 import { domXmlParse, parseErApi, parseFrankfurter, parseTcmb } from '@/services/rates/sources/parse'
+import { logger } from '@/shared/lib/logger'
 
 // Uzak API asılırsa sonsuz beklememek için üst sınır.
 const FETCH_TIMEOUT_MS = 10_000
@@ -61,18 +62,18 @@ async function fetchFiat(source: RateSourceKey): Promise<ParsedRates | null> {
   try {
     const res = await fetchWithTimeout(url)
     if (!res.ok) {
-      console.warn(`[rates] fiat çekilemedi (${source}) — HTTP ${res.status}`)
+      logger.warn(`[rates] fiat çekilemedi (${source}) — HTTP ${res.status}`)
       return null
     }
     const out = parse(await res.text())
     if (!Object.keys(out.rates).length) {
-      console.warn(`[rates] fiat yanıtı ayrıştırılamadı/boş (${source})`)
+      logger.warn(`[rates] fiat yanıtı ayrıştırılamadı/boş (${source})`)
       return null
     }
     return out
   }
   catch (e) {
-    console.warn(`[rates] fiat isteği başarısız (${source})`, e)
+    logger.warn(`[rates] fiat isteği başarısız (${source})`, e)
     return null
   }
 }
@@ -112,7 +113,7 @@ async function fetchCrypto(): Promise<Rates> {
   try {
     const res = await fetchWithTimeout(CRYPTO_URL)
     if (!res.ok) {
-      console.warn(`[rates] kripto çekilemedi — HTTP ${res.status}. Kripto cüzdanlar bugün toplamlara giremeyecek.`)
+      logger.warn(`[rates] kripto çekilemedi — HTTP ${res.status}. Kripto cüzdanlar bugün toplamlara giremeyecek.`)
       return out
     }
     const data = await res.json() as Record<string, { usd?: unknown }>
@@ -122,11 +123,11 @@ async function fetchCrypto(): Promise<Rates> {
       if (typeof price === 'number' && Number.isFinite(price) && price > 0)
         out[code] = 1 / price // 1 USD kaç birim kripto
       else
-        console.warn(`[rates] ${code} fiyatı geçersiz/eksik:`, price)
+        logger.warn(`[rates] ${code} fiyatı geçersiz/eksik:`, price)
     }
   }
   catch (e) {
-    console.warn('[rates] kripto isteği başarısız (ağ/timeout). Kripto cüzdanlar bugün toplamlara giremeyecek.', e)
+    logger.warn('[rates] kripto isteği başarısız (ağ/timeout). Kripto cüzdanlar bugün toplamlara giremeyecek.', e)
   }
   return out
 }
@@ -188,9 +189,9 @@ export async function refreshRates(force = false): Promise<RefreshResult> {
       const latest = rows[0]
       if (latest?.date === today) {
         if (latest.source !== sourceTag(source))
-          console.warn(`[rates] kaynak değişti (${latest.source} → ${sourceTag(source)}) — yeniden çekiliyor.`)
+          logger.warn(`[rates] kaynak değişti (${latest.source} → ${sourceTag(source)}) — yeniden çekiliyor.`)
         else if (!hasCryptoRates(latest.rates))
-          console.warn('[rates] bugünün kurlarında kripto eksik — yeniden deneniyor.')
+          logger.warn('[rates] bugünün kurlarında kripto eksik — yeniden deneniyor.')
         else
           return 'skipped' // aynı gün, aynı kaynak, kripto tam → iş yok
       }
@@ -215,7 +216,7 @@ export async function refreshRates(force = false): Promise<RefreshResult> {
     return 'ok'
   }
   catch (e) {
-    console.error('[rates] refresh failed', e)
+    logger.error('[rates] refresh failed', e)
     return 'error'
   }
 }

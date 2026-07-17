@@ -17,6 +17,8 @@ import { clearAllData, seedDemoData } from '@/features/demo/seed'
 import { MAX_RADIUS, MIN_RADIUS, neutralKeys, neutralPalettes, primaryPalette } from '@/features/theme/palette'
 import { useUserStore } from '@/features/user/store'
 import { exportBackup, importBackup } from '@/services/backup'
+import { checkForUpdates } from '@/services/updater'
+import { revealLogs } from '@/shared/lib/diagnostics'
 import { DATE_FORMATS, NUMBER_FORMATS } from '@/shared/lib/format'
 import { useSettingsStore } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui'
@@ -118,6 +120,27 @@ async function onImport() {
 }
 
 const confirmClear = ref(false)
+
+async function onRevealLogs() {
+  const ok = await revealLogs()
+  if (!ok)
+    ui.showToast(t('settings.openLogsError'), 'error')
+}
+
+const checkingUpdate = ref(false)
+
+async function onCheckUpdates() {
+  checkingUpdate.value = true
+  const outcome = await checkForUpdates()
+  checkingUpdate.value = false
+  // 'updated' durumunda uygulama yeniden başladığı için buraya nadiren gelinir.
+  if (outcome === 'none')
+    ui.showToast(t('settings.updateNone'), 'success')
+  else if (outcome === 'unsupported')
+    ui.showToast(t('settings.updateUnsupported'), 'info')
+  else if (outcome === 'error')
+    ui.showToast(t('settings.updateError'), 'error')
+}
 
 async function onLoadDemo() {
   busy.value = true
@@ -357,6 +380,28 @@ async function onClearData() {
                 </v-btn>
                 <v-btn variant="tonal" color="error" prepend-icon="mdi-delete-outline" :loading="busy" @click="confirmClear = true">
                   {{ t('settings.clearData') }}
+                </v-btn>
+              </div>
+
+              <!-- Tanılama + güncelleme: uzak telemetri yok; loglar kullanıcının
+                   çöküş sonrası paylaşabileceği tek şeydir. Güncelleme imzalıdır. -->
+              <div class="d-flex ga-2 flex-wrap mt-3">
+                <v-btn
+                  variant="text"
+                  size="small"
+                  prepend-icon="mdi-file-document-outline"
+                  @click="onRevealLogs"
+                >
+                  {{ t('settings.openLogs') }}
+                </v-btn>
+                <v-btn
+                  variant="text"
+                  size="small"
+                  prepend-icon="mdi-update"
+                  :loading="checkingUpdate"
+                  @click="onCheckUpdates"
+                >
+                  {{ t('settings.checkUpdates') }}
                 </v-btn>
               </div>
             </SectionCard>
