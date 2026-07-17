@@ -1,5 +1,5 @@
-import { formatByCurrency } from '@/shared/lib/formatByCurrency'
 import type { NumberSeparators } from '@/shared/lib/format'
+import { formatByCurrency } from '@/shared/lib/formatByCurrency'
 
 const config = {
   decimalPlaces: 8,
@@ -14,7 +14,7 @@ const config = {
  *               ekranda ve values.amountRaw içinde durur.
  *
  * Sınırlar net: sanitizeInput GÖRÜNEN→KANONİK, formatInput KANONİK→GÖRÜNEN.
- * evaluateExpression yalnız KANONİK alır.
+ * evaluateAbsExpression yalnız KANONİK alır.
  *
  * Neden önemli: `dot_comma` biçiminde (1.000,33) binlik ayracı NOKTA — yani
  * kanonik ondalık işaretiyle aynı karakter. Görüneni kanonik sanıp
@@ -66,8 +66,18 @@ function getLastNumber(expression: string): string {
 /**
  * Güvenli aritmetik ifade değerlendirici (özyinelemeli inişli ayrıştırıcı).
  * +, -, *, / işlemlerini doğru öncelikle destekler. eval/Function YOK.
+ *
+ * ⚠️ SONUÇ HER ZAMAN MUTLAK DEĞERDİR — ad bunu söylüyor (O-8).
+ * `'100-150'` → **50**, −50 değil.
+ *
+ * Neden: bu bir genel amaçlı hesap makinesi değil, TUTAR alanının motoru.
+ * Tutarlar pozitif büyüklük olarak saklanır; işareti işlemin TÜRÜ (gelir/gider)
+ * taşır. Negatif bir tutar kaydetmek "eksi gider" gibi geçersiz bir durum
+ * üretirdi. Eskiden fonksiyon `evaluateExpression` adındaydı ve bu davranış
+ * yalnızca gövdedeki `Math.abs` çağrısından anlaşılıyordu — çağıran taraf
+ * işaretin korunduğunu sanabilirdi.
  */
-export function evaluateExpression(value: string): number {
+export function evaluateAbsExpression(value: string): number {
   try {
     const sanitized = sanitizeInput(value, CANONICAL_SEPARATORS)
     const lastChar = sanitized.at(-1) || ''
@@ -139,7 +149,7 @@ export function createExpressionString(input: string, expression: string, seps: 
   if (input === 'c')
     return sanitizedExpression === '0' ? '0' : sanitizedExpression.slice(0, -1) || '0'
   if (input === '=')
-    return String(evaluateExpression(sanitizedExpression))
+    return String(evaluateAbsExpression(sanitizedExpression))
   if (input === '.')
     return handleDecimalPoint(sanitizedExpression, lastChar)
 
@@ -161,7 +171,7 @@ export function createExpressionString(input: string, expression: string, seps: 
     if (isExceedingLength)
       return sanitizedExpression
 
-    if (lastChar !== '.' && evaluateExpression(sanitizedExpression + input) === 0)
+    if (lastChar !== '.' && evaluateAbsExpression(sanitizedExpression + input) === 0)
       return sanitizedExpression
   }
 

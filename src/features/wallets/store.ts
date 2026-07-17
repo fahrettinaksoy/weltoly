@@ -1,21 +1,28 @@
-import { defineStore } from 'pinia'
-
-import {
-  deleteRow, resolveWriteUid, rowToWallet, upsertRow, upsertRows,
-  walletToRow, watchTable, type Row, type WatchHandle,
-} from '@/services/db'
-import { uniqueElementsBy } from '@/shared/lib/simple'
-import { walletIdsOfTrn } from '@/features/wallets/trnLink'
-import { getAmountInRate, getWalletsTotals } from '@/shared/lib/getTotal'
-
 import type { CurrencyCode } from '@/features/currencies/types'
+
 import type { TrnId } from '@/features/trns/types'
 import type { WalletId, WalletItem, WalletItemComputed, Wallets, WalletsComputed } from '@/features/wallets/types'
-
+import type { Row, WatchHandle } from '@/services/db'
+import { defineStore } from 'pinia'
 import { useCurrenciesStore } from '@/features/currencies/store'
-import { TrnType } from '@/features/trns/types'
+
 import { useTrnsStore } from '@/features/trns/store'
+import { TrnType } from '@/features/trns/types'
 import { useUserStore } from '@/features/user/store'
+
+import { walletIdsOfTrn } from '@/features/wallets/trnLink'
+import {
+  deleteRow,
+  resolveWriteUid,
+  rowToWallet,
+  upsertRow,
+  upsertRows,
+  walletToRow,
+  watchTable,
+} from '@/services/db'
+import { getAmountInRate, getWalletsTotals } from '@/shared/lib/getTotal'
+import { addMoney, subMoney } from '@/shared/lib/money'
+import { uniqueElementsBy } from '@/shared/lib/simple'
 import { showErrorToast, showSuccessToast } from '@/stores/ui'
 
 function rowsToWallets(rows: Row[]): Wallets | null {
@@ -45,7 +52,7 @@ export const useWalletsStore = defineStore('wallets', () => {
   function initWallets(): void {
     watchController?.abort()
     isLoaded.value = false
-    watchController = watchTable<Row>('SELECT * FROM wallets', [], (rows) => {
+    watchController = watchTable<Row>(['wallets'], 'SELECT * FROM wallets', [], (rows) => {
       isLoaded.value = true
       setWallets(rowsToWallets(rows))
     })
@@ -185,15 +192,21 @@ export const useWalletsStore = defineStore('wallets', () => {
   const totals = computed(() => {
     let assets = 0
     let debts = 0
+    let hasMissingRates = false
     for (const wallet of Object.values(itemsComputed.value)) {
       if (wallet.isExcludeInTotal)
         continue
-      const base = wallet.amount * (wallet.rate ?? 1)
+      // Kur eksikse (rate null) cüzdanı NET'e sokma — sessiz 1:1 varsayma (Y-1).
+      if (wallet.rate == null) {
+        hasMissingRates = true
+        continue
+      }
+      const base = wallet.amount * wallet.rate
       if (base >= 0)
-        assets += base
-      else debts += -base
+        assets = addMoney(assets, base)
+      else debts = subMoney(debts, base) // base<0 → -base ekle
     }
-    return { assets, debts, net: assets - debts }
+    return { assets, debts, net: subMoney(assets, debts), hasMissingRates }
   })
 
   /** Borcun varlığa oranı. Varlık 0 iken tanımsız → 0 (sıfıra bölme). */

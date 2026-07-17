@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
+import type { WalletItem, WalletType } from '@/features/wallets/types'
 
-import { generateId } from '@/shared/lib/generateId'
-import { random } from '@/shared/lib/random'
-import { colorsArray } from '@/features/color/colors'
-import { allCurrencies } from '@/features/currencies/list'
-import { walletItemSchema, walletTypes, type WalletItem, type WalletType } from '@/features/wallets/types'
-import { walletIcon, walletTypeIcon } from '@/features/wallets/walletMeta'
-import { useWalletsStore } from '@/features/wallets/store'
-import { useUserStore } from '@/features/user/store'
-import FormDrawer from '@/components/FormDrawer.vue'
+import { useI18n } from 'vue-i18n'
 import ColorSwatches from '@/components/ColorSwatches.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import FormDrawer from '@/components/FormDrawer.vue'
 import IconPicker from '@/components/IconPicker.vue'
+import { colorsArray } from '@/features/color/colors'
+import { allCurrencies } from '@/features/currencies/list'
+import { useUserStore } from '@/features/user/store'
+import { useWalletsStore } from '@/features/wallets/store'
+import { walletItemSchema, walletTypes } from '@/features/wallets/types'
+import { walletIcon, walletTypeIcon } from '@/features/wallets/walletMeta'
+import { generateId } from '@/shared/lib/generateId'
+import { random } from '@/shared/lib/random'
 
 const props = defineProps<{
   modelValue: boolean
@@ -33,7 +34,7 @@ const palette = colorsArray.filter((_, i) => i % 6 === 0)
 
 const currencyItems = allCurrencies.map(c => ({ code: c.code, title: `${c.code} — ${c.name}` }))
 
-type FormState = {
+interface FormState {
   name: string
   /** '' = seçilmedi → tür varsayılan ikonu gösterilir. */
   icon: string
@@ -46,15 +47,26 @@ type FormState = {
   isExcludeInTotal: boolean
   isArchived: boolean
   order: number
-  /** Cüzdanın alanı DEĞİL: user_settings'teki tek işaretçinin bu cüzdanı
-      gösterip göstermediği. Kaydetmede ayrı yazılır. */
+  /**
+       Cüzdanın alanı DEĞİL: user_settings'teki tek işaretçinin bu cüzdanı
+      gösterip göstermediği. Kaydetmede ayrı yazılır.
+   */
   isDefault: boolean
 }
 
 function blankForm(): FormState {
   return {
-    name: '', icon: '', type: 'cash', currency: 'USD', color: random(colorsArray), desc: '',
-    creditLimit: 0, isWithdrawal: false, isExcludeInTotal: false, isArchived: false, order: 0,
+    name: '',
+    icon: '',
+    type: 'cash',
+    currency: 'USD',
+    color: random(colorsArray),
+    desc: '',
+    creditLimit: 0,
+    isWithdrawal: false,
+    isExcludeInTotal: false,
+    isArchived: false,
+    order: 0,
     isDefault: false,
   }
 }
@@ -65,17 +77,26 @@ const typeItems = computed(() =>
   walletTypes.map(type => ({ value: type, title: t(`wallets.types.${type}`), icon: walletTypeIcon[type] })),
 )
 
-/** Başlık şeridinin ikinci satırı: "Cüzdan ekle" tek başına neyi eklediğini
-    söylemiyor; tür seçildikçe şerit onu yansıtır. */
+/**
+     Başlık şeridinin ikinci satırı: "Cüzdan ekle" tek başına neyi eklediğini
+    söylemiyor; tür seçildikçe şerit onu yansıtır.
+ */
 const typeLabel = computed(() => t(`wallets.types.${form.type}`))
 
 function loadForm() {
   if (props.walletId && walletsStore.items?.[props.walletId]) {
     const w = walletsStore.items[props.walletId]!
     Object.assign(form, {
-      name: w.name, icon: w.icon, type: w.type, currency: w.currency, color: w.color, desc: w.desc,
+      name: w.name,
+      icon: w.icon,
+      type: w.type,
+      currency: w.currency,
+      color: w.color,
+      desc: w.desc,
       creditLimit: w.type === 'credit' ? w.creditLimit : 0,
-      isWithdrawal: w.isWithdrawal, isExcludeInTotal: w.isExcludeInTotal, isArchived: w.isArchived,
+      isWithdrawal: w.isWithdrawal,
+      isExcludeInTotal: w.isExcludeInTotal,
+      isArchived: w.isArchived,
       order: w.order,
       isDefault: userStore.defaultWalletId === props.walletId,
     })
@@ -109,9 +130,16 @@ function close() {
 
 function save() {
   const base = {
-    name: form.name.trim(), icon: form.icon, currency: form.currency.trim().toUpperCase(), color: form.color,
-    desc: form.desc, isWithdrawal: form.isWithdrawal, isExcludeInTotal: form.isExcludeInTotal,
-    isArchived: form.isArchived, order: form.order, updatedAt: Date.now(),
+    name: form.name.trim(),
+    icon: form.icon,
+    currency: form.currency.trim().toUpperCase(),
+    color: form.color,
+    desc: form.desc,
+    isWithdrawal: form.isWithdrawal,
+    isExcludeInTotal: form.isExcludeInTotal,
+    isArchived: form.isArchived,
+    order: form.order,
+    updatedAt: Date.now(),
   }
   const values = form.type === 'credit'
     ? { ...base, type: 'credit' as const, creditLimit: Number(form.creditLimit) || 0 }
@@ -134,7 +162,6 @@ function save() {
 
   close()
 }
-
 
 function remove() {
   if (!props.walletId)
@@ -165,7 +192,9 @@ function remove() {
       <v-avatar :color="form.color" size="56" class="cursor-pointer" @click="iconPicker = true">
         <v-icon :icon="walletIcon(form)" color="white" size="28" />
       </v-avatar>
-      <v-btn variant="tonal" size="small" @click="iconPicker = true">{{ t('wallets.pickIcon') }}</v-btn>
+      <v-btn variant="tonal" size="small" @click="iconPicker = true">
+        {{ t('wallets.pickIcon') }}
+      </v-btn>
       <v-btn
         v-if="form.icon"
         variant="text"
@@ -213,7 +242,9 @@ function remove() {
 
     <!-- Etiket + örnekler tek grup: başlık kendi alanına yapışık kalmalı. -->
     <div>
-      <div class="text-body-2 text-medium-emphasis mb-2">{{ t('wallets.color') }}</div>
+      <div class="text-body-2 text-medium-emphasis mb-2">
+        {{ t('wallets.color') }}
+      </div>
       <ColorSwatches v-model="form.color" :colors="palette" />
     </div>
 

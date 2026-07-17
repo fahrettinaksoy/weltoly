@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useTrnsStore } from '@/features/trns/store'
-import { useTrnsFormStore } from '@/features/trnForm/store'
-import { useTagsStore } from '@/features/tags/store'
 import { useFormat } from '@/composables/useFormat'
+import { useTagsStore } from '@/features/tags/store'
+import { useTrnsFormStore } from '@/features/trnForm/store'
+import { useTrnsStore } from '@/features/trns/store'
 import { TrnType } from '@/features/trns/types'
 
 const props = defineProps<{ id: string }>()
@@ -64,7 +64,9 @@ const title = computed(() => {
         <v-icon :icon="full.category.icon" color="white" size="20" />
       </v-avatar>
     </template>
-    <v-list-item-title class="font-weight-medium">{{ title }}</v-list-item-title>
+    <v-list-item-title class="font-weight-medium">
+      {{ title }}
+    </v-list-item-title>
     <v-list-item-subtitle>{{ subtitle }}</v-list-item-subtitle>
     <div v-if="tags.length" class="d-flex flex-wrap ga-1 mt-1">
       <v-chip
@@ -75,7 +77,9 @@ const title = computed(() => {
       </v-chip>
     </div>
     <template #append>
-      <div class="text-body-1 font-weight-medium" :class="`text-${amountColor}`">{{ amountText }}</div>
+      <div class="text-body-1 font-weight-medium" :class="`text-${amountColor}`">
+        {{ amountText }}
+      </div>
     </template>
   </v-list-item>
 </template>

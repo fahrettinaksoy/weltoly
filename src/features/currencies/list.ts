@@ -1,6 +1,6 @@
 // Tam ISO 4217 para birimi listesi (+ yaygın kripto). Cüzdan para birimi seçici için.
 
-export type CurrencyInfo = { code: string, name: string }
+export interface CurrencyInfo { code: string, name: string }
 
 export const allCurrencies: CurrencyInfo[] = [
   { code: 'USD', name: 'US Dollar' },
@@ -167,6 +167,21 @@ export const allCurrencies: CurrencyInfo[] = [
 
 // Hızlı erişim için sık kullanılanlar (üstte gösterilir).
 export const commonCurrencies: string[] = [
-  'USD', 'EUR', 'TRY', 'GBP', 'RUB', 'JPY', 'CNY', 'CHF', 'CAD', 'AUD',
-  'AED', 'SAR', 'INR', 'BRL', 'BTC', 'ETH', 'USDT',
+  'USD',
+  'EUR',
+  'TRY',
+  'GBP',
+  'RUB',
+  'JPY',
+  'CNY',
+  'CHF',
+  'CAD',
+  'AUD',
+  'AED',
+  'SAR',
+  'INR',
+  'BRL',
+  'BTC',
+  'ETH',
+  'USDT',
 ]

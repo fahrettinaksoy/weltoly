@@ -1,23 +1,23 @@
-import { defineStore } from 'pinia'
-
-import { generateId } from '@/shared/lib/generateId'
-
 import type { CategoryId } from '@/features/categories/types'
+
 import type { TrnFormUi } from '@/features/trnForm/types'
+
 import type { CalculatorKey } from '@/features/trnForm/utils/calculate'
 import type { TransferSide, TrnFormValues, TrnId, TrnItem } from '@/features/trns/types'
 import type { WalletId } from '@/features/wallets/types'
-
+import { defineStore } from 'pinia'
 import { useCategoriesStore } from '@/features/categories/store'
-import { createExpressionString, evaluateExpression, formatInput } from '@/features/trnForm/utils/calculate'
+
+import { createExpressionString, evaluateAbsExpression, formatInput } from '@/features/trnForm/utils/calculate'
 import { formatTransaction, formatTransfer } from '@/features/trnForm/utils/formatData'
 import { validate } from '@/features/trnForm/utils/validate'
-import { TrnType } from '@/features/trns/types'
 import { useTrnsStore } from '@/features/trns/store'
+import { TrnType } from '@/features/trns/types'
 import { useUserStore } from '@/features/user/store'
-import { useSettingsStore } from '@/stores/settings'
-import { getNumberSeparators } from '@/shared/lib/format'
 import { useWalletsStore } from '@/features/wallets/store'
+import { getNumberSeparators } from '@/shared/lib/format'
+import { generateId } from '@/shared/lib/generateId'
+import { useSettingsStore } from '@/stores/settings'
 import { showErrorToast } from '@/stores/ui'
 
 type Values = {
@@ -91,7 +91,7 @@ export const useTrnsFormStore = defineStore('trnForm', () => {
   )
 
   function setAmountAt(idx: number, raw: string) {
-    values.amount[idx] = evaluateExpression(raw)
+    values.amount[idx] = evaluateAbsExpression(raw)
     values.amountRaw[idx] = formatInput(raw, separators.value)
   }
 

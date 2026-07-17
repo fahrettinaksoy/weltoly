@@ -1,12 +1,13 @@
 <script setup lang="ts">
+import type { PageHeaderDef } from '@/composables/usePageHeader'
 import { useI18n } from 'vue-i18n'
-import { useDisplay } from 'vuetify'
 import { useRoute } from 'vue-router'
 
-import { useTrnsFormStore } from '@/features/trnForm/store'
+import { useDisplay } from 'vuetify'
 import { appBarActions } from '@/composables/useAppBarAction'
-import { pageHeader, type PageHeaderDef } from '@/composables/usePageHeader'
+import { pageHeader } from '@/composables/usePageHeader'
 import TrnFormDialog from '@/features/trnForm/components/TrnFormDialog.vue'
+import { useTrnsFormStore } from '@/features/trnForm/store'
 
 const { t } = useI18n()
 const { mobile } = useDisplay()
@@ -16,7 +17,7 @@ const actions = appBarActions()
 const override = pageHeader()
 
 // icon-fonts: semantik ikon alias'ları ($navX) — tek kaynaktan yönetilir.
-type NavItem = { key: string, to: string, icon: string, labelKey: string }
+interface NavItem { key: string, to: string, icon: string, labelKey: string }
 const navItems: NavItem[] = [
   { key: 'dashboard', to: '/dashboard', icon: '$navDashboard', labelKey: 'nav.dashboard' },
   { key: 'wallets', to: '/wallets', icon: '$navWallets', labelKey: 'nav.wallets' },
@@ -105,8 +106,12 @@ function onAdd() {
         />
         <v-icon v-if="header.icon" :icon="header.icon" size="30" />
         <div class="overflow-hidden">
-          <div class="text-h6 font-weight-bold text-truncate">{{ header.title }}</div>
-          <div v-if="header.desc" class="text-body-2 text-truncate" style="opacity: 0.85;">{{ header.desc }}</div>
+          <div class="text-h6 font-weight-bold text-truncate">
+            {{ header.title }}
+          </div>
+          <div v-if="header.desc" class="text-body-2 text-truncate" style="opacity: 0.85;">
+            {{ header.desc }}
+          </div>
         </div>
       </div>
     </v-sheet>
@@ -159,7 +164,9 @@ function onAdd() {
               :aria-label="action.label"
               @click="action.onClick()"
             >
-              <template v-if="!mobile">{{ action.label }}</template>
+              <template v-if="!mobile">
+                {{ action.label }}
+              </template>
             </v-btn>
           </div>
           <v-divider />

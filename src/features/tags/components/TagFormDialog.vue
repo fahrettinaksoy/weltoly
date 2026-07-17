@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
+import type { TagId } from '@/features/tags/types'
 
-import { random } from '@/shared/lib/random'
-import { generateId } from '@/shared/lib/generateId'
-import { colorsArray } from '@/features/color/colors'
-import { useTagsStore } from '@/features/tags/store'
-import FormDrawer from '@/components/FormDrawer.vue'
+import { useI18n } from 'vue-i18n'
 import ColorSwatches from '@/components/ColorSwatches.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import type { TagId } from '@/features/tags/types'
+import FormDrawer from '@/components/FormDrawer.vue'
+import { colorsArray } from '@/features/color/colors'
+import { useTagsStore } from '@/features/tags/store'
+import { generateId } from '@/shared/lib/generateId'
+import { random } from '@/shared/lib/random'
 
 const props = defineProps<{ tagId: TagId | null }>()
 const emit = defineEmits<{
@@ -92,7 +92,9 @@ function remove() {
 
     <!-- Etiket + örnekler tek grup: başlık kendi alanına yapışık kalmalı. -->
     <div>
-      <div class="text-body-2 text-medium-emphasis mb-2">{{ t('tags.color') }}</div>
+      <div class="text-body-2 text-medium-emphasis mb-2">
+        {{ t('tags.color') }}
+      </div>
       <ColorSwatches v-model="form.color" :colors="palette" />
     </div>
   </FormDrawer>

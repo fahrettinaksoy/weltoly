@@ -1,35 +1,30 @@
-import { getDb } from './client'
-import { onTableChange } from './bus'
+import type { TableName } from './schema'
 import type { Row } from './transforms'
+import { onTableChange } from './bus'
+import { getDb } from './client'
 
-/** Sorgudaki FROM/JOIN tablolarını çıkar (basit tek-tablo select'lerimiz için yeterli). */
-function parseTables(query: string): string[] {
-  const tables = new Set<string>()
-  const re = /(?:from|join)\s+["'`]?(\w+)/gi
-  let m: RegExpExecArray | null
-  // eslint-disable-next-line no-cond-assign
-  while ((m = re.exec(query)))
-    tables.add(m[1]!)
-  return [...tables]
-}
-
-export type WatchHandle = { abort: () => void }
+export interface WatchHandle { abort: () => void }
 
 /**
- * PowerSync `watchTable` taklidi: sorguyu hemen çalıştırır, sonra ilgili tablo(lar)
+ * PowerSync `watchTable` taklidi: sorguyu hemen çalıştırır, sonra `tables`
  * değiştikçe yeniden çalıştırıp `onResult` çağırır. `throttleMs` ile ardışık
  * değişiklikler tek bir sona-yaslanmış çalıştırmada birleştirilir.
  *
+ * `tables` AÇIKÇA verilir (O-3). Eskiden sorgu metninden regex ile TAHMİN
+ * ediliyordu (`/(?:from|join)\s+(\w+)/`); alt sorgu, CTE veya takma adlı bir
+ * sorguda yanlış tablo çıkarır ya da bir bağımlılığı tümden kaçırırdı — sonuç
+ * SESSİZ: ekran güncellenmez, hata da vermez. Bağımlılığı çağıran bildirir.
+ *
  * Store'lar iyimser güncelleme yaptığından yeniden-sorgu ekosunun gecikmesi görünmez.
- * finapp store'larıyla uyumlu imza: dönüşte `.abort()` bulunur.
+ * Dönüşte `.abort()` bulunur.
  */
 export function watchTable<T = Row>(
+  tables: TableName[],
   query: string,
   params: unknown[],
   onResult: (rows: T[]) => void,
   throttleMs = 30,
 ): WatchHandle {
-  const tables = parseTables(query)
   let aborted = false
   let pending = false
   let timer: ReturnType<typeof setTimeout> | null = null

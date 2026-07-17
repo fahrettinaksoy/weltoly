@@ -1,19 +1,19 @@
 <script setup lang="ts">
+import type { WalletId } from '@/features/wallets/types'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
 
-import { walletIcon } from '@/features/wallets/walletMeta'
-import { useWalletsStore } from '@/features/wallets/store'
+import { useRouter } from 'vue-router'
+import AppEmptyState from '@/components/AppEmptyState.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import { useAppBarAction } from '@/composables/useAppBarAction'
 import { useCurrenciesStore } from '@/features/currencies/store'
-import { useUserStore } from '@/features/user/store'
 import { useTrnsStore } from '@/features/trns/store'
 import { TrnType } from '@/features/trns/types'
-import { walletIdsOfTrn } from '@/features/wallets/trnLink'
+import { useUserStore } from '@/features/user/store'
 import WalletFormDialog from '@/features/wallets/components/WalletFormDialog.vue'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import AppEmptyState from '@/components/AppEmptyState.vue'
-import { useAppBarAction } from '@/composables/useAppBarAction'
-import type { WalletId } from '@/features/wallets/types'
+import { useWalletsStore } from '@/features/wallets/store'
+import { walletIdsOfTrn } from '@/features/wallets/trnLink'
+import { walletIcon } from '@/features/wallets/walletMeta'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -54,7 +54,7 @@ function openEdit(id: WalletId) {
   showDialog.value = true
 }
 
-type WalletRow = {
+interface WalletRow {
   id: WalletId
   name: string
   color: string
@@ -303,22 +303,28 @@ function onRowClick(_event: unknown, { item }: { item: WalletRow }) {
           v-for="kpi in kpis"
           :key="kpi.key"
         >
-          <div class="text-h5 font-weight-bold">{{ kpi.value }}</div>
-          <div class="text-caption text-medium-emphasis">{{ kpi.label }}</div>
+          <div class="text-h5 font-weight-bold">
+            {{ kpi.value }}
+          </div>
+          <div class="text-caption text-medium-emphasis">
+            {{ kpi.label }}
+          </div>
         </div>
 
         <v-spacer />
 
         <!-- Borç oranı: borcun varlığa oranı. Yüksekse uyarı rengine döner. -->
         <div class="d-flex align-center ga-3">
-          <div class="text-caption text-medium-emphasis">{{ t('wallets.stats.debtRatio') }}</div>
+          <div class="text-caption text-medium-emphasis">
+            {{ t('wallets.stats.debtRatio') }}
+          </div>
           <v-progress-circular
             :model-value="Math.min(debtRatio, 100)"
             :size="48"
             :width="5"
             :color="debtRatio > 50 ? 'error' : 'primary'"
           >
-            <span class="text-caption font-weight-bold">%{{ Math.round(debtRatio) }}</span>
+            <span class="text-caption font-weight-bold">{{ fmt.percent(debtRatio) }}</span>
           </v-progress-circular>
         </div>
       </v-sheet>
@@ -356,7 +362,9 @@ function onRowClick(_event: unknown, { item }: { item: WalletRow }) {
               <v-icon :icon="item.icon" color="white" size="18" />
             </v-avatar>
             <div class="wallets-name">
-              <div class="font-weight-medium text-truncate">{{ item.name }}</div>
+              <div class="font-weight-medium text-truncate">
+                {{ item.name }}
+              </div>
               <div v-if="item.desc" class="text-caption text-medium-emphasis text-truncate">
                 {{ item.desc }}
               </div>

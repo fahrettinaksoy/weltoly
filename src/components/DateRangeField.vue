@@ -24,6 +24,27 @@ const fmt = useFormat()
 
 const displayText = computed(() => dateRangeText(props.modelValue, fmt.date))
 
+/**
+ * Menü AÇIKÇA kontrol edilir (O-12). Eskiden yalnız `activator="parent"` vardı:
+ * VMenu aktivatöre TIKLAMA bağlar, oysa readonly bir metin alanında Enter/Space
+ * tıklama üretmez — takvim yalnızca FAREYLE açılabiliyordu, klavye kullanıcısı
+ * (ve ekran okuyucu) süzgece hiç ulaşamıyordu.
+ * Aktivatör de duruyor, yani fare davranışı aynen korunuyor.
+ */
+const menuOpen = ref(false)
+
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault() // Space sayfayı kaydırmasın
+    menuOpen.value = true
+    return
+  }
+  if (e.key === 'Escape' && menuOpen.value) {
+    e.preventDefault()
+    menuOpen.value = false
+  }
+}
+
 function onPick(value: unknown) {
   // VDatePicker range modunda Date[] döndürür; boş/null'ı da diziye normalize et.
   emit('update:modelValue', Array.isArray(value) ? value as Date[] : value ? [value as Date] : [])
@@ -35,6 +56,8 @@ function clear() {
 </script>
 
 <template>
+  <!-- a11y: combobox rolü + aria-expanded, açılır takvimi ekran okuyucuya
+       duyurur; keydown ile Enter/Space klavyeden açar (O-12). -->
   <v-text-field
     :model-value="displayText"
     :placeholder="placeholder"
@@ -44,9 +67,13 @@ function clear() {
     hide-details
     readonly
     clearable
+    role="combobox"
+    aria-haspopup="dialog"
+    :aria-expanded="menuOpen"
+    @keydown="onKeydown"
     @click:clear="clear"
   >
-    <v-menu activator="parent" :close-on-content-click="false" min-width="0">
+    <v-menu v-model="menuOpen" activator="parent" :close-on-content-click="false" min-width="0">
       <v-date-picker
         :model-value="modelValue"
         multiple="range"

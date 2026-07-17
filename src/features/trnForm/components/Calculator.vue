@@ -3,7 +3,7 @@ import type { CalculatorKey } from '@/features/trnForm/utils/calculate'
 
 const emit = defineEmits<{ key: [CalculatorKey] }>()
 
-type Btn = { k: CalculatorKey, label?: string, icon?: string, color?: string }
+interface Btn { k: CalculatorKey, label?: string, icon?: string, color?: string }
 
 const rows: Btn[][] = [
   [{ k: '7' }, { k: '8' }, { k: '9' }, { k: '/', label: '÷', color: 'primary' }],

@@ -1,20 +1,21 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import { endOfMonth, startOfMonth, subMonths } from 'date-fns'
+import { useI18n } from 'vue-i18n'
 
-import { useWalletsStore } from '@/features/wallets/store'
-import { useTrnsStore } from '@/features/trns/store'
-import { useCurrenciesStore } from '@/features/currencies/store'
+import AppEmptyState from '@/components/AppEmptyState.vue'
+import SectionCard from '@/components/SectionCard.vue'
+import { useFormat } from '@/composables/useFormat'
 import { useCategoriesStore } from '@/features/categories/store'
+import { useCurrenciesStore } from '@/features/currencies/store'
+import { changeRatio, deltaTone } from '@/features/stat/lib/periodCompare'
 import { useTagsStore } from '@/features/tags/store'
+import TrnList from '@/features/trns/components/TrnList.vue'
+import { useTrnsStore } from '@/features/trns/store'
+import { TrnType } from '@/features/trns/types'
 import { useUserStore } from '@/features/user/store'
+import { useWalletsStore } from '@/features/wallets/store'
 import { walletTypes } from '@/features/wallets/types'
 import { walletTypeIcon } from '@/features/wallets/walletMeta'
-import { TrnType } from '@/features/trns/types'
-import { useFormat } from '@/composables/useFormat'
-import SectionCard from '@/components/SectionCard.vue'
-import AppEmptyState from '@/components/AppEmptyState.vue'
-import TrnList from '@/features/trns/components/TrnList.vue'
 
 const { t } = useI18n()
 const walletsStore = useWalletsStore()
@@ -78,20 +79,6 @@ function flowIn(range: { from: number, to: number }) {
 
 const monthFlow = computed(() => flowIn(thisMonth.value))
 const prevMonthFlow = computed(() => flowIn(lastMonth.value))
-
-/** Önceki ay 0 ise yüzde TANIMSIZDIR (0'a bölme) → rozet gösterilmez. */
-function changeRatio(current: number, previous: number): number | null {
-  if (previous === 0)
-    return null
-  return ((current - previous) / Math.abs(previous)) * 100
-}
-
-/** Gider artışı KÖTÜ, gelir artışı İYİ — yön tek başına renk belirlemez. */
-function deltaTone(delta: number, positiveIsGood: boolean): string | undefined {
-  if (Math.abs(delta) < 1)
-    return undefined
-  return (delta > 0) === positiveIsGood ? 'success' : 'error'
-}
 
 const monthCards = computed(() => {
   const c = monthFlow.value
@@ -165,8 +152,10 @@ const creditCards = computed(() =>
     .toSorted((a, b) => b.ratio - a.ratio),
 )
 
-/** Toplam limit/kullanım TEMEL para biriminde — kartlar farklı birimde olabilir
-    (Amex USD), ham toplamak elmayla armudu toplamak olurdu. */
+/**
+     Toplam limit/kullanım TEMEL para biriminde — kartlar farklı birimde olabilir
+    (Amex USD), ham toplamak elmayla armudu toplamak olurdu.
+ */
 const creditTotal = computed(() => {
   let limit = 0
   let used = 0
@@ -246,8 +235,10 @@ const defaultWallet = computed(() => {
 })
 
 // --- Son işlemler --------------------------------------------------------
-/** Seçimi v-slide-group'un grup modeli yönetiyor (multiple + v-model); elle
-    toggle yazmaya gerek yok. */
+/**
+     Seçimi v-slide-group'un grup modeli yönetiyor (multiple + v-model); elle
+    toggle yazmaya gerek yok.
+ */
 const filterTagIds = ref<string[]>([])
 
 /** Kaç GÜN gösterilecek. Kesme TrnList'te gün bazında yapılıyor. */
@@ -273,24 +264,55 @@ const recentIds = computed(() =>
     <v-sheet color="primary" class="pa-5 mb-4 dash-hero">
       <div class="d-flex align-center ga-6 flex-wrap">
         <div class="dash-hero-main">
-          <div class="text-caption dash-hero-label">{{ t('dashboard.netWorth') }}</div>
-          <div class="text-h4 font-weight-bold">{{ fmt.money(totals.net, base) }}</div>
+          <div class="text-caption dash-hero-label">
+            {{ t('dashboard.netWorth') }}
+          </div>
+          <div class="text-h4 font-weight-bold">
+            {{ fmt.money(totals.net, base) }}
+          </div>
+          <!-- Kur eksik: bazı cüzdanlar net'ten çıkarıldı (sessiz 1:1 yerine dürüst uyarı) — Y-1. -->
+          <v-chip
+            v-if="totals.hasMissingRates"
+            size="x-small" color="warning" variant="flat" class="mt-1"
+            prepend-icon="mdi-alert-outline"
+          >
+            {{ t('common.rateMissing') }}
+            <v-tooltip activator="parent" location="bottom">
+              {{ t('common.rateMissingHint') }}
+            </v-tooltip>
+          </v-chip>
         </div>
         <div class="dash-hero-cell">
-          <div class="text-caption dash-hero-label">{{ t('wallets.stats.assets') }}</div>
-          <div class="text-subtitle-1 font-weight-medium">{{ fmt.money(totals.assets, base) }}</div>
+          <div class="text-caption dash-hero-label">
+            {{ t('wallets.stats.assets') }}
+          </div>
+          <div class="text-subtitle-1 font-weight-medium">
+            {{ fmt.money(totals.assets, base) }}
+          </div>
         </div>
         <div class="dash-hero-cell">
-          <div class="text-caption dash-hero-label">{{ t('wallets.stats.debts') }}</div>
-          <div class="text-subtitle-1 font-weight-medium">{{ fmt.money(totals.debts, base) }}</div>
+          <div class="text-caption dash-hero-label">
+            {{ t('wallets.stats.debts') }}
+          </div>
+          <div class="text-subtitle-1 font-weight-medium">
+            {{ fmt.money(totals.debts, base) }}
+          </div>
         </div>
         <div class="dash-hero-cell">
-          <div class="text-caption dash-hero-label">{{ t('wallets.stats.debtRatio') }}</div>
-          <div class="text-subtitle-1 font-weight-medium">%{{ fmt.number(Math.round(walletsStore.debtRatio)) }}</div>
+          <div class="text-caption dash-hero-label">
+            {{ t('wallets.stats.debtRatio') }}
+          </div>
+          <div class="text-subtitle-1 font-weight-medium">
+            {{ fmt.percent(walletsStore.debtRatio) }}
+          </div>
         </div>
         <div v-if="defaultWallet" class="dash-hero-cell dash-hero-wallet">
-          <div class="text-caption dash-hero-label">{{ t('wallets.default') }}</div>
-          <div class="text-subtitle-1 font-weight-medium text-truncate">{{ defaultWallet.name }}</div>
+          <div class="text-caption dash-hero-label">
+            {{ t('wallets.default') }}
+          </div>
+          <div class="text-subtitle-1 font-weight-medium text-truncate">
+            {{ defaultWallet.name }}
+          </div>
         </div>
       </div>
     </v-sheet>
@@ -315,7 +337,7 @@ const recentIds = computed(() =>
             variant="tonal"
             :title="t('dashboard.vsPrevMonth')"
           >
-            %{{ fmt.number(Math.abs(Math.round(card.delta))) }}
+            {{ fmt.percent(Math.abs(card.delta)) }}
           </v-chip>
         </div>
         <div class="text-caption text-medium-emphasis">
@@ -338,7 +360,7 @@ const recentIds = computed(() =>
             <v-icon :icon="row.icon" size="18" class="text-medium-emphasis" />
             <span class="text-body-2 text-truncate flex-1-1">{{ row.title }}</span>
             <span class="text-body-2 font-weight-medium">{{ fmt.money(row.value, base) }}</span>
-            <span class="text-caption text-medium-emphasis dash-pct">%{{ fmt.number(Math.round(row.percent)) }}</span>
+            <span class="text-caption text-medium-emphasis dash-pct">{{ fmt.percent(row.percent) }}</span>
           </div>
           <v-progress-linear :model-value="row.percent" color="primary" height="6" />
         </div>
@@ -368,7 +390,7 @@ const recentIds = computed(() =>
             <v-avatar :color="card.color" size="10" />
             <span class="text-caption text-truncate flex-1-1">{{ card.name }}</span>
             <span class="text-caption text-medium-emphasis">{{ fmt.money(card.used, card.currency) }}</span>
-            <span class="text-caption text-medium-emphasis dash-pct">%{{ fmt.number(Math.round(card.ratio)) }}</span>
+            <span class="text-caption text-medium-emphasis dash-pct">{{ fmt.percent(card.ratio) }}</span>
           </div>
           <v-progress-linear :model-value="card.ratio" :color="usageTone(card.ratio)" height="6" />
         </div>
@@ -467,12 +489,20 @@ const recentIds = computed(() =>
         <v-divider class="my-3" />
 
         <div v-if="trnSpan" class="px-2 mb-3">
-          <div class="text-caption text-medium-emphasis">{{ t('dashboard.trnSpan') }}</div>
-          <div class="text-body-2">{{ fmt.date(trnSpan.first) }} – {{ fmt.date(trnSpan.last) }}</div>
+          <div class="text-caption text-medium-emphasis">
+            {{ t('dashboard.trnSpan') }}
+          </div>
+          <div class="text-body-2">
+            {{ fmt.date(trnSpan.first) }} – {{ fmt.date(trnSpan.last) }}
+          </div>
         </div>
         <div class="px-2">
-          <div class="text-caption text-medium-emphasis">{{ t('settings.currency') }}</div>
-          <div class="text-body-2">{{ base }}</div>
+          <div class="text-caption text-medium-emphasis">
+            {{ t('settings.currency') }}
+          </div>
+          <div class="text-body-2">
+            {{ base }}
+          </div>
         </div>
       </SectionCard>
     </div>

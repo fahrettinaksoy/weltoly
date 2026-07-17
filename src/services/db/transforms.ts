@@ -3,15 +3,23 @@ import type { Rates } from '@/features/currencies/types'
 import type { TagItem } from '@/features/tags/types'
 import type { TrnItem } from '@/features/trns/types'
 import type { WalletItem, WalletType } from '@/features/wallets/types'
+import { sanitizeRates } from '@/features/currencies/types'
 
 import { TrnType } from '@/features/trns/types'
 
 // Ham SQLite satırı: her tabloda `id` metin birincil anahtarı bulunur.
 export type Row = Record<string, any> & { id: string }
 
-// null updatedAt -> 0 (epoch), asla Date.now(): okumalar arası kararlı kalsın ki
-// reconcile değişiklik-tespiti doğru çalışsın.
-const ts = (v: unknown): number => (v == null ? 0 : Number(v))
+/**
+ * Zaman damgası normalizasyonu: null/undefined -> 0 (epoch), asla Date.now() —
+ * okumalar arası KARARLI kalsın ki reconcile değişiklik-tespiti doğru çalışsın.
+ *
+ * Export edilir (O-15): reconcile.ts aynı normalizasyonu kullanmak ZORUNDA.
+ * Orada ham `Number(row.updatedAt)` vardı; `Number(undefined)` → NaN ve
+ * `NaN !== NaN` her zaman doğru olduğu için satır SÜREKLİ "değişmiş" sayılıyor,
+ * her watch tetiğinde tüm harita yeniden kuruluyordu (sessiz thrash).
+ */
+export const ts = (v: unknown): number => (v == null ? 0 : Number(v))
 
 // tagIds JSON kolonu -> string[] (bozuk/boşsa []).
 function parseTagIds(v: unknown): string[] {
@@ -103,7 +111,9 @@ export function rowToRates(row: Row): Rates | null {
   if (!row?.rates)
     return null
   try {
-    return JSON.parse(row.rates as string) as Rates
+    // Okuma yolunda da temizle: bozuk/geçersiz kurlar toplamları zehirlemesin (Y-2).
+    const clean = sanitizeRates(JSON.parse(row.rates as string))
+    return Object.keys(clean).length ? clean : null
   }
   catch {
     return null

@@ -1,10 +1,11 @@
-import { defineStore } from 'pinia'
-import { useLocalStorage } from '@vueuse/core'
-
-import { setLocale } from '@/plugins/i18n'
-import { DEFAULT_RADIUS, defaultNeutral, defaultPrimary, type NeutralKey } from '@/features/theme/palette'
-import type { DateFormatKey, NumberFormatKey, WeekStart } from '@/shared/lib/format'
+import type { NeutralKey } from '@/features/theme/palette'
 import type { LocaleCode } from '@/i18n/messages'
+
+import type { DateFormatKey, NumberFormatKey, WeekStart } from '@/shared/lib/format'
+import { useLocalStorage } from '@vueuse/core'
+import { defineStore } from 'pinia'
+import { DEFAULT_RADIUS, defaultNeutral, defaultPrimary } from '@/features/theme/palette'
+import { setLocale } from '@/plugins/i18n'
 
 export type ThemeMode = 'system' | 'light' | 'dark'
 

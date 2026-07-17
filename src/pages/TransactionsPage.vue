@@ -1,19 +1,24 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { endOfDay, startOfDay } from 'date-fns'
+import type { TrnFilterRow, TrnFilters } from '@/features/trns/lib/trnFilters'
+import type { TrnKind } from '@/features/trns/lib/trnKind'
 
-import { walletIdsOfTrn } from '@/features/wallets/trnLink'
-import { useWalletsStore } from '@/features/wallets/store'
-import { useCategoriesStore } from '@/features/categories/store'
-import { useTagsStore } from '@/features/tags/store'
-import { useTrnsStore } from '@/features/trns/store'
-import { useCurrenciesStore } from '@/features/currencies/store'
-import { useTrnsFormStore } from '@/features/trnForm/store'
-import { TrnType, type TrnId, type TrnItem } from '@/features/trns/types'
+import type { TrnId, TrnItem } from '@/features/trns/types'
 import type { WalletId } from '@/features/wallets/types'
-import DateRangeField from '@/components/DateRangeField.vue'
+import { useI18n } from 'vue-i18n'
 import AppEmptyState from '@/components/AppEmptyState.vue'
+import DateRangeField from '@/components/DateRangeField.vue'
 import { useAppBarAction } from '@/composables/useAppBarAction'
+import { ADJUSTMENT_ID, TRANSFER_ID } from '@/features/categories/pseudoCategories'
+import { useCategoriesStore } from '@/features/categories/store'
+import { useCurrenciesStore } from '@/features/currencies/store'
+import { useTagsStore } from '@/features/tags/store'
+import { useTrnsFormStore } from '@/features/trnForm/store'
+import { applyTrnFilters, emptyTrnFilters, hasAnyTrnFilter } from '@/features/trns/lib/trnFilters'
+import { KIND_META, trnKind, trnKindLabelKey } from '@/features/trns/lib/trnKind'
+import { useTrnsStore } from '@/features/trns/store'
+import { TrnType } from '@/features/trns/types'
+import { useWalletsStore } from '@/features/wallets/store'
+import { walletIdsOfTrn } from '@/features/wallets/trnLink'
 
 const { t } = useI18n()
 const walletsStore = useWalletsStore()
@@ -30,29 +35,6 @@ const fmt = useFormat()
 useAppBarAction(() => ({ icon: '$add', label: t('trnsPage.add'), onClick: () => trnForm.openFormForCreate() }))
 
 /**
- * İşlemin türü — tabloda gösterilen ayrım. WalletDetailPage ile AYNI kural:
- * düzeltme (açılış bakiyesi) trn.type'ında Income/Expense taşır ama gelir/gider
- * SAYILMAZ; ayrı bir tür olarak elenir.
- */
-type TrnKind = 'income' | 'expense' | 'transfer' | 'adjustment'
-
-/** Sıra önemli: düzeltme trn.type'ında Income/Expense görünür, ÖNCE elenmeli. */
-function trnKind(trn: TrnItem): TrnKind {
-  if (trn.categoryId === 'adjustment')
-    return 'adjustment'
-  if (trn.type === TrnType.Transfer)
-    return 'transfer'
-  return trn.type === TrnType.Income ? 'income' : 'expense'
-}
-
-const KIND_META: Record<TrnKind, { color: string, icon: string }> = {
-  income: { color: 'success', icon: 'mdi-arrow-bottom-left' },
-  expense: { color: 'error', icon: 'mdi-arrow-top-right' },
-  transfer: { color: 'info', icon: 'mdi-swap-horizontal' },
-  adjustment: { color: 'grey', icon: 'mdi-scale-balance' },
-}
-
-/**
  * Pasta dilim rengi — KIND_META'daki tema ADLARININ CSS karşılığı.
  * Gerekli çünkü VPie item.color'ı doğrudan CSS `color`'a yazıyor (fill:
  * currentColor); 'success'/'error'/'info' geçerli CSS rengi DEĞİL, dilim renksiz
@@ -65,8 +47,9 @@ const KIND_PIE_COLOR: Record<TrnKind, string> = {
   adjustment: 'grey',
 }
 
+/** Tür etiketi: anahtar tek kaynakta (trnKind.ts), çeviri burada bağlanır. */
 function kindLabel(kind: TrnKind) {
-  return kind === 'adjustment' ? t('walletDetail.adjustment') : t(`trnForm.${kind}`)
+  return t(trnKindLabelKey(kind))
 }
 
 /**
@@ -100,18 +83,18 @@ function amountOf(trn: TrnItem): number {
   return trn.type === TrnType.Income ? trn.amount : -trn.amount
 }
 
-type TrnRow = {
+/**
+ * Tablo satırı = SÜZGEÇ alanları (TrnFilterRow: id'ler) + SUNUM alanları (adlar).
+ * Kimlik id'dedir, adlar yalnız gösterim içindir (O-6).
+ */
+interface TrnRow extends TrnFilterRow {
   id: TrnId
-  date: number
-  kind: TrnKind
   walletLabel: string
   walletIds: WalletId[]
   categoryName: string
   categoryIcon: string
   categoryColor: string
-  desc: string
   tagNames: string[]
-  amount: number
   currency: string
 }
 
@@ -124,21 +107,24 @@ const trnRows = computed<TrnRow[]>(() => {
   for (const id in trns) {
     const trn = trns[id]!
     const category = categoriesStore.items[trn.categoryId]
+    const tagIds = trn.tagIds ?? []
     rows.push({
       id,
       date: trn.date,
       kind: trnKind(trn),
       walletLabel: walletLabelOf(trn),
       walletIds: walletIdsOfTrn(trn),
-      categoryName: trn.categoryId === 'transfer'
+      categoryId: trn.categoryId,
+      categoryName: trn.categoryId === TRANSFER_ID
         ? t('walletDetail.transfer')
-        : trn.categoryId === 'adjustment'
+        : trn.categoryId === ADJUSTMENT_ID
           ? t('walletDetail.adjustment')
           : category?.name ?? trn.categoryId,
       categoryIcon: category?.icon || 'mdi-help-circle-outline',
       categoryColor: category?.color || 'grey',
       desc: trn.desc ?? '',
-      tagNames: (trn.tagIds ?? []).map(tid => tagsStore.items[tid]?.name).filter((x): x is string => !!x),
+      tagIds,
+      tagNames: tagIds.map(tid => tagsStore.items[tid]?.name).filter((x): x is string => !!x),
       amount: amountOf(trn),
       currency: currencyOf(trn),
     })
@@ -146,16 +132,11 @@ const trnRows = computed<TrnRow[]>(() => {
   return rows.toSorted((a, b) => b.date - a.date)
 })
 
-// --- Süzgeçler (WalletDetailPage ile aynı desen + cüzdan süzgeci) -----------
-const trnFilters = reactive({
-  dateRange: [] as Date[],
-  kinds: [] as TrnKind[],
-  wallets: [] as WalletId[],
-  categories: [] as string[],
-  desc: '',
-  tags: [] as string[],
-  minAmount: null as number | null,
-})
+// --- Süzgeçler --------------------------------------------------------------
+// Şekil ve uygulama features/trns/lib/trnFilters.ts'te — TEK KAYNAK (Y-5);
+// WalletDetailPage ve testler de aynı modülü kullanır. Cüzdan süzgeci ortak
+// şemada: cüzdan detayında boş kalır (etkisiz), burada kullanılır.
+const trnFilters = reactive<TrnFilters>(emptyTrnFilters())
 
 /** Tür seçenekleri: dört türün hepsi sabit — sistemde geçmese de anlamlı. */
 const filterKindOptions = computed(() =>
@@ -165,64 +146,51 @@ const filterKindOptions = computed(() =>
 /** Cüzdan seçenekleri: listede GEÇEN cüzdanlar — boş seçenek gösterme. */
 const filterWalletOptions = computed(() => {
   const ids = new Set<WalletId>()
-  for (const r of trnRows.value)
+  for (const r of trnRows.value) {
     for (const id of r.walletIds)
       ids.add(id)
+  }
   return [...ids]
     .map(id => ({ value: id, title: walletsStore.itemsComputed[id]?.name ?? id }))
     .toSorted((a, b) => a.title.localeCompare(b.title))
 })
 
-const filterCategoryOptions = computed(() =>
-  [...new Set(trnRows.value.map(r => r.categoryName))].toSorted((a, b) => a.localeCompare(b)),
-)
-const filterTagOptions = computed(() =>
-  [...new Set(trnRows.value.flatMap(r => r.tagNames))].toSorted((a, b) => a.localeCompare(b)),
-)
+/**
+ * Kategori/etiket seçenekleri: değer ID, başlık ad (O-6) — aynı adlı iki
+ * kategori artık birbirini getirmez.
+ */
+const filterCategoryOptions = computed(() => {
+  const byId = new Map<string, string>()
+  for (const r of trnRows.value)
+    byId.set(r.categoryId, r.categoryName)
+  return [...byId].map(([value, title]) => ({ value, title })).toSorted((a, b) => a.title.localeCompare(b.title))
+})
 
-const hasFilter = computed(() =>
-  trnFilters.dateRange.length > 0 || trnFilters.kinds.length > 0
-  || trnFilters.wallets.length > 0 || trnFilters.categories.length > 0
-  || trnFilters.desc.trim() !== '' || trnFilters.tags.length > 0
-  || trnFilters.minAmount !== null,
-)
+const filterTagOptions = computed(() => {
+  const byId = new Map<string, string>()
+  for (const r of trnRows.value) {
+    r.tagIds.forEach((id, i) => {
+      const name = r.tagNames[i]
+      if (name)
+        byId.set(id, name)
+    })
+  }
+  return [...byId].map(([value, title]) => ({ value, title })).toSorted((a, b) => a.title.localeCompare(b.title))
+})
 
-function clearFilters() {
-  trnFilters.dateRange = []
-  trnFilters.kinds = []
-  trnFilters.wallets = []
-  trnFilters.categories = []
-  trnFilters.desc = ''
-  trnFilters.tags = []
-  trnFilters.minAmount = null
+/** Seçili tek öğenin ADI (özet metni için) — seçim id tutuyor, ekranda ad yazmalı. */
+function optionTitle(options: { value: string, title: string }[], id: string | undefined): string {
+  return options.find(o => o.value === id)?.title ?? id ?? ''
 }
 
-/** Süzgeçler VE'lenir; her biri ayrı bir daraltma. */
-const filteredTrnRows = computed(() => trnRows.value.filter((r) => {
-  if (trnFilters.dateRange.length) {
-    const days = trnFilters.dateRange.map(d => d.getTime()).toSorted((a, b) => a - b)
-    const start = startOfDay(days[0]!).getTime()
-    const end = endOfDay(days.at(-1)!).getTime()
-    if (r.date < start || r.date > end)
-      return false
-  }
-  if (trnFilters.kinds.length && !trnFilters.kinds.includes(r.kind))
-    return false
-  // Cüzdan: satırın dokunduğu cüzdanlardan biri seçiliyse geçer (transfer iki taraflı).
-  if (trnFilters.wallets.length && !r.walletIds.some(id => trnFilters.wallets.includes(id)))
-    return false
-  if (trnFilters.categories.length && !trnFilters.categories.includes(r.categoryName))
-    return false
-  if (trnFilters.desc.trim()
-    && !r.desc.toLocaleLowerCase().includes(trnFilters.desc.trim().toLocaleLowerCase())) {
-    return false
-  }
-  if (trnFilters.tags.length && !r.tagNames.some(n => trnFilters.tags.includes(n)))
-    return false
-  if (trnFilters.minAmount !== null && Math.abs(r.amount) < trnFilters.minAmount)
-    return false
-  return true
-}))
+const hasFilter = computed(() => hasAnyTrnFilter(trnFilters))
+
+function clearFilters() {
+  Object.assign(trnFilters, emptyTrnFilters())
+}
+
+/** Süzgeçler VE'lenir. Kural tek kaynakta (trnFilters.ts); burada yalnız bağlanır. */
+const filteredTrnRows = computed(() => applyTrnFilters(trnRows.value, trnFilters))
 
 const trnHeaders = computed(() => [
   { title: t('trnForm.date'), key: 'date', sortable: true, width: 200, nowrap: true },
@@ -234,8 +202,10 @@ const trnHeaders = computed(() => [
   { title: t('trnForm.amount'), key: 'amount', align: 'end', sortable: true, width: 170, nowrap: true },
 ] as const)
 
-/** Hiç işlem var mı? Kategoriler/Etiketler ile aynı desen: veri yoksa sayfa
-    genelinde boş durum, veri varsa özet + tablo. */
+/**
+     Hiç işlem var mı? Kategoriler/Etiketler ile aynı desen: veri yoksa sayfa
+    genelinde boş durum, veri varsa özet + tablo.
+ */
 const hasTrns = computed(() => trnRows.value.length > 0)
 
 /** Filtreli işlemlerin TÜR bazında adedi — tek geçiş (KPI + pasta ortak kaynak). */
@@ -295,13 +265,19 @@ function onRowClick(_e: unknown, { item }: { item: TrnRow }) {
           tooltip
         >
           <template #center>
-            <div class="text-body-2 font-weight-bold">{{ fmt.number(filteredTrnRows.length) }}</div>
+            <div class="text-body-2 font-weight-bold">
+              {{ fmt.number(filteredTrnRows.length) }}
+            </div>
           </template>
         </v-pie>
 
         <div v-for="kpi in kpis" :key="kpi.key">
-          <div class="text-h5 font-weight-bold">{{ kpi.value }}</div>
-          <div class="text-caption text-medium-emphasis">{{ kpi.label }}</div>
+          <div class="text-h5 font-weight-bold">
+            {{ kpi.value }}
+          </div>
+          <div class="text-caption text-medium-emphasis">
+            {{ kpi.label }}
+          </div>
         </div>
         <v-spacer />
         <v-btn
@@ -350,7 +326,7 @@ function onRowClick(_e: unknown, { item }: { item: TrnRow }) {
                   v-if="column.sortable"
                   :icon="getSortIcon(column)"
                   size="small"
-                  :class="['v-data-table-header__sort-icon', !isSorted(column) && 'text-disabled']"
+                  class="v-data-table-header__sort-icon" :class="[!isSorted(column) && 'text-disabled']"
                 />
               </div>
             </th>
@@ -382,7 +358,7 @@ function onRowClick(_e: unknown, { item }: { item: TrnRow }) {
               </v-select>
               <v-select
                 v-else-if="column.key === 'walletLabel'"
-                v-model="trnFilters.wallets"
+                v-model="trnFilters.walletIds"
                 :items="filterWalletOptions"
                 :placeholder="t('trnsPage.allWallets')"
                 density="compact"
@@ -393,14 +369,16 @@ function onRowClick(_e: unknown, { item }: { item: TrnRow }) {
               >
                 <template #selection="{ index, item: opt }">
                   <span v-if="index === 0" class="text-caption text-truncate">
-                    {{ trnFilters.wallets.length === 1 ? opt.title : t('walletDetail.nSelected', { n: trnFilters.wallets.length }) }}
+                    {{ trnFilters.walletIds.length === 1 ? opt.title : t('walletDetail.nSelected', { n: trnFilters.walletIds.length }) }}
                   </span>
                 </template>
               </v-select>
               <v-select
                 v-else-if="column.key === 'categoryName'"
-                v-model="trnFilters.categories"
+                v-model="trnFilters.categoryIds"
                 :items="filterCategoryOptions"
+                item-title="title"
+                item-value="value"
                 :placeholder="t('walletDetail.filterAll')"
                 density="compact"
                 variant="outlined"
@@ -410,7 +388,9 @@ function onRowClick(_e: unknown, { item }: { item: TrnRow }) {
               >
                 <template #selection="{ index }">
                   <span v-if="index === 0" class="text-caption text-truncate">
-                    {{ trnFilters.categories.length === 1 ? trnFilters.categories[0] : t('walletDetail.nSelected', { n: trnFilters.categories.length }) }}
+                    {{ trnFilters.categoryIds.length === 1
+                      ? optionTitle(filterCategoryOptions, trnFilters.categoryIds[0])
+                      : t('walletDetail.nSelected', { n: trnFilters.categoryIds.length }) }}
                   </span>
                 </template>
               </v-select>
@@ -426,8 +406,10 @@ function onRowClick(_e: unknown, { item }: { item: TrnRow }) {
               />
               <v-select
                 v-else-if="column.key === 'tagNames'"
-                v-model="trnFilters.tags"
+                v-model="trnFilters.tagIds"
                 :items="filterTagOptions"
+                item-title="title"
+                item-value="value"
                 :placeholder="t('walletDetail.filterAll')"
                 density="compact"
                 variant="outlined"
@@ -437,7 +419,9 @@ function onRowClick(_e: unknown, { item }: { item: TrnRow }) {
               >
                 <template #selection="{ index }">
                   <span v-if="index === 0" class="text-caption text-truncate">
-                    {{ trnFilters.tags.length === 1 ? trnFilters.tags[0] : t('walletDetail.nSelected', { n: trnFilters.tags.length }) }}
+                    {{ trnFilters.tagIds.length === 1
+                      ? optionTitle(filterTagOptions, trnFilters.tagIds[0])
+                      : t('walletDetail.nSelected', { n: trnFilters.tagIds.length }) }}
                   </span>
                 </template>
               </v-select>
@@ -491,7 +475,9 @@ function onRowClick(_e: unknown, { item }: { item: TrnRow }) {
 
         <template #[`item.tagNames`]="{ item }">
           <div v-if="item.tagNames.length" class="d-flex ga-1">
-            <v-chip v-for="n in item.tagNames" :key="n" size="x-small" variant="tonal">{{ n }}</v-chip>
+            <v-chip v-for="n in item.tagNames" :key="n" size="x-small" variant="tonal">
+              {{ n }}
+            </v-chip>
           </div>
           <span v-else class="text-disabled">—</span>
         </template>

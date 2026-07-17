@@ -1,31 +1,33 @@
-import { defineStore } from 'pinia'
-
-import { getAmountInRate, getTotal } from '@/shared/lib/getTotal'
-import { filterTrnsIds } from '@/features/trns/getTrns'
-import { rangeForPeriod } from '@/features/date/utils'
-import { getParentCategoryIdOrReturnSame } from '@/features/categories/utils'
-import { TrnType } from '@/features/trns/types'
-import { useTrnsStore } from '@/features/trns/store'
-import { useWalletsStore } from '@/features/wallets/store'
-import { useCategoriesStore } from '@/features/categories/store'
-import { useCurrenciesStore } from '@/features/currencies/store'
-import { useSettingsStore } from '@/stores/settings'
 import type { Period, Range } from '@/features/date/types'
+
+import { defineStore } from 'pinia'
+import { ADJUSTMENT_ID } from '@/features/categories/pseudoCategories'
+import { useCategoriesStore } from '@/features/categories/store'
+import { getParentCategoryIdOrReturnSame } from '@/features/categories/utils'
+import { useCurrenciesStore } from '@/features/currencies/store'
+import { rangeForPeriod } from '@/features/date/utils'
+import { filterTrnsIds } from '@/features/trns/getTrns'
+import { useTrnsStore } from '@/features/trns/store'
+import { TrnType } from '@/features/trns/types'
+import { useWalletsStore } from '@/features/wallets/store'
+import { getAmountInRate, getTotal } from '@/shared/lib/getTotal'
+import { addMoney } from '@/shared/lib/money'
+import { useSettingsStore } from '@/stores/settings'
 
 // Grafikte gösterilecek aralık sayısı (periyoda göre).
 const INTERVAL_COUNT: Record<Period, number> = { day: 14, week: 10, month: 6, year: 5 }
 
 export type StatType = 'expense' | 'income'
 
-export type ChartInterval = { range: Range, income: number, expense: number }
-export type BreakdownItem = {
+export interface ChartInterval { range: Range, income: number, expense: number }
+export interface BreakdownItem {
   categoryId: string
   amount: number
   percent: number
   /** Kök inilebilir mi — altında bu aralıkta birden çok yaprak var mı. */
   canDrill: boolean
 }
-export type TagBreakdownItem = { tagId: string, amount: number, percent: number }
+export interface TagBreakdownItem { tagId: string, amount: number, percent: number }
 
 export const useStatStore = defineStore('stat', () => {
   const trnsStore = useTrnsStore()
@@ -93,15 +95,17 @@ export const useStatStore = defineStore('stat', () => {
     })
   }
 
-  /** Aralıktaki işlem adedi. Gelir/gider tanımıyla AYNI küme: transfer ve
-      düzeltme hariç — yoksa "12 işlem" derken toplamlara girmeyenleri sayardı. */
+  /**
+       Aralıktaki işlem adedi. Gelir/gider tanımıyla AYNI küme: transfer ve
+      düzeltme hariç — yoksa "12 işlem" derken toplamlara girmeyenleri sayardı.
+   */
   function countForRange(range: Range) {
     const items = trnsStore.items ?? {}
     const ids = filterTrnsIds({ trnsItems: items, dates: range, walletsIds: activeWalletIds.value, tagsIds: activeTagIds.value })
     let n = 0
     for (const id of ids) {
       const trn = items[id]
-      if (trn && trn.type !== TrnType.Transfer && trn.categoryId !== 'adjustment')
+      if (trn && trn.type !== TrnType.Transfer && trn.categoryId !== ADJUSTMENT_ID)
         n++
     }
     return n
@@ -145,18 +149,22 @@ export const useStatStore = defineStore('stat', () => {
     const out: { categoryId: string, tagIds: string[], amount: number }[] = []
     for (const id of ids) {
       const trn = items[id]
-      if (!trn || trn.type === TrnType.Transfer || trn.categoryId === 'adjustment')
+      if (!trn || trn.type === TrnType.Transfer || trn.categoryId === ADJUSTMENT_ID)
         continue
       const wallet = walletsStore.items?.[trn.walletId]
+      const amount = getAmountInRate({
+        amount: trn.amount,
+        baseCurrencyCode: currenciesStore.base,
+        currencyCode: wallet?.currency ?? 'USD',
+        rates: currenciesStore.rates,
+      })
+      // Kur eksikse (null) istatistiğe sokma — sessiz 1:1 varsayma (Y-1).
+      if (amount === null)
+        continue
       out.push({
         categoryId: trn.categoryId,
         tagIds: trn.tagIds ?? [],
-        amount: getAmountInRate({
-          amount: trn.amount,
-          baseCurrencyCode: currenciesStore.base,
-          currencyCode: wallet?.currency ?? 'USD',
-          rates: currenciesStore.rates,
-        }),
+        amount,
       })
     }
     return out
@@ -166,7 +174,7 @@ export const useStatStore = defineStore('stat', () => {
   const amountsByLeaf = computed(() => {
     const map = new Map<string, number>()
     for (const t of typedTrns.value)
-      map.set(t.categoryId, (map.get(t.categoryId) ?? 0) + t.amount)
+      map.set(t.categoryId, addMoney(map.get(t.categoryId) ?? 0, t.amount))
     return map
   })
 

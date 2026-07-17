@@ -1,27 +1,38 @@
-import { describe, expect, it } from 'vitest'
+import type { Row } from './transforms'
 
-import {
-  categoryToRow,
-  rowToCategory,
-  rowToTag,
-  tagToRow,
-  rowToRates,
-  rowToTrn,
-  rowToWallet,
-  trnToRow,
-  walletToRow,
-  type Row,
-} from './transforms'
-import { TrnType, type TrnItem } from '@/features/trns/types'
-import type { WalletItem } from '@/features/wallets/types'
 import type { CategoryItem } from '@/features/categories/types'
 import type { TagItem } from '@/features/tags/types'
+import type { TrnItem } from '@/features/trns/types'
+import type { WalletItem } from '@/features/wallets/types'
+import { describe, expect, it } from 'vitest'
+import { TrnType } from '@/features/trns/types'
+import {
+  categoryToRow,
+
+  rowToCategory,
+  rowToRates,
+  rowToTag,
+  rowToTrn,
+  rowToWallet,
+  tagToRow,
+  trnToRow,
+  walletToRow,
+} from './transforms'
 
 describe('wallet transforms', () => {
   it('boolean 0/1 ↔ true/false çevrimi', () => {
     const item: WalletItem = {
-      color: '#fff', currency: 'USD', desc: 'x', icon: '', isArchived: true, isExcludeInTotal: false,
-      isWithdrawal: true, name: 'Cash', order: 2, updatedAt: 5, type: 'cash',
+      color: '#fff',
+      currency: 'USD',
+      desc: 'x',
+      icon: '',
+      isArchived: true,
+      isExcludeInTotal: false,
+      isWithdrawal: true,
+      name: 'Cash',
+      order: 2,
+      updatedAt: 5,
+      type: 'cash',
     }
     const row = walletToRow(item, 'local')
     expect(row.isArchived).toBe(1)
@@ -38,8 +49,18 @@ describe('wallet transforms', () => {
 
   it('credit cüzdanı creditLimit taşır', () => {
     const item: WalletItem = {
-      color: '#fff', currency: 'USD', desc: '', icon: '', isArchived: false, isExcludeInTotal: false,
-      isWithdrawal: false, name: 'Card', order: 0, updatedAt: 0, type: 'credit', creditLimit: 500,
+      color: '#fff',
+      currency: 'USD',
+      desc: '',
+      icon: '',
+      isArchived: false,
+      isExcludeInTotal: false,
+      isWithdrawal: false,
+      name: 'Card',
+      order: 0,
+      updatedAt: 0,
+      type: 'credit',
+      creditLimit: 500,
     }
     const back = rowToWallet({ id: 'w2', ...walletToRow(item, 'local') } as Row)
     expect(back.type).toBe('credit')
@@ -50,8 +71,14 @@ describe('wallet transforms', () => {
 describe('category transforms', () => {
   it('parentId 0 ↔ null (kök işareti)', () => {
     const root: CategoryItem = {
-      color: '#fff', desc: '', icon: 'mdi:home', name: 'Root', parentId: 0,
-      showInLastUsed: true, showInQuickSelector: false, updatedAt: 1,
+      color: '#fff',
+      desc: '',
+      icon: 'mdi:home',
+      name: 'Root',
+      parentId: 0,
+      showInLastUsed: true,
+      showInQuickSelector: false,
+      updatedAt: 1,
     }
     const row = categoryToRow(root, 'local')
     expect(row.parentId).toBeNull()
@@ -67,8 +94,14 @@ describe('category transforms', () => {
 describe('desc alanı (003 migrasyonu)', () => {
   it('kategori desc round-trip; boş desc null olarak yazılır', () => {
     const withDesc: CategoryItem = {
-      color: '#fff', desc: 'Aylık sabit gider', icon: 'mdi:home', name: 'Kira', parentId: 0,
-      showInLastUsed: true, showInQuickSelector: false, updatedAt: 1,
+      color: '#fff',
+      desc: 'Aylık sabit gider',
+      icon: 'mdi:home',
+      name: 'Kira',
+      parentId: 0,
+      showInLastUsed: true,
+      showInQuickSelector: false,
+      updatedAt: 1,
     }
     const row = categoryToRow(withDesc, 'local')
     expect(row.desc).toBe('Aylık sabit gider')
@@ -108,9 +141,14 @@ describe('trn transforms', () => {
 
   it('transfer işlemi expense/income alanlarını taşır', () => {
     const trn: TrnItem = {
-      type: TrnType.Transfer, categoryId: 'transfer',
-      expenseWalletId: 'w1', expenseAmount: 30, incomeWalletId: 'w2', incomeAmount: 30,
-      date: 12, updatedAt: 13,
+      type: TrnType.Transfer,
+      categoryId: 'transfer',
+      expenseWalletId: 'w1',
+      expenseAmount: 30,
+      incomeWalletId: 'w2',
+      incomeAmount: 30,
+      date: 12,
+      updatedAt: 13,
     }
     const row = trnToRow(trn, 'local')
     expect(row.categoryId).toBe('transfer')
@@ -122,7 +160,7 @@ describe('trn transforms', () => {
 })
 
 describe('rates transforms', () => {
-  it('JSON rates parse eder, bozuksa null döner', () => {
+  it('jSON rates parse eder, bozuksa null döner', () => {
     expect(rowToRates({ id: 'r1', rates: JSON.stringify({ USD: 1, EUR: 0.9 }) } as Row)).toEqual({ USD: 1, EUR: 0.9 })
     expect(rowToRates({ id: 'r2', rates: 'bozuk{' } as Row)).toBeNull()
     expect(rowToRates({ id: 'r3' } as Row)).toBeNull()

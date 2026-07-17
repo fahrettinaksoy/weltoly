@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
+import type { CategoryId } from '@/features/categories/types'
 
-import { generateId } from '@/shared/lib/generateId'
-import { random } from '@/shared/lib/random'
-import { colorsArray } from '@/features/color/colors'
-import { useCategoriesStore } from '@/features/categories/store'
-import FormDrawer from '@/components/FormDrawer.vue'
+import { useI18n } from 'vue-i18n'
 import ColorSwatches from '@/components/ColorSwatches.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import FormDrawer from '@/components/FormDrawer.vue'
 import IconPicker from '@/components/IconPicker.vue'
 import { categoryIcons } from '@/features/categories/iconList'
-import type { CategoryId } from '@/features/categories/types'
+import { useCategoriesStore } from '@/features/categories/store'
+import { colorsArray } from '@/features/color/colors'
+import { generateId } from '@/shared/lib/generateId'
+import { random } from '@/shared/lib/random'
 
 const props = defineProps<{ modelValue: boolean, categoryId: string | null }>()
 const emit = defineEmits<{ 'update:modelValue': [boolean] }>()
@@ -24,7 +24,7 @@ const iconPicker = ref(false)
 
 const palette = colorsArray.filter((_, i) => i % 6 === 0)
 
-type FormState = {
+interface FormState {
   name: string
   desc: string
   icon: string
@@ -36,8 +36,13 @@ type FormState = {
 
 function blankForm(): FormState {
   return {
-    name: '', desc: '', icon: random(categoryIcons), color: random(colorsArray),
-    parentId: 0, showInLastUsed: true, showInQuickSelector: false,
+    name: '',
+    desc: '',
+    icon: random(categoryIcons),
+    color: random(colorsArray),
+    parentId: 0,
+    showInLastUsed: true,
+    showInQuickSelector: false,
   }
 }
 
@@ -65,8 +70,13 @@ function loadForm() {
   if (props.categoryId && categoriesStore.items[props.categoryId]) {
     const c = categoriesStore.items[props.categoryId]!
     Object.assign(form, {
-      name: c.name, desc: c.desc, icon: c.icon, color: c.color, parentId: c.parentId,
-      showInLastUsed: c.showInLastUsed, showInQuickSelector: c.showInQuickSelector,
+      name: c.name,
+      desc: c.desc,
+      icon: c.icon,
+      color: c.color,
+      parentId: c.parentId,
+      showInLastUsed: c.showInLastUsed,
+      showInQuickSelector: c.showInQuickSelector,
     })
   }
   else {
@@ -93,13 +103,17 @@ function save() {
     id,
     isUpdateChildCategoriesColor: false,
     values: {
-      name: form.name.trim(), desc: form.desc.trim(), icon: form.icon, color: form.color, parentId: form.parentId,
-      showInLastUsed: form.showInLastUsed, showInQuickSelector: form.showInQuickSelector,
+      name: form.name.trim(),
+      desc: form.desc.trim(),
+      icon: form.icon,
+      color: form.color,
+      parentId: form.parentId,
+      showInLastUsed: form.showInLastUsed,
+      showInQuickSelector: form.showInQuickSelector,
     },
   })
   close()
 }
-
 
 function remove() {
   if (!props.categoryId)
@@ -126,7 +140,9 @@ function remove() {
       <v-avatar :color="form.color" size="56" class="cursor-pointer" @click="iconPicker = true">
         <v-icon :icon="form.icon" color="white" size="28" />
       </v-avatar>
-      <v-btn variant="tonal" size="small" @click="iconPicker = true">{{ t('categories.pickIcon') }}</v-btn>
+      <v-btn variant="tonal" size="small" @click="iconPicker = true">
+        {{ t('categories.pickIcon') }}
+      </v-btn>
     </div>
 
     <v-text-field
@@ -142,7 +158,9 @@ function remove() {
 
     <!-- Etiket + örnekler tek grup: başlık kendi alanına yapışık kalmalı. -->
     <div>
-      <div class="text-body-2 text-medium-emphasis mb-2">{{ t('categories.color') }}</div>
+      <div class="text-body-2 text-medium-emphasis mb-2">
+        {{ t('categories.color') }}
+      </div>
       <ColorSwatches v-model="form.color" :colors="palette" />
     </div>
 
@@ -156,13 +174,13 @@ function remove() {
   <!-- İkon seçici -->
   <IconPicker v-model="iconPicker" v-model:icon="form.icon" :title="t('categories.pickIcon')" />
 
-    <!-- Silme onayı -->
-    <ConfirmDialog
-      v-model="confirmDelete"
-      :title="t('categories.edit')"
-      :message="t('categories.deleteConfirm')"
-      @confirm="remove"
-    />
+  <!-- Silme onayı -->
+  <ConfirmDialog
+    v-model="confirmDelete"
+    :title="t('categories.edit')"
+    :message="t('categories.deleteConfirm')"
+    @confirm="remove"
+  />
 </template>
 
 <style scoped>

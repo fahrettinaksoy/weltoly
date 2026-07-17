@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
+import type { TagId } from '@/features/tags/types'
 
+import { useI18n } from 'vue-i18n'
+import AppEmptyState from '@/components/AppEmptyState.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import { useAppBarAction } from '@/composables/useAppBarAction'
+import TagFormDialog from '@/features/tags/components/TagFormDialog.vue'
 import { useTagsStore } from '@/features/tags/store'
 import { useTrnsStore } from '@/features/trns/store'
-import TagFormDialog from '@/features/tags/components/TagFormDialog.vue'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import AppEmptyState from '@/components/AppEmptyState.vue'
-import { useAppBarAction } from '@/composables/useAppBarAction'
-import type { TagId } from '@/features/tags/types'
 
 const { t } = useI18n()
 const tagsStore = useTagsStore()
@@ -63,7 +63,7 @@ const usageById = computed<Record<TagId, number>>(() => {
   return counts
 })
 
-type TagRow = { id: TagId, name: string, color: string, desc: string, usage: number, share: number }
+interface TagRow { id: TagId, name: string, color: string, desc: string, usage: number, share: number }
 
 const baseRows = computed(() => tagsStore.sortedIds.map(id => ({
   id,
@@ -149,7 +149,9 @@ const headers = computed(() => [
           tooltip
         >
           <template #center>
-            <div class="text-body-2 font-weight-bold">{{ fmt.number(totalUsage) }}</div>
+            <div class="text-body-2 font-weight-bold">
+              {{ fmt.number(totalUsage) }}
+            </div>
           </template>
         </v-pie>
 
@@ -157,17 +159,23 @@ const headers = computed(() => [
           v-for="kpi in kpis"
           :key="kpi.key"
         >
-          <div class="text-h5 font-weight-bold">{{ kpi.value }}</div>
-          <div class="text-caption text-medium-emphasis">{{ kpi.label }}</div>
+          <div class="text-h5 font-weight-bold">
+            {{ kpi.value }}
+          </div>
+          <div class="text-caption text-medium-emphasis">
+            {{ kpi.label }}
+          </div>
         </div>
 
         <v-spacer />
 
         <!-- Kullanım oranı: halka (sayaçların yanında çubuktan daha kompakt) -->
         <div class="d-flex align-center ga-3">
-          <div class="text-caption text-medium-emphasis">{{ t('tags.stats.usedRatio') }}</div>
+          <div class="text-caption text-medium-emphasis">
+            {{ t('tags.stats.usedRatio') }}
+          </div>
           <v-progress-circular :model-value="usedRatio" :size="48" :width="5" color="primary">
-            <span class="text-caption font-weight-bold">%{{ Math.round(usedRatio) }}</span>
+            <span class="text-caption font-weight-bold">{{ fmt.percent(usedRatio) }}</span>
           </v-progress-circular>
         </div>
       </v-sheet>
@@ -321,5 +329,4 @@ const headers = computed(() => [
   min-width: 32px;
   text-align: end;
 }
-
 </style>

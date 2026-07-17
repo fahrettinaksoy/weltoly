@@ -146,6 +146,10 @@ vite.config.ts.timestamp-*
 src-tauri/target/
 src-tauri/gen/
 
-# Vuetify/unplugin üretilen tip dosyaları
+# Vuetify/unplugin üretilen tip dosyaları (vite.config: dts -> src/...)
 src/auto-imports.d.ts
 src/components.d.ts
+# Kök varyantlar: eski yapılandırmadan kalma; yanlışlıkla yeniden üretilirse
+# git'e girmesin (O-14 — stale kopyalar gerçek tiplerle ayrışıyordu).
+/auto-imports.d.ts
+/components.d.ts

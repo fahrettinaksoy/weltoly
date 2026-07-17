@@ -1,4 +1,4 @@
-import { aliases as mdiAliases, mdi } from 'vuetify/iconsets/mdi'
+import { mdi, aliases as mdiAliases } from 'vuetify/iconsets/mdi'
 
 // icon-fonts: MDI font seti (CSS index.ts'te import edilir).
 // Enterprise: semantik ikon alias'ları — ikonlar tek yerden yönetilir, `$navWallets` gibi kullanılır.

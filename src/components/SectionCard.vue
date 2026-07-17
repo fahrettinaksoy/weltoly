@@ -21,8 +21,12 @@ defineProps<{
         <v-icon :icon="icon" size="19" color="white" />
       </v-avatar>
       <div class="overflow-hidden">
-        <div class="text-subtitle-2 font-weight-bold text-truncate">{{ title }}</div>
-        <div v-if="subtitle" class="text-caption text-medium-emphasis text-truncate">{{ subtitle }}</div>
+        <div class="text-subtitle-2 font-weight-bold text-truncate">
+          {{ title }}
+        </div>
+        <div v-if="subtitle" class="text-caption text-medium-emphasis text-truncate">
+          {{ subtitle }}
+        </div>
       </div>
       <v-spacer />
       <slot name="actions" />

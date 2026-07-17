@@ -1,20 +1,21 @@
 <script setup lang="ts">
-import { useTheme } from 'vuetify'
-import { useI18n } from 'vue-i18n'
 import { useDocumentVisibility, usePreferredDark } from '@vueuse/core'
+import { useI18n } from 'vue-i18n'
+import { useTheme } from 'vuetify'
 
-import DefaultLayout from '@/layouts/DefaultLayout.vue'
 import HotkeysHelp from '@/components/HotkeysHelp.vue'
+import { useAppHotkeys } from '@/composables/useAppHotkeys'
+import { useInitApp } from '@/composables/useInitApp'
+import LockScreen from '@/features/auth/LockScreen.vue'
+import { useLockStore } from '@/features/auth/useLockStore'
+import { neutralPalettes } from '@/features/theme/palette'
+import DefaultLayout from '@/layouts/DefaultLayout.vue'
+import { setLocale } from '@/plugins/i18n'
 import { useSettingsStore } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui'
-import { neutralPalettes } from '@/features/theme/palette'
-import { useLockStore } from '@/features/auth/useLockStore'
-import LockScreen from '@/features/auth/LockScreen.vue'
-import { useInitApp } from '@/composables/useInitApp'
-import { useAppHotkeys } from '@/composables/useAppHotkeys'
-import { setLocale } from '@/plugins/i18n'
 
 const { t } = useI18n()
+const route = useRoute()
 const theme = useTheme()
 const settings = useSettingsStore()
 const ui = useUiStore()
@@ -87,11 +88,18 @@ onMounted(() => {
     <!-- Accessibility: içeriğe atla bağlantısı -->
     <a href="#main-content" class="skip-link">{{ t('a11y.skipToContent') }}</a>
 
-    <!-- locale-provider: alt ağaç için locale + RTL (uygulama RTL-hazır) -->
-    <v-locale-provider :locale="settings.locale" :rtl="isRtl">
+    <!-- locale-provider: alt ağaç için locale + RTL (uygulama RTL-hazır)
+         GÜVENLİK: kilitliyken layout DOM'dan tümüyle kaldırılır (v-if) — finansal
+         veri hiç render edilmez; DevTools'tan overlay kaldırıp altını görmek mümkün olmaz. -->
+    <v-locale-provider v-if="!lock.isLocked" :locale="settings.locale" :rtl="isRtl">
       <DefaultLayout>
+        <!-- :key ŞART (O-4): aynı rota bileşeni farklı parametreyle yeniden
+             kullanılınca (/wallets/a → /wallets/b) Vue bileşeni MOUNT'TA TUTAR;
+             trnFilters/tab gibi yerel durum bir önceki cüzdandan sızar ve
+             kullanıcı B cüzdanını A'nın süzgeçleriyle görür. fullPath ile
+             anahtarlamak parametre değişiminde temiz bir mount zorlar. -->
         <router-view v-slot="{ Component }">
-          <component :is="Component" />
+          <component :is="Component" :key="route.fullPath" />
         </router-view>
       </DefaultLayout>
     </v-locale-provider>

@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { useTheme } from 'vuetify'
-import { useI18n } from 'vue-i18n'
+import type { TrnId, TrnItem } from '@/features/trns/types'
 import { format } from 'date-fns'
 import VChart from 'vue-echarts'
+import { useI18n } from 'vue-i18n'
 
-import { TrnType, type TrnId, type TrnItem } from '@/features/trns/types'
+import { useTheme } from 'vuetify'
 import AppEmptyState from '@/components/AppEmptyState.vue'
+import { buildBalanceSeries } from '@/features/wallets/lib/balanceSeries'
 
 const props = defineProps<{
   trns: { id: TrnId, trn: TrnItem }[]
@@ -19,43 +20,11 @@ const theme = useTheme()
 const { t } = useI18n()
 const fmt = useFormat()
 
-/** İşlemin bu cüzdana etkisi (işaretli). Transferde cüzdan iki tarafta da olabilir. */
-function signedAmount(trn: TrnItem): number {
-  if (trn.type === TrnType.Transfer) {
-    let sum = 0
-    if (trn.expenseWalletId === props.walletId)
-      sum -= trn.expenseAmount
-    if (trn.incomeWalletId === props.walletId)
-      sum += trn.incomeAmount
-    return sum
-  }
-  return trn.type === TrnType.Income ? trn.amount : -trn.amount
-}
-
-/**
- * Bakiye seyri.
- *
- * Geçmiş bakiye BUGÜNDEN GERİYE hesaplanır: elimizde yalnız güncel bakiye ve
- * işlemler var, bir "açılış bakiyesi" alanı yok. İleriye doğru toplasaydık
- * dönemden ÖNCEKİ işlemleri kaçırır ve seri yanlış bir taban etrafında gezerdi.
- * Geriye giderken her işlemin etkisi çıkarılır → o işlemden önceki bakiye.
- */
-const series = computed(() => {
-  const sorted = props.trns.toSorted((a, b) => a.trn.date - b.trn.date)
-  if (!sorted.length)
-    return [] as { date: number, balance: number }[]
-
-  // Sondan başa: bakiye_i = bakiye_{i+1} - etki_{i+1}
-  const points: { date: number, balance: number }[] = []
-  let running = props.currentBalance
-  for (let i = sorted.length - 1; i >= 0; i--) {
-    points.unshift({ date: sorted[i]!.trn.date, balance: running })
-    running -= signedAmount(sorted[i]!.trn)
-  }
-  // Dönemin başındaki (ilk işlemden önceki) bakiye
-  points.unshift({ date: sorted[0]!.trn.date - 86_400_000, balance: running })
-  return points
-})
+// Seri mantığı features/wallets/lib/balanceSeries.ts'te — TEK KAYNAK (Y-5).
+// Testler de aynı modülü import eder; bileşen içinde kopyası YOK.
+const series = computed(() =>
+  buildBalanceSeries(props.trns.map(x => x.trn), props.walletId, props.currentBalance),
+)
 
 const colors = computed(() => theme.current.value.colors)
 

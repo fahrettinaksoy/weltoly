@@ -1,11 +1,12 @@
-import { defineStore } from 'pinia'
-import { useLocalStorage } from '@vueuse/core'
-
-import { resolveWriteUid, upsertRow, watchTable, type Row, type WatchHandle } from '@/services/db'
-import { showErrorToast } from '@/stores/ui'
-
 import type { CurrencyCode } from '@/features/currencies/types'
 import type { WalletId } from '@/features/wallets/types'
+
+import type { Row, WatchHandle } from '@/services/db'
+import { useLocalStorage } from '@vueuse/core'
+
+import { defineStore } from 'pinia'
+import { resolveWriteUid, upsertRow, watchTable } from '@/services/db'
+import { showErrorToast } from '@/stores/ui'
 
 // Yerel-önce: gerçek kimlik yok, sabit 'local' kullanıcı. user_settings tek satır ('local').
 // Faz 5'te gerçek auth buraya bağlanacak.
@@ -25,7 +26,7 @@ export const useUserStore = defineStore('user', () => {
 
   function initUserSettings(): void {
     watchController?.abort()
-    watchController = watchTable<Row>('SELECT * FROM user_settings LIMIT 1', [], (rows) => {
+    watchController = watchTable<Row>(['user_settings'], 'SELECT * FROM user_settings LIMIT 1', [], (rows) => {
       const s = rows[0]
       if (!s)
         return

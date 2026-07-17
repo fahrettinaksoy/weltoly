@@ -1,0 +1,35 @@
+name: CI
+
+# Kalite kapısı: her push ve PR'da tip kontrolü + lint + test (Y-6).
+# Bozuk tip / lint hatası / kırık test main'e sızamaz.
+#
+# NOT: `npm ci` package-lock.json'ı BİREBİR kurar — geliştiricinin yerel
+# node_modules'ı ile lock'un ayrışması (bu kapı yokken vuetify v3/v4
+# uyuşmazlığını aylarca gizleyen durum) böyle yakalanır.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test

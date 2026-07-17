@@ -1,7 +1,8 @@
+import type { LocaleCode } from '@/i18n/messages'
 import { createI18n } from 'vue-i18n'
-import { en as vuetifyEn, ru as vuetifyRu, tr as vuetifyTr } from 'vuetify/locale'
 
-import { messages, type LocaleCode } from '@/i18n/messages'
+import { en as vuetifyEn, ru as vuetifyRu, tr as vuetifyTr } from 'vuetify/locale'
+import { messages } from '@/i18n/messages'
 
 const STORAGE_KEY = 'weltoly.locale'
 

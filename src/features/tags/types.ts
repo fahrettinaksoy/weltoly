@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
-import { random } from '@/shared/lib/random'
 import { colorsArray } from '@/features/color/colors'
+import { random } from '@/shared/lib/random'
 
 export type TagId = string
 

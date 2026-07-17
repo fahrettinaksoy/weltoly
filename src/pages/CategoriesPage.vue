@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
+import type { CategoryId } from '@/features/categories/types'
 
+import { useI18n } from 'vue-i18n'
+import AppEmptyState from '@/components/AppEmptyState.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import { useAppBarAction } from '@/composables/useAppBarAction'
+import CategoryFormDialog from '@/features/categories/components/CategoryFormDialog.vue'
 import { useCategoriesStore } from '@/features/categories/store'
 import { useTrnsStore } from '@/features/trns/store'
-import CategoryFormDialog from '@/features/categories/components/CategoryFormDialog.vue'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import AppEmptyState from '@/components/AppEmptyState.vue'
-import { useAppBarAction } from '@/composables/useAppBarAction'
-import type { CategoryId } from '@/features/categories/types'
 
 const { t } = useI18n()
 const categoriesStore = useCategoriesStore()
@@ -64,7 +64,7 @@ const usageById = computed<Record<string, number>>(() => {
   return counts
 })
 
-type CategoryRow = {
+interface CategoryRow {
   id: CategoryId
   name: string
   color: string
@@ -142,6 +142,17 @@ function toggle(id: CategoryId) {
   collapsed.value = next
 }
 
+const rootCount = computed(() => categoriesStore.categoriesRootIds.length)
+const usedCount = computed(() => baseRows.value.filter(r => r.usage > 0).length)
+const totalUsage = computed(() => baseRows.value.reduce((sum, r) => sum + r.usage, 0))
+const usedRatio = computed(() => baseRows.value.length ? (usedCount.value / baseRows.value.length) * 100 : 0)
+
+/** Tablo satırları: işlem sayısının toplam içindeki payı (%) burada eklenir. */
+const rows = computed<CategoryRow[]>(() => baseRows.value.map(r => ({
+  ...r,
+  share: totalUsage.value ? (r.usage / totalUsage.value) * 100 : 0,
+})))
+
 /**
  * Görünen satırlar: kapalı bir üst kategorinin çocukları gizlenir.
  * Arama sırasında kapalılık yok sayılır — yoksa eşleşen bir alt kategori
@@ -153,17 +164,6 @@ const visibleRows = computed<CategoryRow[]>(() => {
     !r.parentId || searching || !collapsed.value.has(r.parentId),
   )
 })
-
-const rootCount = computed(() => categoriesStore.categoriesRootIds.length)
-const usedCount = computed(() => baseRows.value.filter(r => r.usage > 0).length)
-const totalUsage = computed(() => baseRows.value.reduce((sum, r) => sum + r.usage, 0))
-const usedRatio = computed(() => baseRows.value.length ? (usedCount.value / baseRows.value.length) * 100 : 0)
-
-/** Tablo satırları: işlem sayısının toplam içindeki payı (%) burada eklenir. */
-const rows = computed<CategoryRow[]>(() => baseRows.value.map(r => ({
-  ...r,
-  share: totalUsage.value ? (r.usage / totalUsage.value) * 100 : 0,
-})))
 
 /** Özet sayaçları: kategorilerde anlamlı olan yapı (kaç ana / kaç alt). */
 const kpis = computed(() => [
@@ -235,7 +235,9 @@ function onRowClick(_event: unknown, { item }: { item: CategoryRow }) {
           tooltip
         >
           <template #center>
-            <div class="text-body-2 font-weight-bold">{{ fmt.number(totalUsage) }}</div>
+            <div class="text-body-2 font-weight-bold">
+              {{ fmt.number(totalUsage) }}
+            </div>
           </template>
         </v-pie>
 
@@ -243,16 +245,22 @@ function onRowClick(_event: unknown, { item }: { item: CategoryRow }) {
           v-for="kpi in kpis"
           :key="kpi.key"
         >
-          <div class="text-h5 font-weight-bold">{{ kpi.value }}</div>
-          <div class="text-caption text-medium-emphasis">{{ kpi.label }}</div>
+          <div class="text-h5 font-weight-bold">
+            {{ kpi.value }}
+          </div>
+          <div class="text-caption text-medium-emphasis">
+            {{ kpi.label }}
+          </div>
         </div>
 
         <v-spacer />
 
         <div class="d-flex align-center ga-3">
-          <div class="text-caption text-medium-emphasis">{{ t('categories.stats.usedRatio') }}</div>
+          <div class="text-caption text-medium-emphasis">
+            {{ t('categories.stats.usedRatio') }}
+          </div>
           <v-progress-circular :model-value="usedRatio" :size="48" :width="5" color="primary">
-            <span class="text-caption font-weight-bold">%{{ Math.round(usedRatio) }}</span>
+            <span class="text-caption font-weight-bold">{{ fmt.percent(usedRatio) }}</span>
           </v-progress-circular>
         </div>
       </v-sheet>
