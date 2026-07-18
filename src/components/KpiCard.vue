@@ -41,7 +41,7 @@ const fmt = useFormat()
 // `money` true iken currency verilmemişse fmt.money para birimsiz biçimler;
 // çağıranların ikisi de temel para birimini geçiyor.
 const display = computed(() =>
-  props.money ? fmt.money(props.value, props.currency) : fmt.number(props.value),
+  props.money ? fmt.money(props.value, props.currency) : fmt.number(props.value)
 )
 </script>
 

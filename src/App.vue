@@ -31,15 +31,12 @@ const isRtl = computed(() => RTL_LOCALES.has(settings.locale))
 // Uygulama arka plana alınınca PIN varsa kilitle.
 const visibility = useDocumentVisibility()
 watch(visibility, (v) => {
-  if (v === 'hidden')
-    lock.lock()
+  if (v === 'hidden') lock.lock()
 })
 
 // theme feature — etkin tema (system/light/dark).
 const effectiveTheme = computed(() =>
-  settings.themeMode === 'system'
-    ? (prefersDark.value ? 'dark' : 'light')
-    : settings.themeMode,
+  settings.themeMode === 'system' ? (prefersDark.value ? 'dark' : 'light') : settings.themeMode
 )
 
 watchEffect(() => {
@@ -50,10 +47,8 @@ watchEffect(() => {
 watchEffect(() => {
   const c = settings.primaryColor
   const themes = theme.themes.value
-  if (themes.light?.colors)
-    themes.light.colors.primary = c
-  if (themes.dark?.colors)
-    themes.dark.colors.primary = c
+  if (themes.light?.colors) themes.light.colors.primary = c
+  if (themes.dark?.colors) themes.dark.colors.primary = c
 })
 
 // Nötr palet (arka plan/yüzey tonları).

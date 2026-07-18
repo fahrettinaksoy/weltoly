@@ -24,13 +24,11 @@ export const ts = (v: unknown): number => (v == null ? 0 : Number(v))
 
 // tagIds JSON kolonu -> string[] (bozuk/boşsa []).
 function parseTagIds(v: unknown): string[] {
-  if (!v || typeof v !== 'string')
-    return []
+  if (!v || typeof v !== 'string') return []
   try {
     const arr = JSON.parse(v)
     return Array.isArray(arr) ? arr.filter((x): x is string => typeof x === 'string') : []
-  }
-  catch {
+  } catch {
     return []
   }
 }
@@ -44,7 +42,7 @@ export function rowToTrn(row: Row): TrnItem {
     date: Number(row.date),
     updatedAt: ts(row.updatedAt),
     ...(row.desc ? { desc: row.desc as string } : {}),
-    ...(tagIds.length ? { tagIds } : {}),
+    ...(tagIds.length ? { tagIds } : {})
   }
 
   if (type === TrnType.Transfer) {
@@ -55,7 +53,7 @@ export function rowToTrn(row: Row): TrnItem {
       expenseWalletId: row.expenseWalletId,
       incomeAmount: Number(row.incomeAmount),
       incomeWalletId: row.incomeWalletId,
-      type,
+      type
     } as TrnItem
   }
 
@@ -64,7 +62,7 @@ export function rowToTrn(row: Row): TrnItem {
     amount: Number(row.amount),
     categoryId: row.categoryId,
     type,
-    walletId: row.walletId,
+    walletId: row.walletId
   } as TrnItem
 }
 
@@ -79,7 +77,7 @@ export function rowToWallet(row: Row): WalletItem {
     isWithdrawal: !!row.isWithdrawal,
     name: row.name,
     order: Number(row.order ?? 0),
-    updatedAt: ts(row.updatedAt),
+    updatedAt: ts(row.updatedAt)
   }
 
   if (row.type === 'credit')
@@ -104,19 +102,17 @@ export function rowToCategory(row: Row): CategoryItem {
     parentId: (row.parentId ?? 0) as CategoryId | 0, // null -> 0 (kök işareti)
     showInLastUsed: !!row.showInLastUsed,
     showInQuickSelector: !!row.showInQuickSelector,
-    ...(row.updatedAt != null ? { updatedAt: Number(row.updatedAt) } : {}),
+    ...(row.updatedAt != null ? { updatedAt: Number(row.updatedAt) } : {})
   }
 }
 
 export function rowToRates(row: Row): Rates | null {
-  if (!row?.rates)
-    return null
+  if (!row?.rates) return null
   try {
     // Okuma yolunda da temizle: bozuk/geçersiz kurlar toplamları zehirlemesin (Y-2).
     const clean = sanitizeRates(JSON.parse(row.rates as string))
     return Object.keys(clean).length ? clean : null
-  }
-  catch {
+  } catch {
     return null
   }
 }
@@ -138,7 +134,7 @@ export function trnToRow(item: TrnItem, userId: string): Record<string, unknown>
     type: item.type,
     updatedAt: item.updatedAt ?? Date.now(),
     userId,
-    walletId: null as string | null,
+    walletId: null as string | null
   }
 
   if (item.type === TrnType.Transfer) {
@@ -148,7 +144,7 @@ export function trnToRow(item: TrnItem, userId: string): Record<string, unknown>
       expenseAmount: item.expenseAmount,
       expenseWalletId: item.expenseWalletId,
       incomeAmount: item.incomeAmount,
-      incomeWalletId: item.incomeWalletId,
+      incomeWalletId: item.incomeWalletId
     }
   }
 
@@ -169,7 +165,7 @@ export function walletToRow(item: WalletItem, userId: string): Record<string, un
     order: Math.round(item.order ?? 0), // tamsayı sütun - yuvarla, sessizce kırpma
     type: item.type,
     updatedAt: item.updatedAt ?? Date.now(),
-    userId,
+    userId
   }
 }
 
@@ -178,7 +174,7 @@ export function rowToTag(row: Row): TagItem {
     name: row.name,
     color: row.color,
     desc: (row.desc ?? '') as string, // 003 öncesi satırlarda kolon null gelir
-    ...(row.updatedAt != null ? { updatedAt: Number(row.updatedAt) } : {}),
+    ...(row.updatedAt != null ? { updatedAt: Number(row.updatedAt) } : {})
   }
 }
 
@@ -188,7 +184,7 @@ export function tagToRow(item: TagItem, userId: string): Record<string, unknown>
     color: item.color,
     desc: item.desc || null,
     updatedAt: item.updatedAt ?? Date.now(),
-    userId,
+    userId
   }
 }
 
@@ -202,6 +198,6 @@ export function categoryToRow(item: CategoryItem, userId: string): Record<string
     showInLastUsed: item.showInLastUsed ? 1 : 0,
     showInQuickSelector: item.showInQuickSelector ? 1 : 0,
     updatedAt: item.updatedAt ?? Date.now(),
-    userId,
+    userId
   }
 }

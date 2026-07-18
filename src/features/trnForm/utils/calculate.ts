@@ -3,7 +3,7 @@ import { formatByCurrency } from '@/shared/lib/formatByCurrency'
 
 const config = {
   decimalPlaces: 8,
-  maxIntegerLength: 999,
+  maxIntegerLength: 999
 } as const
 
 /**
@@ -27,10 +27,8 @@ type CalculatorOperator = '+' | '-' | '*' | '/'
 type CalculatorAction = '=' | 'c' | '.' | CalculatorOperator
 type CalculatorInput = string | number
 
-export type CalculatorKey
-  = | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
-    | '+' | '-' | '*' | '/'
-    | '.' | 'c'
+export type CalculatorKey =
+  '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '+' | '-' | '*' | '/' | '.' | 'c'
 
 function splitExpression(value: string): string[] {
   return value.split(/([/*\-+])/).filter(Boolean)
@@ -43,10 +41,8 @@ function escapeRegExp(value: string): string {
 /** GÖRÜNEN → KANONİK. Sıra önemli: önce binlikler atılır, sonra ondalık çevrilir. */
 function sanitizeInput(value: string, seps: NumberSeparators = CANONICAL_SEPARATORS): string {
   let out = String(value)
-  if (seps.group)
-    out = out.replace(new RegExp(escapeRegExp(seps.group), 'g'), '')
-  if (seps.decimal !== '.')
-    out = out.replace(new RegExp(escapeRegExp(seps.decimal), 'g'), '.')
+  if (seps.group) out = out.replace(new RegExp(escapeRegExp(seps.group), 'g'), '')
+  if (seps.decimal !== '.') out = out.replace(new RegExp(escapeRegExp(seps.decimal), 'g'), '.')
   // Operatörlerin çevresindeki boşluklar (formatInput " + " yazıyor) her hâlde atılır.
   return out.replace(/\s/g, '')
 }
@@ -81,9 +77,7 @@ export function evaluateAbsExpression(value: string): number {
   try {
     const sanitized = sanitizeInput(value, CANONICAL_SEPARATORS)
     const lastChar = sanitized.at(-1) || ''
-    const expression = isOperator(lastChar)
-      ? sanitized.slice(0, -1)
-      : sanitized || '0'
+    const expression = isOperator(lastChar) ? sanitized.slice(0, -1) : sanitized || '0'
 
     let pos = 0
 
@@ -109,7 +103,10 @@ export function evaluateAbsExpression(value: string): number {
 
     function parseNumber(): number {
       const start = pos
-      while (pos < expression.length && ((expression[pos]! >= '0' && expression[pos]! <= '9') || expression[pos] === '.')) {
+      while (
+        pos < expression.length &&
+        ((expression[pos]! >= '0' && expression[pos]! <= '9') || expression[pos] === '.')
+      ) {
         pos++
       }
       return Number(expression.slice(start, pos)) || 0
@@ -117,13 +114,11 @@ export function evaluateAbsExpression(value: string): number {
 
     const result = parseExpr()
 
-    if (!Number.isFinite(result) || Math.abs(result) > Number.MAX_SAFE_INTEGER)
-      return 0
+    if (!Number.isFinite(result) || Math.abs(result) > Number.MAX_SAFE_INTEGER) return 0
 
     const abs = Math.abs(result)
     return Number.isInteger(abs) ? abs : +abs.toFixed(config.decimalPlaces)
-  }
-  catch {
+  } catch {
     return 0
   }
 }
@@ -131,30 +126,30 @@ export function evaluateAbsExpression(value: string): number {
 function handleDecimalPoint(expression: string, lastChar: string): string {
   const currentNumber = getLastNumber(expression)
 
-  if (currentNumber.includes('.') || lastChar === '.')
-    return expression
+  if (currentNumber.includes('.') || lastChar === '.') return expression
 
-  if (!expression || isOperator(lastChar))
-    return `${expression}0.`
+  if (!expression || isOperator(lastChar)) return `${expression}0.`
 
   return `${expression}.`
 }
 
 /** Tuş + GÖRÜNEN ifade → yeni KANONİK ifade. */
-export function createExpressionString(input: string, expression: string, seps: NumberSeparators = CANONICAL_SEPARATORS): string {
+export function createExpressionString(
+  input: string,
+  expression: string,
+  seps: NumberSeparators = CANONICAL_SEPARATORS
+): string {
   const sanitizedExpression = sanitizeInput(expression, seps)
   const lastChar = sanitizedExpression.at(-1) || ''
   const isActionInput = isValidAction(input)
 
   if (input === 'c')
     return sanitizedExpression === '0' ? '0' : sanitizedExpression.slice(0, -1) || '0'
-  if (input === '=')
-    return String(evaluateAbsExpression(sanitizedExpression))
-  if (input === '.')
-    return handleDecimalPoint(sanitizedExpression, lastChar)
+  if (input === '=') return String(evaluateAbsExpression(sanitizedExpression))
+  if (input === '.') return handleDecimalPoint(sanitizedExpression, lastChar)
 
   if (sanitizedExpression === '0') {
-    return input === '0' ? sanitizedExpression : (isActionInput ? `0${input}` : input)
+    return input === '0' ? sanitizedExpression : isActionInput ? `0${input}` : input
   }
 
   if (isActionInput && isOperator(lastChar)) {
@@ -165,11 +160,11 @@ export function createExpressionString(input: string, expression: string, seps: 
     const currentNumber = getLastNumber(sanitizedExpression)
     const [integerPart, decimalPart] = currentNumber.split('.')
 
-    const isExceedingLength = (!decimalPart && integerPart && integerPart?.length >= config.maxIntegerLength)
-      || (decimalPart && decimalPart?.length >= config.decimalPlaces)
+    const isExceedingLength =
+      (!decimalPart && integerPart && integerPart?.length >= config.maxIntegerLength) ||
+      (decimalPart && decimalPart?.length >= config.decimalPlaces)
 
-    if (isExceedingLength)
-      return sanitizedExpression
+    if (isExceedingLength) return sanitizedExpression
 
     if (lastChar !== '.' && evaluateAbsExpression(sanitizedExpression + input) === 0)
       return sanitizedExpression
@@ -179,11 +174,13 @@ export function createExpressionString(input: string, expression: string, seps: 
 }
 
 /** KANONİK → GÖRÜNEN. Girdi her zaman kanonik olmalı (sayı ya da kanonik ifade). */
-export function formatInput(value: CalculatorInput, seps: NumberSeparators = CANONICAL_SEPARATORS): string {
+export function formatInput(
+  value: CalculatorInput,
+  seps: NumberSeparators = CANONICAL_SEPARATORS
+): string {
   return splitExpression(String(value))
     .map((part) => {
-      if (isOperator(part))
-        return ` ${part} `
+      if (isOperator(part)) return ` ${part} `
 
       const isDecimal = part.at(-1) === '.'
       const [integerPart, decimalPart] = sanitizeInput(part, CANONICAL_SEPARATORS).split('.')
@@ -212,15 +209,17 @@ export function formatInput(value: CalculatorInput, seps: NumberSeparators = CAN
  * İfadede her sayıya ayrı uygulanır: "1200" + tuş "+" + "250" → "1.200,00 +
  * 250,00". Bu tutarlı — her operand'da tamsayı soldan büyür, kuruş 00'da durur.
  */
-export function padDisplayCents(display: string, seps: NumberSeparators = CANONICAL_SEPARATORS): string {
+export function padDisplayCents(
+  display: string,
+  seps: NumberSeparators = CANONICAL_SEPARATORS
+): string {
   const text = display || '0'
   // formatInput operatörleri boşlukla sarıyor (" + "); operatör segmentlerini
   // ayır ve dokunma, yalnız sayı segmentlerini doldur.
   return text
     .split(/(\s[/*\-+]\s)/)
     .map((seg) => {
-      if (!seg || /^\s[/*\-+]\s$/.test(seg))
-        return seg
+      if (!seg || /^\s[/*\-+]\s$/.test(seg)) return seg
       return seg.includes(seps.decimal) ? seg : `${seg}${seps.decimal}00`
     })
     .join('')
@@ -231,6 +230,9 @@ export function padDisplayCents(display: string, seps: NumberSeparators = CANONI
  * matematik sonucu da kuruşlu görünsün ("1450" → "1.450,00", "1450.5" →
  * "1.450,50"). toFixed yalnız önizleme içindir; saklanan değere dokunmaz.
  */
-export function formatAmountResult(value: number, seps: NumberSeparators = CANONICAL_SEPARATORS): string {
+export function formatAmountResult(
+  value: number,
+  seps: NumberSeparators = CANONICAL_SEPARATORS
+): string {
   return formatInput(value.toFixed(2), seps)
 }

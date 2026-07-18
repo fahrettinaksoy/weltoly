@@ -17,37 +17,42 @@ import { runTx } from './tx'
 // Her mutasyon güvenilir sabit tablolardan birini hedefler (çağıran kullanıcı girdisi geçmez).
 // Beyaz liste tek kaynaktan gelir (schema.ts) — backup/import ile drift olmasın.
 function assertTable(table: string): void {
-  if (!isKnownTable(table))
-    throw new Error(`Refusing to mutate unknown table: ${table}`)
+  if (!isKnownTable(table)) throw new Error(`Refusing to mutate unknown table: ${table}`)
 }
 
 function buildUpsert(table: string, id: string, row: Record<string, unknown>) {
   const cols = Object.keys(row)
   const allCols = ['id', ...cols]
-  const quoted = allCols.map(c => `"${c}"`).join(', ')
-  const values = [id, ...cols.map(c => row[c])]
+  const quoted = allCols.map((c) => `"${c}"`).join(', ')
+  const values = [id, ...cols.map((c) => row[c])]
   const placeholders = values.map((_, i) => `$${i + 1}`).join(', ')
-  const updates = cols.map(c => `"${c}" = excluded."${c}"`).join(', ')
+  const updates = cols.map((c) => `"${c}" = excluded."${c}"`).join(', ')
   const sql = `INSERT INTO ${table} (${quoted}) VALUES (${placeholders}) ON CONFLICT(id) DO UPDATE SET ${updates}`
   return { sql, values }
 }
 
 /** Outbox kaydı — mutasyonla AYNI transaction'da yazılır. */
-function outboxStmt(table: string, rowId: string, op: 'upsert' | 'delete', payload: unknown): TxStatement {
+function outboxStmt(
+  table: string,
+  rowId: string,
+  op: 'upsert' | 'delete',
+  payload: unknown
+): TxStatement {
   return {
     sql: 'INSERT INTO outbox ("tableName", "rowId", "op", "payload", "createdAt") VALUES ($1, $2, $3, $4, $5)',
-    values: [table, rowId, op, payload == null ? null : JSON.stringify(payload), Date.now()],
+    values: [table, rowId, op, payload == null ? null : JSON.stringify(payload), Date.now()]
   }
 }
 
 /** id'ye göre ekle veya güncelle. `row`, transforms.ts'ten SQLite-hazır değerler taşır. */
-export async function upsertRow(table: string, id: string, row: Record<string, unknown>): Promise<void> {
+export async function upsertRow(
+  table: string,
+  id: string,
+  row: Record<string, unknown>
+): Promise<void> {
   assertTable(table)
   const { sql, values } = buildUpsert(table, id, row)
-  await runTx([
-    { sql, values },
-    outboxStmt(table, id, 'upsert', row),
-  ])
+  await runTx([{ sql, values }, outboxStmt(table, id, 'upsert', row)])
   emitTableChange(table)
 }
 
@@ -57,10 +62,12 @@ export async function upsertRow(table: string, id: string, row: Record<string, u
  * TEK transaction: eskiden döngü içinde ayrı ayrı yazılıyordu ve yarıda çökme
  * cüzdanların yarısını yeni, yarısını eski `order` ile bırakabiliyordu.
  */
-export async function upsertRows(table: string, rows: { id: string, row: Record<string, unknown> }[]): Promise<void> {
+export async function upsertRows(
+  table: string,
+  rows: { id: string; row: Record<string, unknown> }[]
+): Promise<void> {
   assertTable(table)
-  if (!rows.length)
-    return
+  if (!rows.length) return
   const stmts: TxStatement[] = []
   for (const { id, row } of rows) {
     const { sql, values } = buildUpsert(table, id, row)
@@ -74,7 +81,7 @@ export async function deleteRow(table: string, id: string): Promise<void> {
   assertTable(table)
   await runTx([
     { sql: `DELETE FROM ${table} WHERE id = $1`, values: [id] },
-    outboxStmt(table, id, 'delete', null),
+    outboxStmt(table, id, 'delete', null)
   ])
   emitTableChange(table)
 }
@@ -100,18 +107,19 @@ export interface RowRef {
  * olması ileride sessizce kırılmasını önler.
  */
 export async function deleteRows(refs: RowRef[]): Promise<void> {
-  if (!refs.length)
-    return
+  if (!refs.length) return
   for (const { table } of refs) assertTable(table)
 
-  await runTx(refs.flatMap(({ table, id }) => [
-    { sql: `DELETE FROM ${table} WHERE id = $1`, values: [id] },
-    outboxStmt(table, id, 'delete', null),
-  ]))
+  await runTx(
+    refs.flatMap(({ table, id }) => [
+      { sql: `DELETE FROM ${table} WHERE id = $1`, values: [id] },
+      outboxStmt(table, id, 'delete', null)
+    ])
+  )
 
   // Tablo başına tek bildirim: aynı tablodan 50 satır silindiyse 50 kez
   // yeniden okumanın anlamı yok.
-  for (const table of new Set(refs.map(r => r.table))) emitTableChange(table)
+  for (const table of new Set(refs.map((r) => r.table))) emitTableChange(table)
 }
 
 // Not: burada bir `deleteTrnsReferencing(table, id)` vardı — bir cüzdana/kategoriye

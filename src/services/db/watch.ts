@@ -4,7 +4,9 @@ import { logger } from '@/shared/lib/logger'
 import { onTableChange } from './bus'
 import { getDb } from './client'
 
-export interface WatchHandle { abort: () => void }
+export interface WatchHandle {
+  abort: () => void
+}
 
 /**
  * PowerSync `watchTable` taklidi: sorguyu hemen çalıştırır, sonra `tables`
@@ -24,36 +26,31 @@ export function watchTable<T = Row>(
   query: string,
   params: unknown[],
   onResult: (rows: T[]) => void,
-  throttleMs = 30,
+  throttleMs = 30
 ): WatchHandle {
   let aborted = false
   let pending = false
   let timer: ReturnType<typeof setTimeout> | null = null
 
   async function run() {
-    if (aborted)
-      return
+    if (aborted) return
     try {
       const db = await getDb()
       const rows = await db.select<T[]>(query, params)
-      if (!aborted)
-        onResult(rows)
-    }
-    catch (e) {
+      if (!aborted) onResult(rows)
+    } catch (e) {
       // Tauri dışı ortamda (saf web) plugin yok; sessizce logla.
       logger.error('[db] watch query failed:', query, e)
     }
   }
 
   function schedule() {
-    if (aborted)
-      return
+    if (aborted) return
     if (throttleMs <= 0) {
       run()
       return
     }
-    if (pending)
-      return
+    if (pending) return
     pending = true
     timer = setTimeout(() => {
       pending = false
@@ -68,8 +65,7 @@ export function watchTable<T = Row>(
     abort() {
       aborted = true
       off()
-      if (timer)
-        clearTimeout(timer)
-    },
+      if (timer) clearTimeout(timer)
+    }
   }
 }

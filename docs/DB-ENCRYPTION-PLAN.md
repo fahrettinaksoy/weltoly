@@ -28,6 +28,7 @@ Conclusion: encryption **cannot be added** to the plugin through a supported pat
 ## Implementation paths (later, verified on-device)
 
 ### Path A — our own encrypted connection layer (recommended)
+
 1. `Cargo.toml`: add `libsqlite3-sys` with the `bundled-sqlcipher` feature (switches
    sqlx's libsqlite3-sys to SQLCipher across the workspace).
 2. Bypass `tauri-plugin-sql`: build the connection pool on the Rust side with
@@ -38,10 +39,12 @@ Conclusion: encryption **cannot be added** to the plugin through a supported pat
    writes it to disk.
 
 ### Path B — vendor/patch the plugin
+
 Fork `tauri-plugin-sql` and add `pragma("key", …)` in the `connect` path. Less code but
 carries the maintenance debt of diverging from upstream.
 
 ## Key/PIN relationship and rekey
+
 - If the key derives from the PIN, then **changing the PIN requires `PRAGMA rekey`** on
   the DB (to the new key). That step must be part of the migration.
 - If there is NO PIN: a per-install random key is stored in `tauri-plugin-store` (stays
@@ -49,6 +52,7 @@ carries the maintenance debt of diverging from upstream.
   against device access is weaker (the key is on the device). Decision point.
 
 ## Plaintext → encrypted migration (RISKY — on-device verification REQUIRED)
+
 1. On launch, detect whether the existing `weltoly.db` is plaintext.
 2. Export to a new encrypted file with `sqlcipher_export()`; verify; atomically swap it
    in; delete the old file only on success.
@@ -56,6 +60,7 @@ carries the maintenance debt of diverging from upstream.
    populated DBs — if it goes wrong, the user loses access to all their financial data.
 
 ## Interim (currently applicable) mitigation
+
 - OS full-disk encryption (macOS **FileVault**, Windows **BitLocker**, Linux **LUKS**) —
   recommended to users; this is today's source of at-rest protection.
 - The app PIN lock (`LockScreen`) blocks unauthorized UI access (but not the DB file).

@@ -34,7 +34,11 @@ const fmt = useFormat()
 // Kart başlığı şeridi ("Liste" + sağda ekle düğmesi) — Kategoriler/Etiketler ile
 // aynı desen. Bu çağrı olmadan şerit hiç render edilmiyordu (DefaultLayout,
 // yalnız action varsa çiziyor). Ekle: global işlem formunu açar.
-useAppBarAction(() => ({ icon: '$add', label: t('trnsPage.add'), onClick: () => trnForm.openFormForCreate() }))
+useAppBarAction(() => ({
+  icon: '$add',
+  label: t('trnsPage.add'),
+  onClick: () => trnForm.openFormForCreate()
+}))
 
 /**
  * Pasta dilim rengi — KIND_META'daki tema ADLARININ CSS karşılığı.
@@ -46,7 +50,7 @@ const KIND_PIE_COLOR: Record<TrnKind, string> = {
   income: 'rgb(var(--v-theme-success))',
   expense: 'rgb(var(--v-theme-error))',
   transfer: 'rgb(var(--v-theme-info))',
-  adjustment: 'grey',
+  adjustment: 'grey'
 }
 
 /** Tür etiketi: anahtar tek kaynakta (trnKind.ts), çeviri burada bağlanır. */
@@ -80,8 +84,7 @@ function walletLabelOf(trn: TrnItem): string {
  * Transferde tek cüzdan bakışı yok → çıkan tutar (mutlak) gösterilir, nötr renk.
  */
 function amountOf(trn: TrnItem): number {
-  if (trn.type === TrnType.Transfer)
-    return trn.expenseAmount
+  if (trn.type === TrnType.Transfer) return trn.expenseAmount
   return trn.type === TrnType.Income ? trn.amount : -trn.amount
 }
 
@@ -103,8 +106,7 @@ interface TrnRow extends TrnFilterRow {
 /** Tüm işlemler, yeniden eskiye. Cüzdan farketmez. */
 const trnRows = computed<TrnRow[]>(() => {
   const trns = trnsStore.items
-  if (!trns)
-    return []
+  if (!trns) return []
   const rows: TrnRow[] = []
   for (const id in trns) {
     const trn = trns[id]!
@@ -117,18 +119,19 @@ const trnRows = computed<TrnRow[]>(() => {
       walletLabel: walletLabelOf(trn),
       walletIds: walletIdsOfTrn(trn),
       categoryId: trn.categoryId,
-      categoryName: trn.categoryId === TRANSFER_ID
-        ? t('walletDetail.transfer')
-        : trn.categoryId === ADJUSTMENT_ID
-          ? t('walletDetail.adjustment')
-          : category?.name ?? trn.categoryId,
+      categoryName:
+        trn.categoryId === TRANSFER_ID
+          ? t('walletDetail.transfer')
+          : trn.categoryId === ADJUSTMENT_ID
+            ? t('walletDetail.adjustment')
+            : (category?.name ?? trn.categoryId),
       categoryIcon: category?.icon || 'mdi-help-circle-outline',
       categoryColor: category?.color || 'grey',
       desc: trn.desc ?? '',
       tagIds,
-      tagNames: tagIds.map(tid => tagsStore.items[tid]?.name).filter((x): x is string => !!x),
+      tagNames: tagIds.map((tid) => tagsStore.items[tid]?.name).filter((x): x is string => !!x),
       amount: amountOf(trn),
-      currency: currencyOf(trn),
+      currency: currencyOf(trn)
     })
   }
   return rows.toSorted((a, b) => b.date - a.date)
@@ -142,18 +145,17 @@ const trnFilters = reactive<TrnFilters>(emptyTrnFilters())
 
 /** Tür seçenekleri: dört türün hepsi sabit — sistemde geçmese de anlamlı. */
 const filterKindOptions = computed(() =>
-  (Object.keys(KIND_META) as TrnKind[]).map(k => ({ value: k, title: kindLabel(k) })),
+  (Object.keys(KIND_META) as TrnKind[]).map((k) => ({ value: k, title: kindLabel(k) }))
 )
 
 /** Cüzdan seçenekleri: listede GEÇEN cüzdanlar — boş seçenek gösterme. */
 const filterWalletOptions = computed(() => {
   const ids = new Set<WalletId>()
   for (const r of trnRows.value) {
-    for (const id of r.walletIds)
-      ids.add(id)
+    for (const id of r.walletIds) ids.add(id)
   }
   return [...ids]
-    .map(id => ({ value: id, title: walletsStore.itemsComputed[id]?.name ?? id }))
+    .map((id) => ({ value: id, title: walletsStore.itemsComputed[id]?.name ?? id }))
     .toSorted((a, b) => a.title.localeCompare(b.title))
 })
 
@@ -163,9 +165,10 @@ const filterWalletOptions = computed(() => {
  */
 const filterCategoryOptions = computed(() => {
   const byId = new Map<string, string>()
-  for (const r of trnRows.value)
-    byId.set(r.categoryId, r.categoryName)
-  return [...byId].map(([value, title]) => ({ value, title })).toSorted((a, b) => a.title.localeCompare(b.title))
+  for (const r of trnRows.value) byId.set(r.categoryId, r.categoryName)
+  return [...byId]
+    .map(([value, title]) => ({ value, title }))
+    .toSorted((a, b) => a.title.localeCompare(b.title))
 })
 
 const filterTagOptions = computed(() => {
@@ -173,16 +176,17 @@ const filterTagOptions = computed(() => {
   for (const r of trnRows.value) {
     r.tagIds.forEach((id, i) => {
       const name = r.tagNames[i]
-      if (name)
-        byId.set(id, name)
+      if (name) byId.set(id, name)
     })
   }
-  return [...byId].map(([value, title]) => ({ value, title })).toSorted((a, b) => a.title.localeCompare(b.title))
+  return [...byId]
+    .map(([value, title]) => ({ value, title }))
+    .toSorted((a, b) => a.title.localeCompare(b.title))
 })
 
 /** Seçili tek öğenin ADI (özet metni için) — seçim id tutuyor, ekranda ad yazmalı. */
-function optionTitle(options: { value: string, title: string }[], id: string | undefined): string {
-  return options.find(o => o.value === id)?.title ?? id ?? ''
+function optionTitle(options: { value: string; title: string }[], id: string | undefined): string {
+  return options.find((o) => o.value === id)?.title ?? id ?? ''
 }
 
 const hasFilter = computed(() => hasAnyTrnFilter(trnFilters))
@@ -194,15 +198,31 @@ function clearFilters() {
 /** Süzgeçler VE'lenir. Kural tek kaynakta (trnFilters.ts); burada yalnız bağlanır. */
 const filteredTrnRows = computed(() => applyTrnFilters(trnRows.value, trnFilters))
 
-const trnHeaders = computed(() => [
-  { title: t('trnForm.date'), key: 'date', sortable: true, width: 200, nowrap: true },
-  { title: t('walletDetail.type'), key: 'kind', sortable: true, width: 150, nowrap: true },
-  { title: t('trnsPage.wallet'), key: 'walletLabel', sortable: true, width: 200, nowrap: true },
-  { title: t('trnForm.category'), key: 'categoryName', sortable: true, width: 200, nowrap: true },
-  { title: t('trnForm.description'), key: 'desc', sortable: true, nowrap: true },
-  { title: t('walletDetail.tags'), key: 'tagNames', sortable: false, nowrap: true },
-  { title: t('trnForm.amount'), key: 'amount', align: 'end', sortable: true, width: 170, nowrap: true },
-] as const)
+const trnHeaders = computed(
+  () =>
+    [
+      { title: t('trnForm.date'), key: 'date', sortable: true, width: 200, nowrap: true },
+      { title: t('walletDetail.type'), key: 'kind', sortable: true, width: 150, nowrap: true },
+      { title: t('trnsPage.wallet'), key: 'walletLabel', sortable: true, width: 200, nowrap: true },
+      {
+        title: t('trnForm.category'),
+        key: 'categoryName',
+        sortable: true,
+        width: 200,
+        nowrap: true
+      },
+      { title: t('trnForm.description'), key: 'desc', sortable: true, nowrap: true },
+      { title: t('walletDetail.tags'), key: 'tagNames', sortable: false, nowrap: true },
+      {
+        title: t('trnForm.amount'),
+        key: 'amount',
+        align: 'end',
+        sortable: true,
+        width: 170,
+        nowrap: true
+      }
+    ] as const
+)
 
 /**
      Hiç işlem var mı? Kategoriler/Etiketler ile aynı desen: veri yoksa sayfa
@@ -213,8 +233,7 @@ const hasTrns = computed(() => trnRows.value.length > 0)
 /** Filtreli işlemlerin TÜR bazında adedi — tek geçiş (KPI + pasta ortak kaynak). */
 const kindCounts = computed(() => {
   const counts: Record<TrnKind, number> = { income: 0, expense: 0, transfer: 0, adjustment: 0 }
-  for (const r of filteredTrnRows.value)
-    counts[r.kind]++
+  for (const r of filteredTrnRows.value) counts[r.kind]++
   return counts
 })
 
@@ -230,7 +249,7 @@ const kpis = computed(() => {
     { key: 'total', label: t('trnsPage.total'), value: fmt.number(filteredTrnRows.value.length) },
     { key: 'income', label: t('trnForm.income'), value: fmt.number(c.income) },
     { key: 'expense', label: t('trnForm.expense'), value: fmt.number(c.expense) },
-    { key: 'transfer', label: t('trnForm.transfer'), value: fmt.number(c.transfer) },
+    { key: 'transfer', label: t('trnForm.transfer'), value: fmt.number(c.transfer) }
   ]
 })
 
@@ -241,8 +260,13 @@ const kpis = computed(() => {
  */
 const kindPie = computed(() =>
   (Object.keys(KIND_META) as TrnKind[])
-    .map(k => ({ key: k, title: kindLabel(k), value: kindCounts.value[k], color: KIND_PIE_COLOR[k] }))
-    .filter(slice => slice.value > 0),
+    .map((k) => ({
+      key: k,
+      title: kindLabel(k),
+      value: kindCounts.value[k],
+      color: KIND_PIE_COLOR[k]
+    }))
+    .filter((slice) => slice.value > 0)
 )
 
 function openTrn(item: TrnRow) {
@@ -340,7 +364,7 @@ const rowProps = keyboardRowProps(openTrn)
               class="v-data-table__th"
               :class="[
                 column.sortable && 'v-data-table__th--sortable',
-                `v-data-table-column--align-${column.align ?? 'start'}`,
+                `v-data-table-column--align-${column.align ?? 'start'}`
               ]"
               :style="{ width: column.width ? `${column.width}px` : undefined }"
               :aria-sort="ariaSort(column.key, column.sortable, sortBy)"
@@ -355,7 +379,8 @@ const rowProps = keyboardRowProps(openTrn)
                   v-if="column.sortable"
                   :icon="getSortIcon(column)"
                   size="small"
-                  class="v-data-table-header__sort-icon" :class="[!isSorted(column) && 'text-disabled']"
+                  class="v-data-table-header__sort-icon"
+                  :class="[!isSorted(column) && 'text-disabled']"
                 />
               </div>
             </th>
@@ -381,7 +406,11 @@ const rowProps = keyboardRowProps(openTrn)
               >
                 <template #selection="{ index, item: opt }">
                   <span v-if="index === 0" class="text-caption text-truncate">
-                    {{ trnFilters.kinds.length === 1 ? opt.title : t('walletDetail.nSelected', { n: trnFilters.kinds.length }) }}
+                    {{
+                      trnFilters.kinds.length === 1
+                        ? opt.title
+                        : t('walletDetail.nSelected', { n: trnFilters.kinds.length })
+                    }}
                   </span>
                 </template>
               </v-select>
@@ -398,7 +427,11 @@ const rowProps = keyboardRowProps(openTrn)
               >
                 <template #selection="{ index, item: opt }">
                   <span v-if="index === 0" class="text-caption text-truncate">
-                    {{ trnFilters.walletIds.length === 1 ? opt.title : t('walletDetail.nSelected', { n: trnFilters.walletIds.length }) }}
+                    {{
+                      trnFilters.walletIds.length === 1
+                        ? opt.title
+                        : t('walletDetail.nSelected', { n: trnFilters.walletIds.length })
+                    }}
                   </span>
                 </template>
               </v-select>
@@ -417,9 +450,11 @@ const rowProps = keyboardRowProps(openTrn)
               >
                 <template #selection="{ index }">
                   <span v-if="index === 0" class="text-caption text-truncate">
-                    {{ trnFilters.categoryIds.length === 1
-                      ? optionTitle(filterCategoryOptions, trnFilters.categoryIds[0])
-                      : t('walletDetail.nSelected', { n: trnFilters.categoryIds.length }) }}
+                    {{
+                      trnFilters.categoryIds.length === 1
+                        ? optionTitle(filterCategoryOptions, trnFilters.categoryIds[0])
+                        : t('walletDetail.nSelected', { n: trnFilters.categoryIds.length })
+                    }}
                   </span>
                 </template>
               </v-select>
@@ -448,9 +483,11 @@ const rowProps = keyboardRowProps(openTrn)
               >
                 <template #selection="{ index }">
                   <span v-if="index === 0" class="text-caption text-truncate">
-                    {{ trnFilters.tagIds.length === 1
-                      ? optionTitle(filterTagOptions, trnFilters.tagIds[0])
-                      : t('walletDetail.nSelected', { n: trnFilters.tagIds.length }) }}
+                    {{
+                      trnFilters.tagIds.length === 1
+                        ? optionTitle(filterTagOptions, trnFilters.tagIds[0])
+                        : t('walletDetail.nSelected', { n: trnFilters.tagIds.length })
+                    }}
                   </span>
                 </template>
               </v-select>
@@ -463,7 +500,9 @@ const rowProps = keyboardRowProps(openTrn)
                 variant="outlined"
                 hide-details
                 clearable
-                @update:model-value="trnFilters.minAmount = $event === '' || $event === null ? null : Number($event)"
+                @update:model-value="
+                  trnFilters.minAmount = $event === '' || $event === null ? null : Number($event)
+                "
               />
             </td>
           </tr>
@@ -515,7 +554,13 @@ const rowProps = keyboardRowProps(openTrn)
         <template #[`item.amount`]="{ item }">
           <span
             class="text-body-2 font-weight-medium"
-            :class="item.kind === 'transfer' ? 'text-info' : item.amount >= 0 ? 'text-success' : 'text-error'"
+            :class="
+              item.kind === 'transfer'
+                ? 'text-info'
+                : item.amount >= 0
+                  ? 'text-success'
+                  : 'text-error'
+            "
           >
             {{ fmt.money(item.amount, item.currency) }}
           </span>

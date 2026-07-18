@@ -20,14 +20,14 @@ export default defineConfig({
       imports: ['vue', 'vue-router', 'pinia', '@vueuse/core'],
       dts: false,
       dirs: ['src/composables'],
-      vueTemplate: true,
+      vueTemplate: true
     }),
-    Components({ dts: false, dirs: ['src/components'] }),
+    Components({ dts: false, dirs: ['src/components'] })
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
-    },
+      '@': fileURLToPath(new URL('./src', import.meta.url))
+    }
   },
   test: {
     environment: 'node',
@@ -45,7 +45,7 @@ export default defineConfig({
         'src/main.ts', // uygulama bootstrap — birim testi değil, smoke/E2E kapsamı
         'src/i18n/messages.ts', // saf veri sözlüğü
         'src/**/types.ts',
-        'src/plugins/**', // vuetify/i18n/echarts kurulum kabloları
+        'src/plugins/**' // vuetify/i18n/echarts kurulum kabloları
       ],
       // Ölçülen tabanın ALTINA düşüş regresyondur. Değerler mevcut kapsamın hemen
       // altına konur (ratchet) — kapı bugün yeşil, ama örtülü kod eklenince kırmızı.
@@ -53,8 +53,8 @@ export default defineConfig({
         statements: 52,
         branches: 80,
         functions: 39,
-        lines: 52,
-      },
+        lines: 52
+      }
     },
     server: {
       deps: {
@@ -65,8 +65,8 @@ export default defineConfig({
         // varsayılanı) ile boş modüle indirgenir. Stil testi yapmıyoruz,
         // yalnız render edilen SINIF adlarına bakıyoruz — CSS'in kendisi
         // gereksiz.
-        inline: ['vuetify'],
-      },
-    },
-  },
+        inline: ['vuetify']
+      }
+    }
+  }
 })

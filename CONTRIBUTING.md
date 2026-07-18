@@ -20,14 +20,14 @@ npm run tauri:dev    # native desktop app
 A PR must have ALL of these green before it can be merged. Run the same locally
 before pushing:
 
-| Command | What it checks |
-| ------- | -------------- |
-| `npm run typecheck` | `vue-tsc` — type safety |
-| `npm run lint` | ESLint (@antfu) — code style |
-| `npm test` | Vitest — frontend unit tests |
-| `cargo fmt --check` | Rust formatting (src-tauri/) |
-| `cargo clippy --all-targets -- -D warnings` | Rust lint |
-| `cargo test` | Rust tests (tx.rs transaction integrity) |
+| Command                                     | What it checks                           |
+| ------------------------------------------- | ---------------------------------------- |
+| `npm run typecheck`                         | `vue-tsc` — type safety                  |
+| `npm run lint`                              | ESLint (@antfu) — code style             |
+| `npm test`                                  | Vitest — frontend unit tests             |
+| `cargo fmt --check`                         | Rust formatting (src-tauri/)             |
+| `cargo clippy --all-targets -- -D warnings` | Rust lint                                |
+| `cargo test`                                | Rust tests (tx.rs transaction integrity) |
 
 The `npm audit` (prod) and `cargo audit` supply-chain gates also run.
 

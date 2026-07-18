@@ -35,19 +35,16 @@ const EMPTY: ParsedRates = { rates: {}, rateDate: null }
  * bulamaz, null döner ve HER ŞEY "kur eksik"e düşerdi.
  */
 export function parseFrankfurter(text: string): ParsedRates {
-  let d: { base?: unknown, date?: unknown, rates?: unknown }
+  let d: { base?: unknown; date?: unknown; rates?: unknown }
   try {
     d = JSON.parse(text)
-  }
-  catch {
+  } catch {
     return EMPTY
   }
-  if (d.base !== 'USD')
-    return EMPTY // base=USD istedik; başka bir şey geldiyse matematik tutmaz
+  if (d.base !== 'USD') return EMPTY // base=USD istedik; başka bir şey geldiyse matematik tutmaz
 
   const rates = sanitizeRates(d.rates)
-  if (!Object.keys(rates).length)
-    return EMPTY
+  if (!Object.keys(rates).length) return EMPTY
 
   rates.USD = 1 // taban her zaman 1 — kaynak vermez
   return { rates, rateDate: typeof d.date === 'string' ? d.date : null }
@@ -58,19 +55,16 @@ export function parseFrankfurter(text: string): ParsedRates {
  * Örnek: `{"result":"success","time_last_update_utc":"...","rates":{...}}`
  */
 export function parseErApi(text: string): ParsedRates {
-  let d: { result?: unknown, rates?: unknown, time_last_update_utc?: unknown }
+  let d: { result?: unknown; rates?: unknown; time_last_update_utc?: unknown }
   try {
     d = JSON.parse(text)
-  }
-  catch {
+  } catch {
     return EMPTY
   }
-  if (d.result !== 'success')
-    return EMPTY
+  if (d.result !== 'success') return EMPTY
 
   const rates = sanitizeRates(d.rates)
-  if (!Object.keys(rates).length)
-    return EMPTY
+  if (!Object.keys(rates).length) return EMPTY
 
   rates.USD = 1 // gelmiş olsa da sabitle: taban tanım gereği 1
   return { rates, rateDate: erApiDate(d.time_last_update_utc) }
@@ -78,8 +72,7 @@ export function parseErApi(text: string): ParsedRates {
 
 /** "Tue, 16 Jul 2026 00:02:31 +0000" → "2026-07-16". Ayrıştırılamazsa null. */
 function erApiDate(v: unknown): string | null {
-  if (typeof v !== 'string')
-    return null
+  if (typeof v !== 'string') return null
   const ms = Date.parse(v)
   return Number.isNaN(ms) ? null : new Date(ms).toISOString().slice(0, 10)
 }
@@ -110,8 +103,7 @@ export function parseTcmb(text: string, parseXml: XmlParse): ParsedRates {
   let doc: XmlDoc
   try {
     doc = parseXml(text)
-  }
-  catch {
+  } catch {
     return EMPTY
   }
 
@@ -126,13 +118,13 @@ export function parseTcmb(text: string, parseXml: XmlParse): ParsedRates {
   }
 
   const usdTry = raw.get('USD')
-  if (!usdTry) // USD olmadan USD tabanına çeviremeyiz
+  if (!usdTry)
+    // USD olmadan USD tabanına çeviremeyiz
     return EMPTY
 
   const out: Rates = { USD: 1, TRY: usdTry }
   for (const [code, tryPerUnit] of raw) {
-    if (code === 'USD')
-      continue
+    if (code === 'USD') continue
     out[code] = usdTry / tryPerUnit
   }
 
@@ -147,21 +139,27 @@ function tcmbDate(v: string | null): string | null {
 
 // --- XML soyutlaması (ortamdan bağımsız) ------------------------------------
 
-export interface XmlCurrency { code: string | null, unit: string | null, forexSelling: string | null }
-export interface XmlDoc { date: string | null, currencies: XmlCurrency[] }
+export interface XmlCurrency {
+  code: string | null
+  unit: string | null
+  forexSelling: string | null
+}
+export interface XmlDoc {
+  date: string | null
+  currencies: XmlCurrency[]
+}
 export type XmlParse = (text: string) => XmlDoc
 
 /** Tarayıcı/WebView ayrıştırıcısı (DOMParser). Testler kendi parser'ını verir. */
 export const domXmlParse: XmlParse = (text) => {
   const doc = new DOMParser().parseFromString(text, 'application/xml')
-  if (doc.querySelector('parsererror'))
-    throw new Error('TCMB XML ayrıştırılamadı')
+  if (doc.querySelector('parsererror')) throw new Error('TCMB XML ayrıştırılamadı')
   return {
     date: doc.documentElement?.getAttribute('Tarih') ?? null,
-    currencies: [...doc.querySelectorAll('Currency')].map(el => ({
+    currencies: [...doc.querySelectorAll('Currency')].map((el) => ({
       code: el.getAttribute('Kod'),
       unit: el.querySelector('Unit')?.textContent ?? null,
-      forexSelling: el.querySelector('ForexSelling')?.textContent ?? null,
-    })),
+      forexSelling: el.querySelector('ForexSelling')?.textContent ?? null
+    }))
   }
 }

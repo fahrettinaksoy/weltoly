@@ -15,18 +15,18 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "lint": "eslint .",
+    "lint": "eslint . --cache",
     "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
-    "prepare": "simple-git-hooks"
-  },
-  "simple-git-hooks": {
-    "pre-commit": "npx lint-staged"
+    "prepare": "husky"
   },
   "lint-staged": {
-    "*.{ts,vue,js}": "eslint --fix"
+    "*.{ts,js,vue}": "eslint --cache --fix",
+    "*.{ts,js,vue,json,md,yml,yaml,scss,css,html}": "prettier --write"
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
@@ -53,15 +53,19 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.19.0",
+    "@commitlint/cli": "^21.2.0",
+    "@commitlint/config-conventional": "^21.2.0",
     "@tauri-apps/cli": "^2",
     "@types/node": "^22.10.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vitest/coverage-v8": "^2.1.9",
     "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
     "happy-dom": "^15.11.0",
+    "husky": "^9.1.7",
     "lint-staged": "^17.0.8",
+    "prettier": "^3.4.2",
     "sass-embedded": "^1.83.0",
-    "simple-git-hooks": "^2.13.1",
     "typescript": "~5.9.3",
     "unplugin-auto-import": "^0.19.0",
     "unplugin-vue-components": "^0.28.0",

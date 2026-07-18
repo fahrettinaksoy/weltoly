@@ -36,7 +36,7 @@ export const CRYPTO_CURRENCIES: CryptoInfo[] = [
   { code: 'ADA', coingeckoId: 'cardano', name: 'Cardano' },
   { code: 'DOGE', coingeckoId: 'dogecoin', name: 'Dogecoin' },
   { code: 'TON', coingeckoId: 'the-open-network', name: 'Toncoin' },
-  { code: 'LTC', coingeckoId: 'litecoin', name: 'Litecoin' },
+  { code: 'LTC', coingeckoId: 'litecoin', name: 'Litecoin' }
 ]
 
 /** Para birimi seçici girdileri (`allCurrencies` sonuna eklenir). */
@@ -44,10 +44,10 @@ export const cryptoCurrencyOptions = CRYPTO_CURRENCIES.map(({ code, name }) => (
 
 /** Kod → CoinGecko id. Fiyat çekme ve yanıt eşleme burayı kullanır. */
 export const CRYPTO_IDS: Record<string, string> = Object.fromEntries(
-  CRYPTO_CURRENCIES.map(c => [c.code, c.coingeckoId]),
+  CRYPTO_CURRENCIES.map((c) => [c.code, c.coingeckoId])
 )
 
-export const CRYPTO_CODES: string[] = CRYPTO_CURRENCIES.map(c => c.code)
+export const CRYPTO_CODES: string[] = CRYPTO_CURRENCIES.map((c) => c.code)
 
 export function isCryptoCode(code: string): boolean {
   return code in CRYPTO_IDS

@@ -16,8 +16,7 @@
  * Payda `Math.abs`: önceki değer negatifse (borç) işaret ters dönmesin.
  */
 export function changeRatio(current: number, previous: number): number | null {
-  if (previous === 0)
-    return null
+  if (previous === 0) return null
   return ((current - previous) / Math.abs(previous)) * 100
 }
 
@@ -30,7 +29,6 @@ export function changeRatio(current: number, previous: number): number | null {
  * %1'in altındaki sapmalar nötr: olmayan bir eğilimi varmış gibi boyamamak için.
  */
 export function deltaTone(delta: number, positiveIsGood: boolean): string | undefined {
-  if (Math.abs(delta) < 1)
-    return undefined
-  return (delta > 0) === positiveIsGood ? 'success' : 'error'
+  if (Math.abs(delta) < 1) return undefined
+  return delta > 0 === positiveIsGood ? 'success' : 'error'
 }

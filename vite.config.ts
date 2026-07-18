@@ -28,19 +28,19 @@ export default defineConfig(async () => ({
       imports: ['vue', 'vue-router', 'pinia', '@vueuse/core'],
       dts: 'src/auto-imports.d.ts',
       dirs: ['src/composables'],
-      vueTemplate: true,
+      vueTemplate: true
     }),
     // Kendi bileşenlerimizi otomatik import et
     Components({
       dts: 'src/components.d.ts',
-      dirs: ['src/components'],
-    }),
+      dirs: ['src/components']
+    })
   ],
 
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
-    },
+      '@': fileURLToPath(new URL('./src', import.meta.url))
+    }
   },
 
   /**
@@ -65,7 +65,7 @@ export default defineConfig(async () => ({
   build: {
     target: process.env.TAURI_ENV_PLATFORM === 'windows' ? 'chrome105' : 'safari13',
     minify: process.env.TAURI_ENV_DEBUG ? false : 'esbuild',
-    sourcemap: !!process.env.TAURI_ENV_DEBUG,
+    sourcemap: !!process.env.TAURI_ENV_DEBUG
   },
 
   // Tauri geliştirmesi için ayarlar (yalnız `tauri dev`/`tauri build` sırasında geçerli)
@@ -74,11 +74,9 @@ export default defineConfig(async () => ({
     port: 1420,
     strictPort: true,
     host: host || false,
-    hmr: host
-      ? { protocol: 'ws', host, port: 1421 }
-      : undefined,
+    hmr: host ? { protocol: 'ws', host, port: 1421 } : undefined,
     watch: {
-      ignored: ['**/src-tauri/**'],
-    },
-  },
+      ignored: ['**/src-tauri/**']
+    }
+  }
 }))

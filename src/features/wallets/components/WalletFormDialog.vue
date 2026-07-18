@@ -32,7 +32,7 @@ const iconPicker = ref(false)
 // Renk seçici için sadeleştirilmiş palet (colorsArray'den örnek).
 const palette = colorsArray.filter((_, i) => i % 6 === 0)
 
-const currencyItems = allCurrencies.map(c => ({ code: c.code, title: `${c.code} — ${c.name}` }))
+const currencyItems = allCurrencies.map((c) => ({ code: c.code, title: `${c.code} — ${c.name}` }))
 
 interface FormState {
   name: string
@@ -67,14 +67,18 @@ function blankForm(): FormState {
     isExcludeInTotal: false,
     isArchived: false,
     order: 0,
-    isDefault: false,
+    isDefault: false
   }
 }
 
 const form = reactive<FormState>(blankForm())
 
 const typeItems = computed(() =>
-  walletTypes.map(type => ({ value: type, title: t(`wallets.types.${type}`), icon: walletTypeIcon[type] })),
+  walletTypes.map((type) => ({
+    value: type,
+    title: t(`wallets.types.${type}`),
+    icon: walletTypeIcon[type]
+  }))
 )
 
 /**
@@ -98,18 +102,19 @@ function loadForm() {
       isExcludeInTotal: w.isExcludeInTotal,
       isArchived: w.isArchived,
       order: w.order,
-      isDefault: userStore.defaultWalletId === props.walletId,
+      isDefault: userStore.defaultWalletId === props.walletId
     })
-  }
-  else {
+  } else {
     Object.assign(form, blankForm())
   }
 }
 
-watch(() => props.modelValue, (open) => {
-  if (open)
-    loadForm()
-})
+watch(
+  () => props.modelValue,
+  (open) => {
+    if (open) loadForm()
+  }
+)
 
 const isValid = computed(() => form.name.trim().length > 0 && form.currency.trim().length > 0)
 
@@ -119,8 +124,7 @@ const isValid = computed(() => form.name.trim().length > 0 && form.currency.trim
  */
 const otherDefaultName = computed(() => {
   const current = userStore.defaultWalletId
-  if (!current || current === props.walletId)
-    return null
+  if (!current || current === props.walletId) return null
   return walletsStore.items?.[current]?.name ?? null
 })
 
@@ -139,15 +143,15 @@ function save() {
     isExcludeInTotal: form.isExcludeInTotal,
     isArchived: form.isArchived,
     order: form.order,
-    updatedAt: Date.now(),
+    updatedAt: Date.now()
   }
-  const values = form.type === 'credit'
-    ? { ...base, type: 'credit' as const, creditLimit: Number(form.creditLimit) || 0 }
-    : { ...base, type: form.type }
+  const values =
+    form.type === 'credit'
+      ? { ...base, type: 'credit' as const, creditLimit: Number(form.creditLimit) || 0 }
+      : { ...base, type: form.type }
 
   const parsed = walletItemSchema.safeParse(values)
-  if (!parsed.success)
-    return
+  if (!parsed.success) return
 
   const id = props.walletId ?? generateId()
   walletsStore.saveWallet({ id, values: parsed.data as WalletItem })
@@ -157,15 +161,13 @@ function save() {
   // Kapatırken null yazmak, başka bir cüzdan varsayılansa onu da silerdi;
   // bu yüzden önce bu cüzdanın gerçekten varsayılan olup olmadığına bakılır.
   const wasDefault = userStore.defaultWalletId === id
-  if (form.isDefault !== wasDefault)
-    userStore.saveDefaultWalletId(form.isDefault ? id : null)
+  if (form.isDefault !== wasDefault) userStore.saveDefaultWalletId(form.isDefault ? id : null)
 
   close()
 }
 
 function remove() {
-  if (!props.walletId)
-    return
+  if (!props.walletId) return
   walletsStore.deleteWallet(props.walletId)
   close()
 }
@@ -206,12 +208,7 @@ function remove() {
       </v-btn>
     </div>
 
-    <v-text-field
-      v-model="form.name"
-      :label="t('wallets.name')"
-      :rules="['required']"
-      autofocus
-    />
+    <v-text-field v-model="form.name" :label="t('wallets.name')" :rules="['required']" autofocus />
 
     <v-select v-model="form.type" :items="typeItems" :label="t('wallets.type')">
       <template #selection="{ item }">
@@ -220,7 +217,10 @@ function remove() {
       </template>
       <!-- İkonu slot item şeklinden değil, kendi haritamızdan türet (sürümden bağımsız). -->
       <template #item="{ props: itemProps }">
-        <v-list-item v-bind="itemProps" :prepend-icon="walletTypeIcon[itemProps.value as WalletType]" />
+        <v-list-item
+          v-bind="itemProps"
+          :prepend-icon="walletTypeIcon[itemProps.value as WalletType]"
+        />
       </template>
     </v-select>
 
@@ -256,7 +256,10 @@ function remove() {
     <div class="d-flex flex-column ga-2">
       <div>
         <v-switch v-model="form.isDefault" :label="t('wallets.default')" />
-        <div v-if="form.isDefault && otherDefaultName" class="text-caption text-medium-emphasis ms-1">
+        <div
+          v-if="form.isDefault && otherDefaultName"
+          class="text-caption text-medium-emphasis ms-1"
+        >
           {{ t('wallets.defaultMovedFrom', { name: otherDefaultName }) }}
         </div>
       </div>

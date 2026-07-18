@@ -14,12 +14,9 @@ export function validate(values: Transaction | Transfer): string | null {
       return 'trnForm.errors.transferAmountEmpty'
     }
 
-    if (issue?.path?.includes('amount'))
-      return 'trnForm.errors.amountEmpty'
-    if (issue?.path?.includes('walletId'))
-      return 'trnForm.errors.selectWallet'
-    if (issue?.path?.includes('categoryId'))
-      return 'trnForm.errors.selectCategory'
+    if (issue?.path?.includes('amount')) return 'trnForm.errors.amountEmpty'
+    if (issue?.path?.includes('walletId')) return 'trnForm.errors.selectWallet'
+    if (issue?.path?.includes('categoryId')) return 'trnForm.errors.selectCategory'
 
     return 'trnForm.errors.amountEmpty'
   }

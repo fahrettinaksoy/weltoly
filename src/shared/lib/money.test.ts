@@ -13,8 +13,7 @@ describe('addMoney / subMoney — float birikmesini önler', () => {
 
   it('üst üste toplama tail biriktirmez', () => {
     let acc = 0
-    for (let i = 0; i < 1000; i++)
-      acc = addMoney(acc, 0.1)
+    for (let i = 0; i < 1000; i++) acc = addMoney(acc, 0.1)
     expect(acc).toBe(100)
   })
 })

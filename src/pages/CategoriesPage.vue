@@ -28,8 +28,7 @@ const pendingDelete = ref<CategoryRow | null>(null)
  */
 function confirmDelete() {
   const row = pendingDelete.value
-  if (!row)
-    return
+  if (!row) return
   categoriesStore.deleteCategory(row.id)
   pendingDelete.value = null
 }
@@ -54,12 +53,10 @@ function openEdit(id: CategoryId) {
 const usageById = computed<Record<string, number>>(() => {
   const counts: Record<string, number> = {}
   const trns = trnsStore.items
-  if (!trns)
-    return counts
+  if (!trns) return counts
   for (const trnId in trns) {
     const categoryId = trns[trnId]?.categoryId
-    if (categoryId)
-      counts[categoryId] = (counts[categoryId] ?? 0) + 1
+    if (categoryId) counts[categoryId] = (counts[categoryId] ?? 0) + 1
   }
   return counts
 })
@@ -89,8 +86,7 @@ const baseRows = computed(() => {
 
   const push = (id: CategoryId, parentId: CategoryId | null, childCount: number) => {
     const c = categoriesStore.items[id]
-    if (!c)
-      return
+    if (!c) return
     out.push({
       id,
       name: c.name,
@@ -100,7 +96,7 @@ const baseRows = computed(() => {
       parentId,
       childCount,
       quick: c.showInQuickSelector,
-      usage: usageById.value[id] ?? 0,
+      usage: usageById.value[id] ?? 0
     })
   }
 
@@ -113,10 +109,9 @@ const baseRows = computed(() => {
    * ebeveynler her zaman en alta düşer ve dolu dalları da beraberinde götürür.
    */
   const usage = (id: CategoryId) => usageById.value[id] ?? 0
-  const byUsageThenName = (weight: (id: CategoryId) => number) =>
-    (a: CategoryId, b: CategoryId) =>
-      weight(b) - weight(a)
-      || (categoriesStore.items[a]?.name ?? '').localeCompare(categoriesStore.items[b]?.name ?? '')
+  const byUsageThenName = (weight: (id: CategoryId) => number) => (a: CategoryId, b: CategoryId) =>
+    weight(b) - weight(a) ||
+    (categoriesStore.items[a]?.name ?? '').localeCompare(categoriesStore.items[b]?.name ?? '')
 
   const rootWeight = (rootId: CategoryId) =>
     usage(rootId) + categoriesStore.getChildrenIds(rootId).reduce((sum, c) => sum + usage(c), 0)
@@ -126,8 +121,7 @@ const baseRows = computed(() => {
   for (const rootId of rootIds) {
     const childIds = [...categoriesStore.getChildrenIds(rootId)].sort(byUsageThenName(usage))
     push(rootId, null, childIds.length)
-    for (const childId of childIds)
-      push(childId, rootId, 0)
+    for (const childId of childIds) push(childId, rootId, 0)
   }
   return out
 })
@@ -137,21 +131,24 @@ const collapsed = ref(new Set<CategoryId>())
 
 function toggle(id: CategoryId) {
   const next = new Set(collapsed.value)
-  if (!next.delete(id))
-    next.add(id)
+  if (!next.delete(id)) next.add(id)
   collapsed.value = next
 }
 
 const rootCount = computed(() => categoriesStore.categoriesRootIds.length)
-const usedCount = computed(() => baseRows.value.filter(r => r.usage > 0).length)
+const usedCount = computed(() => baseRows.value.filter((r) => r.usage > 0).length)
 const totalUsage = computed(() => baseRows.value.reduce((sum, r) => sum + r.usage, 0))
-const usedRatio = computed(() => baseRows.value.length ? (usedCount.value / baseRows.value.length) * 100 : 0)
+const usedRatio = computed(() =>
+  baseRows.value.length ? (usedCount.value / baseRows.value.length) * 100 : 0
+)
 
 /** Tablo satırları: işlem sayısının toplam içindeki payı (%) burada eklenir. */
-const rows = computed<CategoryRow[]>(() => baseRows.value.map(r => ({
-  ...r,
-  share: totalUsage.value ? (r.usage / totalUsage.value) * 100 : 0,
-})))
+const rows = computed<CategoryRow[]>(() =>
+  baseRows.value.map((r) => ({
+    ...r,
+    share: totalUsage.value ? (r.usage / totalUsage.value) * 100 : 0
+  }))
+)
 
 /**
  * Görünen satırlar: kapalı bir üst kategorinin çocukları gizlenir.
@@ -160,16 +157,18 @@ const rows = computed<CategoryRow[]>(() => baseRows.value.map(r => ({
  */
 const visibleRows = computed<CategoryRow[]>(() => {
   const searching = search.value.trim().length > 0
-  return rows.value.filter(r =>
-    !r.parentId || searching || !collapsed.value.has(r.parentId),
-  )
+  return rows.value.filter((r) => !r.parentId || searching || !collapsed.value.has(r.parentId))
 })
 
 /** Özet sayaçları: kategorilerde anlamlı olan yapı (kaç ana / kaç alt). */
 const kpis = computed(() => [
   { key: 'total', label: t('categories.stats.total'), value: fmt.number(rows.value.length) },
   { key: 'root', label: t('categories.stats.root'), value: fmt.number(rootCount.value) },
-  { key: 'child', label: t('categories.stats.child'), value: fmt.number(rows.value.length - rootCount.value) },
+  {
+    key: 'child',
+    label: t('categories.stats.child'),
+    value: fmt.number(rows.value.length - rootCount.value)
+  }
 ])
 
 /** Donut'ta ayrı dilim olarak gösterilecek en çok işlem alan kategori sayısı. */
@@ -180,12 +179,12 @@ const PIE_LIMIT = 6
  * "Diğer" diliminde. Renk her kategorinin kendi rengi (VPie: item.color ?? palette).
  */
 const pieItems = computed(() => {
-  const used = rows.value.filter(r => r.usage > 0).toSorted((a, b) => b.usage - a.usage)
-  const items = used.slice(0, PIE_LIMIT).map(r => ({
+  const used = rows.value.filter((r) => r.usage > 0).toSorted((a, b) => b.usage - a.usage)
+  const items = used.slice(0, PIE_LIMIT).map((r) => ({
     key: r.id,
     title: r.name,
     value: r.usage,
-    color: r.color,
+    color: r.color
   }))
 
   const restUsage = used.slice(PIE_LIMIT).reduce((sum, r) => sum + r.usage, 0)
@@ -194,7 +193,7 @@ const pieItems = computed(() => {
       key: '__rest',
       title: t('categories.chart.other', { count: used.length - PIE_LIMIT }),
       value: restUsage,
-      color: 'grey',
+      color: 'grey'
     })
   }
   return items
@@ -205,12 +204,28 @@ const pieItems = computed(() => {
  * Varsayılan sıralama (işleme göre azalan) baseRows'ta AĞAÇ İÇİNDE yapılır —
  * tabloya bıraksaydık çocukları ebeveynlerinden koparırdı.
  */
-const headers = computed(() => [
-  { title: t('categories.table.name'), key: 'name', sortable: false, width: 320, nowrap: true },
-  { title: t('categories.description'), key: 'desc', sortable: false, width: 340, nowrap: true },
-  { title: t('categories.table.usage'), key: 'usage', align: 'end', sortable: false, width: 260, nowrap: true },
-  { title: '', key: 'actions', align: 'end', sortable: false, width: 104 },
-] as const)
+const headers = computed(
+  () =>
+    [
+      { title: t('categories.table.name'), key: 'name', sortable: false, width: 320, nowrap: true },
+      {
+        title: t('categories.description'),
+        key: 'desc',
+        sortable: false,
+        width: 340,
+        nowrap: true
+      },
+      {
+        title: t('categories.table.usage'),
+        key: 'usage',
+        align: 'end',
+        sortable: false,
+        width: 260,
+        nowrap: true
+      },
+      { title: '', key: 'actions', align: 'end', sortable: false, width: 104 }
+    ] as const
+)
 
 /** VDataTable @click:row → (event, { item }). Satıra tıklamak düzenlemeyi açar. */
 function onRowClick(_event: unknown, { item }: { item: CategoryRow }) {
@@ -251,10 +266,7 @@ function onRowClick(_event: unknown, { item }: { item: CategoryRow }) {
           </template>
         </v-pie>
 
-        <div
-          v-for="kpi in kpis"
-          :key="kpi.key"
-        >
+        <div v-for="kpi in kpis" :key="kpi.key">
           <div class="text-h5 font-weight-bold">
             {{ kpi.value }}
           </div>

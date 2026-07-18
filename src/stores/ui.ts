@@ -27,7 +27,7 @@ const iconByColor: Record<SnackColor, string> = {
   success: 'mdi-check-circle',
   error: 'mdi-alert-circle',
   warning: 'mdi-alert',
-  info: 'mdi-information',
+  info: 'mdi-information'
 }
 
 /**
@@ -46,16 +46,19 @@ export const useUiStore = defineStore('ui', () => {
 
   /** Hazır metinle bildirim ekle (çeviri çağıranın sorumluluğu). */
   function showToast(message: string, color: SnackColor = 'info') {
-    snackbarQueue.value = [...snackbarQueue.value, {
-      text: message,
-      color,
-      prependIcon: iconByColor[color],
-      timer: 'bottom',
-      // Zeminle aynı renk ailesinden koyu ton → çubuk zeminden ayrışır ama
-      // yabancı bir renk gibi durmaz. Sabit hex yerine tema varyasyonu:
-      // primary/nötr palet değişince bu da birlikte kayar.
-      timerColor: `${color}-darken-2`,
-    }]
+    snackbarQueue.value = [
+      ...snackbarQueue.value,
+      {
+        text: message,
+        color,
+        prependIcon: iconByColor[color],
+        timer: 'bottom',
+        // Zeminle aynı renk ailesinden koyu ton → çubuk zeminden ayrışır ama
+        // yabancı bir renk gibi durmaz. Sabit hex yerine tema varyasyonu:
+        // primary/nötr palet değişince bu da birlikte kayar.
+        timerColor: `${color}-darken-2`
+      }
+    ]
   }
 
   return { snackbarQueue, showToast }

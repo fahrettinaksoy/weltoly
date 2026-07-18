@@ -26,16 +26,17 @@ import { vuetify } from './plugins/vuetify'
 beforeAll(() => {
   // happy-dom bunları sağlamaz; VueUse (usePreferredDark) ve Vuetify layout ister.
   if (!window.matchMedia) {
-    window.matchMedia = (query: string) => ({
-      matches: false,
-      media: query,
-      onchange: null,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      addListener: () => {},
-      removeListener: () => {},
-      dispatchEvent: () => false,
-    }) as unknown as MediaQueryList
+    window.matchMedia = (query: string) =>
+      ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false
+      }) as unknown as MediaQueryList
   }
   if (!globalThis.ResizeObserver) {
     globalThis.ResizeObserver = class {
@@ -50,7 +51,7 @@ describe('uygulama önyüklemesi', () => {
   function boot() {
     const router = createRouter({
       history: createMemoryHistory(),
-      routes: [{ path: '/', name: 'home', component: { template: '<div>home</div>' } }],
+      routes: [{ path: '/', name: 'home', component: { template: '<div>home</div>' } }]
     })
     const el = document.createElement('div')
     document.body.appendChild(el)

@@ -48,13 +48,27 @@ export interface TrnFilters {
 }
 
 export function emptyTrnFilters(): TrnFilters {
-  return { dateRange: [], kinds: [], walletIds: [], categoryIds: [], desc: '', tagIds: [], minAmount: null }
+  return {
+    dateRange: [],
+    kinds: [],
+    walletIds: [],
+    categoryIds: [],
+    desc: '',
+    tagIds: [],
+    minAmount: null
+  }
 }
 
 export function hasAnyTrnFilter(f: TrnFilters): boolean {
-  return f.dateRange.length > 0 || f.kinds.length > 0 || f.walletIds.length > 0
-    || f.categoryIds.length > 0 || f.desc.trim() !== '' || f.tagIds.length > 0
-    || f.minAmount !== null
+  return (
+    f.dateRange.length > 0 ||
+    f.kinds.length > 0 ||
+    f.walletIds.length > 0 ||
+    f.categoryIds.length > 0 ||
+    f.desc.trim() !== '' ||
+    f.tagIds.length > 0 ||
+    f.minAmount !== null
+  )
 }
 
 export function applyTrnFilters<T extends TrnFilterRow>(rows: T[], f: TrnFilters): T[] {
@@ -63,7 +77,7 @@ export function applyTrnFilters<T extends TrnFilterRow>(rows: T[], f: TrnFilters
   let start: number | null = null
   let end: number | null = null
   if (f.dateRange.length) {
-    const days = f.dateRange.map(d => d.getTime()).toSorted((a, b) => a - b)
+    const days = f.dateRange.map((d) => d.getTime()).toSorted((a, b) => a - b)
     // Bitiş GÜNÜNÜN TAMAMI dahil: 00:00 ile kıyaslamak o günün işlemlerini eler.
     start = startOfDay(days[0]!).getTime()
     end = endOfDay(days.at(-1)!).getTime()
@@ -72,24 +86,17 @@ export function applyTrnFilters<T extends TrnFilterRow>(rows: T[], f: TrnFilters
   const needle = f.desc.trim().toLocaleLowerCase()
 
   return rows.filter((r) => {
-    if (start !== null && (r.date < start || r.date > end!))
-      return false
-    if (f.kinds.length && !f.kinds.includes(r.kind))
-      return false
+    if (start !== null && (r.date < start || r.date > end!)) return false
+    if (f.kinds.length && !f.kinds.includes(r.kind)) return false
     // Cüzdan: satırın dokunduğu cüzdanlardan biri seçiliyse geçer (transfer iki taraflı).
-    if (f.walletIds.length && !r.walletIds?.some(id => f.walletIds.includes(id)))
-      return false
+    if (f.walletIds.length && !r.walletIds?.some((id) => f.walletIds.includes(id))) return false
     // VEYA: seçilenlerden herhangi biri.
-    if (f.categoryIds.length && !f.categoryIds.includes(r.categoryId))
-      return false
-    if (needle && !r.desc.toLocaleLowerCase().includes(needle))
-      return false
+    if (f.categoryIds.length && !f.categoryIds.includes(r.categoryId)) return false
+    if (needle && !r.desc.toLocaleLowerCase().includes(needle)) return false
     // Etiket: satır seçilenlerden EN AZ BİRİNİ taşımalı — işlem çok etiketlidir.
-    if (f.tagIds.length && !r.tagIds.some(id => f.tagIds.includes(id)))
-      return false
+    if (f.tagIds.length && !r.tagIds.some((id) => f.tagIds.includes(id))) return false
     // Gider negatif tutulur; kullanıcı "şu tutardan büyük hareketler" diyor.
-    if (f.minAmount !== null && Math.abs(r.amount) < f.minAmount)
-      return false
+    if (f.minAmount !== null && Math.abs(r.amount) < f.minAmount) return false
     return true
   })
 }

@@ -21,17 +21,15 @@ export interface TxStatement {
 }
 
 export async function runTx(statements: TxStatement[]): Promise<void> {
-  if (!statements.length)
-    return
-  if (!isTauriRuntime())
-    throw new Error('runTx yalnız Tauri runtime\'ında çalışır')
+  if (!statements.length) return
+  if (!isTauriRuntime()) throw new Error("runTx yalnız Tauri runtime'ında çalışır")
 
   // Rust `values`'ı Vec<serde_json::Value> bekliyor; undefined JSON'da yok
   // sayılır ve dizi kısalır → parametre sayısı SQL'deki $n ile uyuşmaz.
   // Bu yüzden undefined açıkça null'a çevrilir.
-  const payload = statements.map(s => ({
+  const payload = statements.map((s) => ({
     sql: s.sql,
-    values: (s.values ?? []).map(v => (v === undefined ? null : v)),
+    values: (s.values ?? []).map((v) => (v === undefined ? null : v))
   }))
 
   await invoke('run_tx', { statements: payload })

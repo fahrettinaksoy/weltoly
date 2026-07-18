@@ -12,7 +12,7 @@ import { colorsArray } from '@/features/color/colors'
 import { generateId } from '@/shared/lib/generateId'
 import { random } from '@/shared/lib/random'
 
-const props = defineProps<{ modelValue: boolean, categoryId: string | null }>()
+const props = defineProps<{ modelValue: boolean; categoryId: string | null }>()
 const emit = defineEmits<{ 'update:modelValue': [boolean] }>()
 
 const { t } = useI18n()
@@ -42,7 +42,7 @@ function blankForm(): FormState {
     color: random(colorsArray),
     parentId: 0,
     showInLastUsed: true,
-    showInQuickSelector: false,
+    showInQuickSelector: false
   }
 }
 
@@ -52,8 +52,8 @@ const form = reactive<FormState>(blankForm())
 /** Başlık şeridinin ikinci satırı: kök mü, yoksa hangi kategorinin altında. */
 const parentLabel = computed(() =>
   form.parentId
-    ? categoriesStore.items[form.parentId]?.name ?? t('categories.noParent')
-    : t('categories.noParent'),
+    ? (categoriesStore.items[form.parentId]?.name ?? t('categories.noParent'))
+    : t('categories.noParent')
 )
 
 const parentOptions = computed(() => {
@@ -61,8 +61,8 @@ const parentOptions = computed(() => {
   const childIds = selfId ? categoriesStore.getChildrenIds(selfId) : []
   const excluded = new Set([selfId, ...childIds])
   const opts = categoriesStore.categoriesRootIds
-    .filter(id => !excluded.has(id))
-    .map(id => ({ value: id as CategoryId | 0, title: categoriesStore.items[id]?.name ?? id }))
+    .filter((id) => !excluded.has(id))
+    .map((id) => ({ value: id as CategoryId | 0, title: categoriesStore.items[id]?.name ?? id }))
   return [{ value: 0 as CategoryId | 0, title: t('categories.noParent') }, ...opts]
 })
 
@@ -76,18 +76,19 @@ function loadForm() {
       color: c.color,
       parentId: c.parentId,
       showInLastUsed: c.showInLastUsed,
-      showInQuickSelector: c.showInQuickSelector,
+      showInQuickSelector: c.showInQuickSelector
     })
-  }
-  else {
+  } else {
     Object.assign(form, blankForm())
   }
 }
 
-watch(() => props.modelValue, (open) => {
-  if (open)
-    loadForm()
-})
+watch(
+  () => props.modelValue,
+  (open) => {
+    if (open) loadForm()
+  }
+)
 
 const isValid = computed(() => form.name.trim().length > 0 && form.icon.trim().length > 0)
 
@@ -96,8 +97,7 @@ function close() {
 }
 
 function save() {
-  if (!isValid.value)
-    return
+  if (!isValid.value) return
   const id = props.categoryId ?? generateId()
   categoriesStore.saveCategory({
     id,
@@ -109,15 +109,14 @@ function save() {
       color: form.color,
       parentId: form.parentId,
       showInLastUsed: form.showInLastUsed,
-      showInQuickSelector: form.showInQuickSelector,
-    },
+      showInQuickSelector: form.showInQuickSelector
+    }
   })
   close()
 }
 
 function remove() {
-  if (!props.categoryId)
-    return
+  if (!props.categoryId) return
   categoriesStore.deleteCategory(props.categoryId)
   close()
 }
@@ -184,5 +183,7 @@ function remove() {
 </template>
 
 <style scoped>
-.cursor-pointer { cursor: pointer; }
+.cursor-pointer {
+  cursor: pointer;
+}
 </style>

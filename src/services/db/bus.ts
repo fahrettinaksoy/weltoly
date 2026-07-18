@@ -16,8 +16,7 @@ export function onTableChange(tables: string[], fn: Listener): () => void {
     set.add(fn)
   }
   return () => {
-    for (const t of tables)
-      listeners.get(t)?.delete(fn)
+    for (const t of tables) listeners.get(t)?.delete(fn)
   }
 }
 
@@ -26,11 +25,9 @@ export function emitTableChange(...tables: string[]): void {
   const notified = new Set<Listener>()
   for (const t of tables) {
     const set = listeners.get(t)
-    if (!set)
-      continue
+    if (!set) continue
     for (const fn of set) {
-      if (notified.has(fn))
-        continue
+      if (notified.has(fn)) continue
       notified.add(fn)
       fn()
     }

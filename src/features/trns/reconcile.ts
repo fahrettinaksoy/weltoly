@@ -5,11 +5,9 @@ import { rowToTrn, ts } from '@/services/db'
 
 /** Tam satır anlık görüntüsünden yeni bir trns haritası kur (ilk yükleme). */
 export function rowsToTrns(rows: Row[]): Trns | null {
-  if (!rows.length)
-    return null
+  if (!rows.length) return null
   const map: Trns = {}
-  for (const row of rows)
-    map[row.id] = rowToTrn(row)
+  for (const row of rows) map[row.id] = rowToTrn(row)
   return map
 }
 
@@ -31,18 +29,14 @@ export function reconcileTrns(prev: Trns, rows: Row[]): Trns | null {
       }
     }
   }
-  if (!dirty)
-    return prev
+  if (!dirty) return prev
 
-  if (!rows.length)
-    return null
+  if (!rows.length) return null
 
   const next: Trns = {}
   for (const row of rows) {
     const existing = prev[row.id]
-    next[row.id] = existing && existing.updatedAt === ts(row.updatedAt)
-      ? existing
-      : rowToTrn(row)
+    next[row.id] = existing && existing.updatedAt === ts(row.updatedAt) ? existing : rowToTrn(row)
   }
   return next
 }

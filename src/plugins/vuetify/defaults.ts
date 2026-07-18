@@ -28,7 +28,7 @@ const RADIUS_INNER = 'max(0px, calc(var(--app-radius, 12px) - 4px))'
 export const defaults = {
   global: {
     // Erişilebilirlik + performans: hareket azaltma tercihi olanlarda ripple kapatılabilir
-    ripple: true,
+    ripple: true
   },
 
   // İkon butonları dahil TÜM butonlar ayarı izler. `rounded` inline style üretip
@@ -38,7 +38,7 @@ export const defaults = {
   VBtn: {
     rounded: RADIUS,
     variant: 'flat',
-    style: 'text-transform: none;', // enterprise: BÜYÜK HARF yerine normal metin
+    style: 'text-transform: none;' // enterprise: BÜYÜK HARF yerine normal metin
   },
 
   // --- Yuvarlaklık ayardan gelen yüzeyler --------------------------------
@@ -64,27 +64,27 @@ export const defaults = {
   VTextField: {
     variant: 'outlined',
     density: 'comfortable',
-    hideDetails: 'auto',
+    hideDetails: 'auto'
   },
   VTextarea: {
     variant: 'outlined',
     density: 'comfortable',
-    hideDetails: 'auto',
+    hideDetails: 'auto'
   },
   VSelect: {
     variant: 'outlined',
     density: 'comfortable',
-    hideDetails: 'auto',
+    hideDetails: 'auto'
   },
   VAutocomplete: {
     variant: 'outlined',
     density: 'comfortable',
-    hideDetails: 'auto',
+    hideDetails: 'auto'
   },
   VCombobox: {
     variant: 'outlined',
     density: 'comfortable',
-    hideDetails: 'auto',
+    hideDetails: 'auto'
   },
   // VDateInput'a variant/density AYRICA yazılmak ZORUNDA — yukarıdaki
   // VTextField varsayılanı buraya İNMEZ. Sebep: VDateInput, VTextField'ın
@@ -102,26 +102,26 @@ export const defaults = {
     density: 'comfortable',
     hideDetails: 'auto',
     prependIcon: '',
-    prependInnerIcon: '$calendar',
+    prependInnerIcon: '$calendar'
   },
 
   VList: {
     density: 'comfortable',
-    rounded: RADIUS,
+    rounded: RADIUS
   },
   VDialog: {
-    scrollable: true,
+    scrollable: true
   },
   // Takvim: seçili gün / bugün göstergesi ana renkte.
   // VDateInput'a color VERMEK İŞE YARAMAZ: kendi color'ını picker'a geçirmiyor
   // (kaynak: VDatePicker.filterProps(omit(props, [... 'color' ...]))) — yalnız
   // metin alanına uygular. Bileşen default'u ise VDatePicker'a doğrudan iner.
   VDatePicker: {
-    color: 'primary',
+    color: 'primary'
   },
   VSnackbar: {
     location: 'bottom',
-    rounded: RADIUS,
+    rounded: RADIUS
   },
   // inset: 'material' → MD3 anahtar biçimi (dolu thumb, kapsül track).
   // Vuetify: isMaterial = ['material','square'].includes(inset) → .v-switch--inset-material
@@ -129,16 +129,16 @@ export const defaults = {
     color: 'primary',
     density: 'comfortable',
     hideDetails: true,
-    inset: 'material',
+    inset: 'material'
   },
   VSlider: {
     color: 'primary',
-    hideDetails: true,
+    hideDetails: true
   },
   VProgressLinear: {
-    rounded: true,
+    rounded: true
   },
   VTooltip: {
-    location: 'top',
-  },
+    location: 'top'
+  }
 }

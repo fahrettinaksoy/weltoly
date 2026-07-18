@@ -17,7 +17,12 @@ const actions = appBarActions()
 const override = pageHeader()
 
 // icon-fonts: semantik ikon alias'ları ($navX) — tek kaynaktan yönetilir.
-interface NavItem { key: string, to: string, icon: string, labelKey: string }
+interface NavItem {
+  key: string
+  to: string
+  icon: string
+  labelKey: string
+}
 const navItems: NavItem[] = [
   { key: 'dashboard', to: '/dashboard', icon: '$navDashboard', labelKey: 'nav.dashboard' },
   { key: 'wallets', to: '/wallets', icon: '$navWallets', labelKey: 'nav.wallets' },
@@ -25,26 +30,31 @@ const navItems: NavItem[] = [
   { key: 'categories', to: '/categories', icon: '$navCategories', labelKey: 'nav.categories' },
   { key: 'tags', to: '/tags', icon: '$navTags', labelKey: 'nav.tags' },
   { key: 'stat', to: '/stat', icon: '$navStat', labelKey: 'nav.stat' },
-  { key: 'settings', to: '/settings', icon: '$navSettings', labelKey: 'nav.settings' },
+  { key: 'settings', to: '/settings', icon: '$navSettings', labelKey: 'nav.settings' }
 ]
 
 const activeKey = computed(() => (route.meta.navKey as string) ?? 'dashboard')
-const activeIcon = computed(() => navItems.find(i => i.key === activeKey.value)?.icon ?? '$navDashboard')
+const activeIcon = computed(
+  () => navItems.find((i) => i.key === activeKey.value)?.icon ?? '$navDashboard'
+)
 
 // Bant başlığı: sayfa devralmadıysa rotanın statik etiketi.
 // Detay sayfaları usePageHeader ile varlığın kendi adını yazar.
-const header = computed(() => override.value ?? {
-  title: t(`nav.${activeKey.value}`),
-  desc: t(`pageDesc.${activeKey.value}`),
-  icon: activeIcon.value,
-  backTo: undefined as string | undefined,
-  cardTitle: undefined as string | undefined,
-  tabs: undefined as PageHeaderDef['tabs'],
-})
+const header = computed(
+  () =>
+    override.value ?? {
+      title: t(`nav.${activeKey.value}`),
+      desc: t(`pageDesc.${activeKey.value}`),
+      icon: activeIcon.value,
+      backTo: undefined as string | undefined,
+      cardTitle: undefined as string | undefined,
+      tabs: undefined as PageHeaderDef['tabs']
+    }
+)
 
 // Mobil alt bar sıkışmasın: ikincil öğeler yukarı açılan "Daha fazla" menüsünde toplanır.
 const MORE_KEYS = ['trns', 'categories', 'tags', 'settings']
-const moreItems = computed(() => navItems.filter(i => MORE_KEYS.includes(i.key)))
+const moreItems = computed(() => navItems.filter((i) => MORE_KEYS.includes(i.key)))
 const isMoreActive = computed(() => MORE_KEYS.includes(activeKey.value))
 const moreMenu = ref(false)
 
@@ -109,7 +119,7 @@ function onAdd() {
           <div class="text-h6 font-weight-bold text-truncate">
             {{ header.title }}
           </div>
-          <div v-if="header.desc" class="text-body-2 text-truncate" style="opacity: 0.85;">
+          <div v-if="header.desc" class="text-body-2 text-truncate" style="opacity: 0.85">
             {{ header.desc }}
           </div>
         </div>
@@ -118,11 +128,7 @@ function onAdd() {
 
     <!-- Üzerine binen "floating" içerik kartı -->
     <div class="px-5">
-      <v-card
-        class="page-hero-card"
-        :class="{ 'page-hero-card--mobile': mobile }"
-        elevation="4"
-      >
+      <v-card class="page-hero-card" :class="{ 'page-hero-card--mobile': mobile }" elevation="4">
         <!-- Kart başlığı: yalnız sayfaya özel eylem varsa render edilir (başlık + buton) -->
         <template v-if="actions.length">
           <div class="d-flex align-center ga-2 pa-3">
@@ -203,12 +209,7 @@ function onAdd() {
     <v-btn :active="isMoreActive">
       <v-icon icon="mdi-dots-horizontal" />
       <span>{{ t('nav.more') }}</span>
-      <v-menu
-        v-model="moreMenu"
-        activator="parent"
-        location="top end"
-        :offset="12"
-      >
+      <v-menu v-model="moreMenu" activator="parent" location="top end" :offset="12">
         <v-list nav density="comfortable" min-width="200" class="mb-1">
           <v-list-item
             v-for="item in moreItems"

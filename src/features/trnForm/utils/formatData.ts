@@ -4,8 +4,7 @@ import { TRANSFER_ID } from '@/features/categories/pseudoCategories'
 import { TrnType } from '@/features/trns/types'
 
 function formatTransaction(props: TrnFormValues): Transaction | false {
-  if (props.trnType === TrnType.Transfer || !props.categoryId || !props.walletId)
-    return false
+  if (props.trnType === TrnType.Transfer || !props.categoryId || !props.walletId) return false
 
   const data: Transaction = {
     amount: props.amount[0],
@@ -13,14 +12,12 @@ function formatTransaction(props: TrnFormValues): Transaction | false {
     date: props.date || Date.now(),
     type: props.trnType,
     updatedAt: Date.now(),
-    walletId: props.walletId,
+    walletId: props.walletId
   }
 
-  if (props.desc)
-    data.desc = props.desc
+  if (props.desc) data.desc = props.desc
 
-  if (props.tagIds?.length)
-    data.tagIds = [...props.tagIds]
+  if (props.tagIds?.length) data.tagIds = [...props.tagIds]
 
   return data
 }
@@ -40,14 +37,12 @@ function formatTransfer(props: TrnFormValues): Transfer | false {
     incomeAmount: props.amount[2],
     incomeWalletId: props.incomeWalletId,
     type: props.trnType,
-    updatedAt: Date.now(),
+    updatedAt: Date.now()
   }
 
-  if (props.desc)
-    data.desc = props.desc
+  if (props.desc) data.desc = props.desc
 
-  if (props.tagIds?.length)
-    data.tagIds = [...props.tagIds]
+  if (props.tagIds?.length) data.tagIds = [...props.tagIds]
 
   return data
 }

@@ -8,11 +8,9 @@ const STORAGE_KEY = 'weltoly.locale'
 
 function detectLocale(): LocaleCode {
   const stored = localStorage.getItem(STORAGE_KEY) as LocaleCode | null
-  if (stored && stored in messages)
-    return stored
+  if (stored && stored in messages) return stored
   const nav = navigator.language.slice(0, 2)
-  if (nav === 'tr' || nav === 'ru')
-    return nav
+  if (nav === 'tr' || nav === 'ru') return nav
   return 'en'
 }
 
@@ -21,7 +19,7 @@ function detectLocale(): LocaleCode {
 const mergedMessages = {
   tr: { ...messages.tr, $vuetify: vuetifyTr },
   en: { ...messages.en, $vuetify: vuetifyEn },
-  ru: { ...messages.ru, $vuetify: vuetifyRu },
+  ru: { ...messages.ru, $vuetify: vuetifyRu }
 }
 
 export const i18n = createI18n({
@@ -29,7 +27,7 @@ export const i18n = createI18n({
   globalInjection: true, // şablonlarda $t kullanımı için
   locale: detectLocale(),
   fallbackLocale: 'en',
-  messages: mergedMessages,
+  messages: mergedMessages
 })
 
 export function setLocale(locale: LocaleCode) {

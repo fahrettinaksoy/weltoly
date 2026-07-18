@@ -11,8 +11,7 @@ let dbPromise: Promise<Database> | null = null
  * saf tarayıcıda (`npm run dev`) `@tauri-apps/plugin-sql` yoktur ve çağrı hata verir.
  */
 export function getDb(): Promise<Database> {
-  if (!dbPromise)
-    dbPromise = Database.load(DB_URL)
+  if (!dbPromise) dbPromise = Database.load(DB_URL)
   return dbPromise
 }
 
@@ -28,8 +27,7 @@ export function resolveWriteUid(uid?: string | null): string {
 export function isTauriRuntime(): boolean {
   try {
     return isTauri()
-  }
-  catch {
+  } catch {
     return typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
   }
 }

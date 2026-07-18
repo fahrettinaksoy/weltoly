@@ -1,12 +1,25 @@
-import type { AddCategoryParams, Categories, CategoryId, CategoryItem } from '@/features/categories/types'
+import type {
+  AddCategoryParams,
+  Categories,
+  CategoryId,
+  CategoryItem
+} from '@/features/categories/types'
 import type { TrnId } from '@/features/trns/types'
 
 import type { Row, WatchHandle } from '@/services/db'
 
 import { defineStore } from 'pinia'
-import { ADJUSTMENT_ID, isPseudoCategoryId, TRANSFER_ID } from '@/features/categories/pseudoCategories'
+import {
+  ADJUSTMENT_ID,
+  isPseudoCategoryId,
+  TRANSFER_ID
+} from '@/features/categories/pseudoCategories'
 
-import { compareCategoryIds, computeChildrenDiff, getTransactibleCategoriesIds } from '@/features/categories/utils'
+import {
+  compareCategoryIds,
+  computeChildrenDiff,
+  getTransactibleCategoriesIds
+} from '@/features/categories/utils'
 import { useTrnsStore } from '@/features/trns/store'
 import { TrnType } from '@/features/trns/types'
 import {
@@ -16,7 +29,7 @@ import {
   resolveWriteUid,
   rowToCategory,
   upsertRows,
-  watchTable,
+  watchTable
 } from '@/services/db'
 import { logger } from '@/shared/lib/logger'
 import { showErrorToast, showSuccessToast } from '@/stores/ui'
@@ -28,7 +41,7 @@ const adjustment: CategoryItem = {
   name: 'Adjustment',
   parentId: 0,
   showInLastUsed: false,
-  showInQuickSelector: false,
+  showInQuickSelector: false
 }
 const transfer: CategoryItem = {
   color: '',
@@ -37,7 +50,7 @@ const transfer: CategoryItem = {
   name: 'Transfer',
   parentId: 0,
   showInLastUsed: false,
-  showInQuickSelector: false,
+  showInQuickSelector: false
 }
 
 export const useCategoriesStore = defineStore('categories', () => {
@@ -45,7 +58,7 @@ export const useCategoriesStore = defineStore('categories', () => {
 
   const items = shallowRef<Categories>({ adjustment, transfer })
   const hasItems = computed(() =>
-    Object.keys(items.value).some(id => id !== 'transfer' && id !== 'adjustment'),
+    Object.keys(items.value).some((id) => id !== 'transfer' && id !== 'adjustment')
   )
   /**
    * İlk DB okuması döndü mü? UI bunu "veri yok" ile karıştırmamak için okur:
@@ -66,24 +79,19 @@ export const useCategoriesStore = defineStore('categories', () => {
     const map = new Map<CategoryId, CategoryId[]>()
     for (const id in all) {
       const parentId = all[id]?.parentId
-      if (!parentId)
-        continue
+      if (!parentId) continue
       const group = map.get(parentId)
-      if (group)
-        group.push(id)
-      else
-        map.set(parentId, [id])
+      if (group) group.push(id)
+      else map.set(parentId, [id])
     }
-    for (const group of map.values())
-      group.sort((a, b) => compareCategoryIds(a, b, all))
+    for (const group of map.values()) group.sort((a, b) => compareCategoryIds(a, b, all))
     return map
   })
 
   const categoriesRootIds = computed(() => {
-    if (!hasItems.value)
-      return []
+    if (!hasItems.value) return []
     return categoriesIds.value
-      .filter(id => items.value[id]?.parentId === 0 && id !== 'transfer' && id !== 'adjustment')
+      .filter((id) => items.value[id]?.parentId === 0 && id !== 'transfer' && id !== 'adjustment')
       .sort((a, b) => compareCategoryIds(a, b, items.value))
   })
 
@@ -93,33 +101,31 @@ export const useCategoriesStore = defineStore('categories', () => {
     if (trns) {
       for (const id in trns) {
         const trn = trns[id]
-        if (trn)
-          ids.add(trn.categoryId)
+        if (trn) ids.add(trn.categoryId)
       }
     }
     return ids
   })
 
   const categoriesForBeParent = computed(() => {
-    if (!hasItems.value)
-      return []
-    return categoriesRootIds.value.filter(id => !usedCategoryIds.value.has(id) && id !== 'transfer')
+    if (!hasItems.value) return []
+    return categoriesRootIds.value.filter(
+      (id) => !usedCategoryIds.value.has(id) && id !== 'transfer'
+    )
   })
 
   const transactibleIds = computed(() => getTransactibleCategoriesIds(items.value))
   const transactibleIdsSet = computed(() => new Set(transactibleIds.value))
 
   const favoriteCategoriesIds = computed(() => {
-    if (!hasItems.value)
-      return []
+    if (!hasItems.value) return []
     return categoriesIds.value
-      .filter(id => items.value[id]?.showInQuickSelector)
+      .filter((id) => items.value[id]?.showInQuickSelector)
       .sort((a, b) => compareCategoryIds(a, b, items.value))
   })
 
   const recentCategoriesIds = computed(() => {
-    if (!hasItems.value || !trnsStore.hasItems)
-      return []
+    if (!hasItems.value || !trnsStore.hasItems) return []
     const trnsItems = trnsStore.items
     const maxCategories = Math.min(categoriesIds.value.length, 16)
     const favoriteIds = new Set(favoriteCategoriesIds.value)
@@ -127,21 +133,23 @@ export const useCategoriesStore = defineStore('categories', () => {
     const latestDateByCategory = new Map<CategoryId, number>()
     for (const trnId in trnsItems) {
       const trn = trnsItems[trnId]
-      if (!trn || trn.type === TrnType.Transfer || trn.categoryId === ADJUSTMENT_ID)
-        continue
+      if (!trn || trn.type === TrnType.Transfer || trn.categoryId === ADJUSTMENT_ID) continue
       const categoryId = trn.categoryId
       const existing = latestDateByCategory.get(categoryId)
-      if (!existing || trn.date > existing)
-        latestDateByCategory.set(categoryId, trn.date)
+      if (!existing || trn.date > existing) latestDateByCategory.set(categoryId, trn.date)
     }
 
     const sortedEntries = [...latestDateByCategory.entries()].toSorted(([, a], [, b]) => b - a)
     const recentIds: CategoryId[] = []
     for (const [categoryId] of sortedEntries) {
-      if (recentIds.length >= maxCategories)
-        break
+      if (recentIds.length >= maxCategories) break
       const category = items.value[categoryId]
-      if (!category || !category.showInLastUsed || categoryId === TRANSFER_ID || favoriteIds.has(categoryId))
+      if (
+        !category ||
+        !category.showInLastUsed ||
+        categoryId === TRANSFER_ID ||
+        favoriteIds.has(categoryId)
+      )
         continue
       recentIds.push(categoryId)
     }
@@ -149,7 +157,7 @@ export const useCategoriesStore = defineStore('categories', () => {
   })
 
   const categoriesIdsForTrnValues = computed<CategoryId[]>(() =>
-    transactibleIds.value.filter(id => id !== 'transfer'),
+    transactibleIds.value.filter((id) => id !== 'transfer')
   )
 
   function initCategories(): void {
@@ -162,8 +170,7 @@ export const useCategoriesStore = defineStore('categories', () => {
         return
       }
       const map: Categories = {} as Categories
-      for (const row of rows)
-        map[row.id] = rowToCategory(row)
+      for (const row of rows) map[row.id] = rowToCategory(row)
       setCategories(map)
     })
   }
@@ -173,17 +180,14 @@ export const useCategoriesStore = defineStore('categories', () => {
   }
 
   function hasChildren(categoryId: CategoryId) {
-    if (!hasItems.value)
-      return false
+    if (!hasItems.value) return false
     const category = items.value[categoryId]
-    if (!category || category.parentId !== 0)
-      return false
+    if (!category || category.parentId !== 0) return false
     return (childrenMap.value.get(categoryId)?.length ?? 0) > 0
   }
 
   function getChildrenIds(categoryId: CategoryId) {
-    if (!hasItems.value)
-      return []
+    if (!hasItems.value) return []
     return childrenMap.value.get(categoryId)?.slice() ?? []
   }
 
@@ -205,7 +209,7 @@ export const useCategoriesStore = defineStore('categories', () => {
     categoryValues: CategoryItem,
     isUpdateChildCategoriesColor: boolean,
     colorPropagationIds: CategoryId[],
-    reparent?: { added: CategoryId[], removed: CategoryId[] },
+    reparent?: { added: CategoryId[]; removed: CategoryId[] }
   ) {
     const now = Date.now()
     const updatedItems: Categories = { ...items.value, [id]: { ...categoryValues, updatedAt: now } }
@@ -213,20 +217,23 @@ export const useCategoriesStore = defineStore('categories', () => {
     if (isUpdateChildCategoriesColor && colorPropagationIds.length > 0) {
       for (const childId of colorPropagationIds) {
         if (updatedItems[childId])
-          updatedItems[childId] = { ...updatedItems[childId], color: categoryValues.color, updatedAt: now }
+          updatedItems[childId] = {
+            ...updatedItems[childId],
+            color: categoryValues.color,
+            updatedAt: now
+          }
       }
     }
 
     if (reparent) {
       for (const addId of reparent.added) {
         const existing = updatedItems[addId]
-        if (!existing)
-          continue
+        if (!existing) continue
         updatedItems[addId] = {
           ...existing,
           color: isUpdateChildCategoriesColor ? categoryValues.color : existing.color,
           parentId: id,
-          updatedAt: now,
+          updatedAt: now
         }
       }
       for (const removeId of reparent.removed) {
@@ -238,10 +245,14 @@ export const useCategoriesStore = defineStore('categories', () => {
     setCategories(updatedItems)
   }
 
-  function saveCategory({ id, isUpdateChildCategoriesColor, nextChildIds, values }: AddCategoryParams) {
+  function saveCategory({
+    id,
+    isUpdateChildCategoriesColor,
+    nextChildIds,
+    values
+  }: AddCategoryParams) {
     // Sentetik kategoriler kullanıcı verisi değil; kaydedilemez/silinemez.
-    if (isPseudoCategoryId(id))
-      return
+    if (isPseudoCategoryId(id)) return
 
     const prev = items.value
     // İyimser güncellemeden ÖNCE bak: sonrası hep "var" görünürdü.
@@ -253,10 +264,16 @@ export const useCategoriesStore = defineStore('categories', () => {
       : { added: [] as CategoryId[], removed: [] as CategoryId[] }
     const hasChildrenDiff = diff.added.length > 0 || diff.removed.length > 0
     const keptChildIds = useChildrenDiff
-      ? prevChildIds.filter(cid => nextChildIds!.includes(cid))
+      ? prevChildIds.filter((cid) => nextChildIds!.includes(cid))
       : prevChildIds
 
-    applyOptimisticUpdate(id, values, isUpdateChildCategoriesColor, keptChildIds, hasChildrenDiff ? diff : undefined)
+    applyOptimisticUpdate(
+      id,
+      values,
+      isUpdateChildCategoriesColor,
+      keptChildIds,
+      hasChildrenDiff ? diff : undefined
+    )
 
     const touched = new Set<CategoryId>([id])
     if (isUpdateChildCategoriesColor) {
@@ -266,20 +283,21 @@ export const useCategoriesStore = defineStore('categories', () => {
     for (const cid of diff.removed) touched.add(cid)
 
     const userId = resolveWriteUid(null)
-    const rows: { id: CategoryId, row: Record<string, unknown> }[] = []
+    const rows: { id: CategoryId; row: Record<string, unknown> }[] = []
     for (const cid of touched) {
       const item = items.value[cid]
-      if (item)
-        rows.push({ id: cid, row: categoryToRow(item, userId) })
+      if (item) rows.push({ id: cid, row: categoryToRow(item, userId) })
     }
 
-    return upsertRows('categories', rows).then(() => {
-      showSuccessToast(isNew ? 'categories.added' : 'categories.updated')
-    }).catch((e) => {
-      setCategories(prev)
-      logger.error('[categories] saveCategory failed', e)
-      showErrorToast('categories.errors.saveFailed')
-    })
+    return upsertRows('categories', rows)
+      .then(() => {
+        showSuccessToast(isNew ? 'categories.added' : 'categories.updated')
+      })
+      .catch((e) => {
+        setCategories(prev)
+        logger.error('[categories] saveCategory failed', e)
+        showErrorToast('categories.errors.saveFailed')
+      })
   }
 
   /**
@@ -289,20 +307,17 @@ export const useCategoriesStore = defineStore('categories', () => {
    */
   function referencingTrnIds(categoryId: CategoryId): TrnId[] {
     const trns = trnsStore.items
-    if (!trns)
-      return []
+    if (!trns) return []
     const ids: TrnId[] = []
     for (const trnId in trns) {
-      if (trns[trnId]?.categoryId === categoryId)
-        ids.push(trnId)
+      if (trns[trnId]?.categoryId === categoryId) ids.push(trnId)
     }
     return ids
   }
 
   /** Kategoriyi ve ona bağlı işlemleri siler; sonucu merkezî kuyrukta bildirir. */
   function deleteCategory(id: CategoryId, trnsIds: TrnId[] = referencingTrnIds(id)) {
-    if (isPseudoCategoryId(id))
-      return
+    if (isPseudoCategoryId(id)) return
 
     const prevCategories = items.value
     const prevTrns = trnsStore.items
@@ -310,22 +325,23 @@ export const useCategoriesStore = defineStore('categories', () => {
     delete categories[id]
     setCategories(categories)
 
-    if (trnsIds.length)
-      trnsStore.removeTrnsFromStore(trnsIds)
+    if (trnsIds.length) trnsStore.removeTrnsFromStore(trnsIds)
 
     // TEK transaction: kategori + işlemleri ya hep ya hiç (bkz. deleteRows).
     // İşlemler kategoriden ÖNCE — FK açıldığında bu sıra şart olacak.
     return deleteRows([
-      ...trnsIds.map(trnId => ({ table: 'trns', id: trnId })),
-      { table: 'categories', id },
-    ]).then(() => {
-      showSuccessToast('categories.deleted')
-    }).catch((e) => {
-      setCategories(prevCategories)
-      trnsStore.setTrns(prevTrns)
-      logger.error('[categories] deleteCategory failed', e)
-      showErrorToast('categories.errors.deleteFailed')
-    })
+      ...trnsIds.map((trnId) => ({ table: 'trns', id: trnId })),
+      { table: 'categories', id }
+    ])
+      .then(() => {
+        showSuccessToast('categories.deleted')
+      })
+      .catch((e) => {
+        setCategories(prevCategories)
+        trnsStore.setTrns(prevTrns)
+        logger.error('[categories] deleteCategory failed', e)
+        showErrorToast('categories.errors.deleteFailed')
+      })
   }
 
   return {
@@ -346,6 +362,6 @@ export const useCategoriesStore = defineStore('categories', () => {
     items,
     recentCategoriesIds,
     saveCategory,
-    setCategories,
+    setCategories
   }
 })

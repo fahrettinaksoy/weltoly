@@ -4,24 +4,27 @@ import { useDisplay } from 'vuetify'
 
 // Oluştur/güncelle formları için ortak yan panel (navigation-drawer).
 // Material Design: çerçeve/çizgi yok; ayrım yüzey rengi + elevation (gölge) ile.
-const props = withDefaults(defineProps<{
-  title: string
-  /** Başlıkta ne düzenlendiğini söyleyen ikinci satır (ör. "Banka hesabı"). */
-  subtitle?: string
-  /** Başlık şeridindeki ikon rozeti. */
-  icon?: string
-  deletable?: boolean
-  saveDisabled?: boolean
-  /**
-   * Panel genişliği. Varsayılan tüm formlar için geçerli olmalı — dört form
-   * (cüzdan/işlem/kategori/etiket) tek yapıyı paylaşıyor, genişlik de o
-   * yapının parçası. Önceden her form kendi değerini geçiyordu (460/480/420)
-   * ve yan yana açıldıklarında panel eni oynuyordu; artık tek kaynak burası.
-   */
-  width?: number
-}>(), { deletable: false, saveDisabled: false, width: 480 })
+const props = withDefaults(
+  defineProps<{
+    title: string
+    /** Başlıkta ne düzenlendiğini söyleyen ikinci satır (ör. "Banka hesabı"). */
+    subtitle?: string
+    /** Başlık şeridindeki ikon rozeti. */
+    icon?: string
+    deletable?: boolean
+    saveDisabled?: boolean
+    /**
+     * Panel genişliği. Varsayılan tüm formlar için geçerli olmalı — dört form
+     * (cüzdan/işlem/kategori/etiket) tek yapıyı paylaşıyor, genişlik de o
+     * yapının parçası. Önceden her form kendi değerini geçiyordu (460/480/420)
+     * ve yan yana açıldıklarında panel eni oynuyordu; artık tek kaynak burası.
+     */
+    width?: number
+  }>(),
+  { deletable: false, saveDisabled: false, width: 480 }
+)
 
-const emit = defineEmits<{ save: [], delete: [] }>()
+const emit = defineEmits<{ save: []; delete: [] }>()
 const model = defineModel<boolean>({ required: true })
 
 const { t } = useI18n()

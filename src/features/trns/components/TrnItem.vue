@@ -17,43 +17,35 @@ const full = computed(() => trnsStore.computeTrnItem(props.id))
 
 // Etiketler: yalnız hâlâ var olan etiket id'lerini çipe dönüştür.
 const tags = computed(() =>
-  tagsStore.resolveIds(full.value?.tagIds).map(id => ({ id, ...tagsStore.items[id]! })),
+  tagsStore.resolveIds(full.value?.tagIds).map((id) => ({ id, ...tagsStore.items[id]! }))
 )
 
 const amountColor = computed(() => {
   const f = full.value
-  if (!f)
-    return undefined
-  if (f.type === TrnType.Transfer)
-    return 'medium-emphasis'
-  if (f.categoryId === ADJUSTMENT_ID)
-    return 'medium-emphasis'
+  if (!f) return undefined
+  if (f.type === TrnType.Transfer) return 'medium-emphasis'
+  if (f.categoryId === ADJUSTMENT_ID) return 'medium-emphasis'
   return f.type === TrnType.Income ? 'success' : 'error'
 })
 
 const amountText = computed(() => {
   const f = full.value
-  if (!f)
-    return ''
-  if (f.type === TrnType.Transfer)
-    return fmt.money(f.expenseAmount, f.expenseWallet.currency)
+  if (!f) return ''
+  if (f.type === TrnType.Transfer) return fmt.money(f.expenseAmount, f.expenseWallet.currency)
   const sign = f.type === TrnType.Income ? '+' : '-'
   return `${sign}${fmt.money(f.amount, f.wallet.currency)}`
 })
 
 const subtitle = computed(() => {
   const f = full.value
-  if (!f)
-    return ''
-  if (f.type === TrnType.Transfer)
-    return `${f.expenseWallet.name} → ${f.incomeWallet.name}`
+  if (!f) return ''
+  if (f.type === TrnType.Transfer) return `${f.expenseWallet.name} → ${f.incomeWallet.name}`
   return f.wallet.name
 })
 
 const title = computed(() => {
   const f = full.value
-  if (!f)
-    return ''
+  if (!f) return ''
   return f.categoryParent ? `${f.categoryParent.name} · ${f.category.name}` : f.category.name
 })
 </script>
@@ -71,8 +63,12 @@ const title = computed(() => {
     <v-list-item-subtitle>{{ subtitle }}</v-list-item-subtitle>
     <div v-if="tags.length" class="d-flex flex-wrap ga-1 mt-1">
       <v-chip
-        v-for="tag in tags" :key="tag.id"
-        :color="tag.color" size="x-small" variant="flat" label
+        v-for="tag in tags"
+        :key="tag.id"
+        :color="tag.color"
+        size="x-small"
+        variant="flat"
+        label
       >
         {{ tag.name }}
       </v-chip>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Material renk seçici: çerçeve/outline yok; seçili renk üzerinde check ikonu.
-defineProps<{ modelValue: string, colors: string[] }>()
+defineProps<{ modelValue: string; colors: string[] }>()
 const emit = defineEmits<{ 'update:modelValue': [string] }>()
 </script>
 
@@ -16,7 +16,13 @@ const emit = defineEmits<{ 'update:modelValue': [string] }>()
       :aria-pressed="modelValue === c"
       @click="emit('update:modelValue', c)"
     >
-      <v-icon v-if="modelValue === c" icon="mdi-check" size="18" color="white" class="swatch-check" />
+      <v-icon
+        v-if="modelValue === c"
+        icon="mdi-check"
+        size="18"
+        color="white"
+        class="swatch-check"
+      />
     </button>
   </div>
 </template>

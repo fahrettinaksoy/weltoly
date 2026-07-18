@@ -34,11 +34,21 @@ const fmt = useFormat()
       class="mb-3 stat-row"
       :class="it.canDrill && 'stat-row--drill'"
       :type="it.canDrill ? 'button' : undefined"
-      :title="it.canDrill ? t('stat.drillHint', { name: categoriesStore.items[it.categoryId]?.name ?? it.categoryId }) : undefined"
+      :title="
+        it.canDrill
+          ? t('stat.drillHint', {
+              name: categoriesStore.items[it.categoryId]?.name ?? it.categoryId
+            })
+          : undefined
+      "
       @click="it.canDrill && emit('drill', it.categoryId)"
     >
       <div class="d-flex align-center mb-1">
-        <v-avatar :color="categoriesStore.items[it.categoryId]?.color || 'surface-variant'" size="28" class="me-2">
+        <v-avatar
+          :color="categoriesStore.items[it.categoryId]?.color || 'surface-variant'"
+          size="28"
+          class="me-2"
+        >
           <v-icon :icon="categoriesStore.items[it.categoryId]?.icon" color="white" size="16" />
         </v-avatar>
         <span class="text-body-2 text-truncate">

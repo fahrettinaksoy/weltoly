@@ -14,22 +14,23 @@
  */
 
 /** Vuetify'ın `#headers` slot'undan gelen sortBy öğesi. */
-export interface SortItem { key: string, order?: boolean | 'asc' | 'desc' }
+export interface SortItem {
+  key: string
+  order?: boolean | 'asc' | 'desc'
+}
 
 export type AriaSort = 'ascending' | 'descending' | 'none' | undefined
 
 export function ariaSort(
   columnKey: unknown,
   sortable: boolean | undefined,
-  sortBy: readonly SortItem[] | undefined,
+  sortBy: readonly SortItem[] | undefined
 ): AriaSort {
-  if (!sortable)
-    return undefined
+  if (!sortable) return undefined
 
   const key = String(columnKey)
-  const active = sortBy?.find(s => s.key === key)
-  if (!active)
-    return 'none'
+  const active = sortBy?.find((s) => s.key === key)
+  if (!active) return 'none'
 
   // Vuetify order'ı 'asc'|'desc' ya da boolean (true=asc) verebiliyor.
   const desc = active.order === 'desc' || active.order === false

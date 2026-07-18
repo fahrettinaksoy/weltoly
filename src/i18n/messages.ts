@@ -5,8 +5,27 @@ export type LocaleCode = 'tr' | 'en' | 'ru'
 export const messages = {
   tr: {
     app: { name: 'Weltoly' },
-    nav: { dashboard: 'Panel', wallets: 'Cüzdanlar', trns: 'İşlemler', categories: 'Kategoriler', tags: 'Etiketler', stat: 'İstatistik', settings: 'Ayarlar', add: 'Ekle', more: 'Daha', menu: 'Menü' },
-    pageDesc: { dashboard: 'Genel bakış ve son işlemler', wallets: 'Hesaplarını yönet', trns: 'Tüm cüzdanlardaki işlemler', categories: 'Gelir ve gider kategorileri', tags: 'İşlem etiketleri', stat: 'Harcama analizi', settings: 'Uygulama tercihleri' },
+    nav: {
+      dashboard: 'Panel',
+      wallets: 'Cüzdanlar',
+      trns: 'İşlemler',
+      categories: 'Kategoriler',
+      tags: 'Etiketler',
+      stat: 'İstatistik',
+      settings: 'Ayarlar',
+      add: 'Ekle',
+      more: 'Daha',
+      menu: 'Menü'
+    },
+    pageDesc: {
+      dashboard: 'Genel bakış ve son işlemler',
+      wallets: 'Hesaplarını yönet',
+      trns: 'Tüm cüzdanlardaki işlemler',
+      categories: 'Gelir ve gider kategorileri',
+      tags: 'İşlem etiketleri',
+      stat: 'Harcama analizi',
+      settings: 'Uygulama tercihleri'
+    },
     settings: {
       title: 'Ayarlar',
       appearance: 'Görünüm',
@@ -56,14 +75,16 @@ export const messages = {
         profile: 'Görünen adını düzenle ve uygulama PIN kilidini yönet.',
         localization: 'Dil, para birimi ve sayı/tarih gösterim biçimlerini ayarla.',
         data: 'Yedek al veya geri yükle, örnek veri yükle, tüm veriyi sil.',
-        rates: 'Döviz kurlarının kaynağını seç ve güncelliğini izle.',
+        rates: 'Döviz kurlarının kaynağını seç ve güncelliğini izle.'
       },
       // --- Kur kaynağı / güncellik ---
       tabRates: 'Kurlar',
       rateSource: 'Kur kaynağı',
-      rateSourceHint: 'Yalnız DÖVİZ kurlarını etkiler. Kripto kurları her zaman CoinGecko\'dan gelir — listedeki kaynakların hiçbiri kripto vermiyor.',
+      rateSourceHint:
+        "Yalnız DÖVİZ kurlarını etkiler. Kripto kurları her zaman CoinGecko'dan gelir — listedeki kaynakların hiçbiri kripto vermiyor.",
       rateSourceFrankfurterDesc: 'Avrupa Merkez Bankası verisi. 29 para birimi, anahtarsız.',
-      rateSourceTcmbDesc: 'Türkiye Cumhuriyet Merkez Bankası resmi kuru. 22 para birimi, satış kuru.',
+      rateSourceTcmbDesc:
+        'Türkiye Cumhuriyet Merkez Bankası resmi kuru. 22 para birimi, satış kuru.',
       rateSourceErApiDesc: 'Geniş kapsam (160+ para birimi), anahtarsız.',
       rateSourceSaveFailed: 'Kur kaynağı kaydedilemedi',
       ratesStatus: 'Kur durumu',
@@ -80,27 +101,53 @@ export const messages = {
       ratesStale: 'Bayat',
       ratesUnknown: 'Bilinmiyor',
       ratesStaleHint: 'Kurlar {n} gündür yenilenmedi. Toplamlar eski kurla hesaplanıyor.',
-      ratesFreshHint: 'Kaynaklar yalnız iş günü yayımlar; hafta sonu son iş gününün kuru geçerlidir.',
-      ratesUnknownHint: 'Bu kur seti kaynağın tarihini taşımıyor (eski kayıt). Yenileyince görünecek.',
+      ratesFreshHint:
+        'Kaynaklar yalnız iş günü yayımlar; hafta sonu son iş gününün kuru geçerlidir.',
+      ratesUnknownHint:
+        'Bu kur seti kaynağın tarihini taşımıyor (eski kayıt). Yenileyince görünecek.',
       ratesTableTitle: 'Kayıtlı kurlar',
       ratesTableDesc: '1 {base} karşılığı',
       ratesCrypto: 'Kripto',
       ratesFiat: 'Döviz',
       formatting: 'Biçimlendirme',
-      formattingHint: 'Biçimlendirme, verilerin nasıl saklandığını etkilemez; istediğin zaman değiştirebilirsin.',
+      formattingHint:
+        'Biçimlendirme, verilerin nasıl saklandığını etkilemez; istediğin zaman değiştirebilirsin.',
       numbers: 'Sayılar',
       dates: 'Tarihler',
       firstDayOfWeek: 'Haftanın ilk günü',
       hideDecimals: 'Ondalıkları gizle',
       formatAuto: 'Otomatik (dile göre)',
       sunday: 'Pazar',
-      monday: 'Pazartesi',
+      monday: 'Pazartesi'
     },
-    lock: { title: 'Kilitli', subtitle: 'PIN gir', enterCurrent: 'Mevcut PIN', enterNew: 'Yeni PIN gir (en az 6 hane)', confirmNew: 'PIN tekrar gir', pinSet: 'PIN ayarlandı', lockedFor: '{s} sn bekleyin', notEncryptedNote: 'PIN yalnızca ekran kilididir, veriyi şifrelemez.' },
+    lock: {
+      title: 'Kilitli',
+      subtitle: 'PIN gir',
+      enterCurrent: 'Mevcut PIN',
+      enterNew: 'Yeni PIN gir (en az 6 hane)',
+      confirmNew: 'PIN tekrar gir',
+      pinSet: 'PIN ayarlandı',
+      lockedFor: '{s} sn bekleyin',
+      notEncryptedNote: 'PIN yalnızca ekran kilididir, veriyi şifrelemez.'
+    },
     a11y: { skipToContent: 'İçeriğe atla', mainNav: 'Ana menü', calcDelete: 'Sil' },
     errors: { unexpected: 'Beklenmeyen bir hata oluştu' },
     hotkeys: { title: 'Klavye kısayolları', newTrn: 'Yeni işlem', help: 'Kısayol yardımı' },
-    common: { back: 'Geri', soon: 'Bu bölüm yakında (geliştirme aşamasında).', save: 'Kaydet', cancel: 'Vazgeç', delete: 'Sil', edit: 'Düzenle', add: 'Ekle', close: 'Kapat', required: 'Zorunlu alan', list: 'Liste', rateMissing: 'Kur eksik', rateMissingHint: 'Bazı cüzdanların güncel kuru olmadığı için toplama katılmadı. Kurları yenileyin.' },
+    common: {
+      back: 'Geri',
+      soon: 'Bu bölüm yakında (geliştirme aşamasında).',
+      save: 'Kaydet',
+      cancel: 'Vazgeç',
+      delete: 'Sil',
+      edit: 'Düzenle',
+      add: 'Ekle',
+      close: 'Kapat',
+      required: 'Zorunlu alan',
+      list: 'Liste',
+      rateMissing: 'Kur eksik',
+      rateMissingHint:
+        'Bazı cüzdanların güncel kuru olmadığı için toplama katılmadı. Kurları yenileyin.'
+    },
     dashboard: {
       title: 'Panel',
       // 'totalBalance' KALDIRILDI: borçlar dahil tüm cüzdanları tek toplamda
@@ -118,7 +165,7 @@ export const messages = {
       projectStateDesc: 'Kayıtlarının genel görünümü',
       unusedN: '{n} tanesi kullanılmıyor',
       trnSpan: 'Kayıt aralığı',
-      noTrns: 'Henüz işlem yok',
+      noTrns: 'Henüz işlem yok'
     },
     stat: {
       day: 'Gün',
@@ -140,10 +187,11 @@ export const messages = {
       byTag: 'Etiket dağılımı',
       byTagDesc: 'Tutarların etiketlere dağılımı',
       untagged: 'Etiketsiz',
-      byTagNote: 'Bir işlem birden çok etiket taşıyabilir; her oran aralığın toplamına göredir ve oranların toplamı %100 etmez.',
+      byTagNote:
+        'Bir işlem birden çok etiket taşıyabilir; her oran aralığın toplamına göredir ve oranların toplamı %100 etmez.',
       noData: 'Bu aralıkta veri yok',
       filterWallets: 'Cüzdan filtresi',
-      filterTags: 'Etiket filtresi',
+      filterTags: 'Etiket filtresi'
     },
     walletDetail: {
       nSelected: '{n} seçili',
@@ -184,8 +232,9 @@ export const messages = {
       byTag: 'Etiket dağılımı',
       byTagDesc: 'Giderlerin etiketlere dağılımı',
       untagged: 'Etiketsiz',
-      byTagNote: 'Bir işlem birden çok etiket taşıyabilir; her oran toplam gidere göredir ve oranların toplamı %100 etmez.',
-      drillHint: '{name} alt kırılımını gör',
+      byTagNote:
+        'Bir işlem birden çok etiket taşıyabilir; her oran toplam gidere göredir ve oranların toplamı %100 etmez.',
+      drillHint: '{name} alt kırılımını gör'
     },
     trnsPage: {
       wallet: 'Cüzdan',
@@ -194,7 +243,7 @@ export const messages = {
       count: '{n} işlem',
       noTrns: 'Henüz işlem yok',
       total: 'Toplam',
-      add: 'İşlem ekle',
+      add: 'İşlem ekle'
     },
     wallets: {
       title: 'Cüzdanlar',
@@ -215,11 +264,28 @@ export const messages = {
       withdrawal: 'Çekilebilir',
       deleteConfirm: 'Bu cüzdanı ve işlemlerini silmek istediğine emin misin?',
       total: 'Toplam',
-      types: { cash: 'Nakit', credit: 'Kredi kartı', cashless: 'Banka hesabı', deposit: 'Mevduat', crypto: 'Kripto', debt: 'Borç' },
+      types: {
+        cash: 'Nakit',
+        credit: 'Kredi kartı',
+        cashless: 'Banka hesabı',
+        deposit: 'Mevduat',
+        crypto: 'Kripto',
+        debt: 'Borç'
+      },
       search: 'Cüzdan ara',
       noResults: 'Eşleşen cüzdan yok',
       stats: { net: 'Net toplam', assets: 'Varlık', debts: 'Borç', debtRatio: 'Borç oranı' },
-      table: { name: 'Cüzdan adı', trnCount: 'İşlem', balance: 'Bakiye', income: 'Gelir', expense: 'Gider', default: 'Varsayılan', withdrawal: 'Çekilebilir', excluded: 'Toplam D.', archived: 'Arşivli' },
+      table: {
+        name: 'Cüzdan adı',
+        trnCount: 'İşlem',
+        balance: 'Bakiye',
+        income: 'Gelir',
+        expense: 'Gider',
+        default: 'Varsayılan',
+        withdrawal: 'Çekilebilir',
+        excluded: 'Toplam D.',
+        archived: 'Arşivli'
+      },
       setDefault: 'Varsayılan cüzdan yap',
       default: 'Varsayılan cüzdan',
       defaultMovedFrom: 'Varsayılan şu an "{name}" — kaydedince bu cüzdana geçer.',
@@ -227,7 +293,11 @@ export const messages = {
       deleted: 'Cüzdan silindi',
       added: 'Cüzdan eklendi',
       updated: 'Cüzdan güncellendi',
-      errors: { saveFailed: 'Cüzdan kaydedilemedi', orderFailed: 'Sıralama kaydedilemedi', deleteFailed: 'Cüzdan silinemedi' },
+      errors: {
+        saveFailed: 'Cüzdan kaydedilemedi',
+        orderFailed: 'Sıralama kaydedilemedi',
+        deleteFailed: 'Cüzdan silinemedi'
+      }
     },
     categories: {
       title: 'Kategoriler',
@@ -248,13 +318,18 @@ export const messages = {
       search: 'Kategori ara',
       noResults: 'Eşleşen kategori yok',
       unused: 'Henüz kullanılmadı',
-      stats: { total: 'Toplam', root: 'Ana kategori', child: 'Alt kategori', usedRatio: 'Kullanım oranı' },
+      stats: {
+        total: 'Toplam',
+        root: 'Ana kategori',
+        child: 'Alt kategori',
+        usedRatio: 'Kullanım oranı'
+      },
       table: { name: 'Kategori adı', usage: 'İşlem' },
       chart: { other: 'Diğer ({count})' },
       deleted: 'Kategori silindi',
       added: 'Kategori eklendi',
       updated: 'Kategori güncellendi',
-      errors: { saveFailed: 'Kategori kaydedilemedi', deleteFailed: 'Kategori silinemedi' },
+      errors: { saveFailed: 'Kategori kaydedilemedi', deleteFailed: 'Kategori silinemedi' }
     },
     tags: {
       title: 'Etiketler',
@@ -270,13 +345,18 @@ export const messages = {
       search: 'Etiket ara',
       noResults: 'Eşleşen etiket yok',
       unused: 'Henüz kullanılmadı',
-      stats: { total: 'Toplam', used: 'Kullanımda', unused: 'Kullanılmayan', usedRatio: 'Kullanım oranı' },
+      stats: {
+        total: 'Toplam',
+        used: 'Kullanımda',
+        unused: 'Kullanılmayan',
+        usedRatio: 'Kullanım oranı'
+      },
       chart: { other: 'Diğer ({count})' },
       table: { name: 'Etiket adı', usage: 'Kullanım' },
       deleted: 'Etiket silindi',
       added: 'Etiket eklendi',
       updated: 'Etiket güncellendi',
-      errors: { saveFailed: 'Etiket kaydedilemedi', deleteFailed: 'Etiket silinemedi' },
+      errors: { saveFailed: 'Etiket kaydedilemedi', deleteFailed: 'Etiket silinemedi' }
     },
     trns: {
       empty: 'Henüz işlem yok',
@@ -285,7 +365,7 @@ export const messages = {
       deleteConfirm: 'Bu işlemi silmek istediğine emin misin?',
       added: 'İşlem eklendi',
       updated: 'İşlem güncellendi',
-      errors: { saveFailed: 'İşlem kaydedilemedi', deleteFailed: 'İşlem silinemedi' },
+      errors: { saveFailed: 'İşlem kaydedilemedi', deleteFailed: 'İşlem silinemedi' }
     },
     trnForm: {
       newTitle: 'Yeni işlem',
@@ -308,15 +388,34 @@ export const messages = {
         amountEmpty: 'Tutar gir',
         transferAmountEmpty: 'Transfer tutarı gir',
         transferSameWallet: 'Farklı cüzdanlar seç',
-        noData: 'Eksik bilgi',
-      },
-    },
+        noData: 'Eksik bilgi'
+      }
+    }
   },
 
   en: {
     app: { name: 'Weltoly' },
-    nav: { dashboard: 'Dashboard', wallets: 'Wallets', trns: 'Transactions', categories: 'Categories', tags: 'Tags', stat: 'Stats', settings: 'Settings', add: 'Add', more: 'More', menu: 'Menu' },
-    pageDesc: { dashboard: 'Overview & recent activity', wallets: 'Manage your accounts', trns: 'Transactions across all wallets', categories: 'Income & expense categories', tags: 'Transaction tags', stat: 'Spending analytics', settings: 'App preferences' },
+    nav: {
+      dashboard: 'Dashboard',
+      wallets: 'Wallets',
+      trns: 'Transactions',
+      categories: 'Categories',
+      tags: 'Tags',
+      stat: 'Stats',
+      settings: 'Settings',
+      add: 'Add',
+      more: 'More',
+      menu: 'Menu'
+    },
+    pageDesc: {
+      dashboard: 'Overview & recent activity',
+      wallets: 'Manage your accounts',
+      trns: 'Transactions across all wallets',
+      categories: 'Income & expense categories',
+      tags: 'Transaction tags',
+      stat: 'Spending analytics',
+      settings: 'App preferences'
+    },
     settings: {
       title: 'Settings',
       appearance: 'Appearance',
@@ -366,12 +465,13 @@ export const messages = {
         profile: 'Edit your display name and manage the app PIN lock.',
         localization: 'Set the language, currency and number/date display formats.',
         data: 'Export or restore a backup, load sample data, or clear all data.',
-        rates: 'Choose where exchange rates come from and monitor freshness.',
+        rates: 'Choose where exchange rates come from and monitor freshness.'
       },
       // --- Rate source / freshness ---
       tabRates: 'Rates',
       rateSource: 'Rate source',
-      rateSourceHint: 'Affects FIAT rates only. Crypto rates always come from CoinGecko — none of these sources provide crypto.',
+      rateSourceHint:
+        'Affects FIAT rates only. Crypto rates always come from CoinGecko — none of these sources provide crypto.',
       rateSourceFrankfurterDesc: 'European Central Bank data. 29 currencies, no API key.',
       rateSourceTcmbDesc: 'Central Bank of Türkiye official rate. 22 currencies, selling rate.',
       rateSourceErApiDesc: 'Broad coverage (160+ currencies), no API key.',
@@ -390,27 +490,53 @@ export const messages = {
       ratesStale: 'Stale',
       ratesUnknown: 'Unknown',
       ratesStaleHint: 'Rates have not refreshed for {n} days. Totals use the old rates.',
-      ratesFreshHint: 'Sources publish on business days only; on weekends the last business day rate applies.',
-      ratesUnknownHint: 'This rate set carries no source date (older record). It will appear after a refresh.',
+      ratesFreshHint:
+        'Sources publish on business days only; on weekends the last business day rate applies.',
+      ratesUnknownHint:
+        'This rate set carries no source date (older record). It will appear after a refresh.',
       ratesTableTitle: 'Stored rates',
       ratesTableDesc: 'per 1 {base}',
       ratesCrypto: 'Crypto',
       ratesFiat: 'Fiat',
       formatting: 'Formatting',
-      formattingHint: 'Formatting does not affect how data is stored, and can be changed at any time.',
+      formattingHint:
+        'Formatting does not affect how data is stored, and can be changed at any time.',
       numbers: 'Numbers',
       dates: 'Dates',
       firstDayOfWeek: 'First day of the week',
       hideDecimals: 'Hide decimal places',
       formatAuto: 'Automatic (by language)',
       sunday: 'Sunday',
-      monday: 'Monday',
+      monday: 'Monday'
     },
-    lock: { title: 'Locked', subtitle: 'Enter PIN', enterCurrent: 'Current PIN', enterNew: 'Enter new PIN (min 6 digits)', confirmNew: 'Re-enter PIN', pinSet: 'PIN set', lockedFor: 'Wait {s}s', notEncryptedNote: 'The PIN is a screen lock only; it does not encrypt your data.' },
+    lock: {
+      title: 'Locked',
+      subtitle: 'Enter PIN',
+      enterCurrent: 'Current PIN',
+      enterNew: 'Enter new PIN (min 6 digits)',
+      confirmNew: 'Re-enter PIN',
+      pinSet: 'PIN set',
+      lockedFor: 'Wait {s}s',
+      notEncryptedNote: 'The PIN is a screen lock only; it does not encrypt your data.'
+    },
     a11y: { skipToContent: 'Skip to content', mainNav: 'Main menu', calcDelete: 'Delete' },
     errors: { unexpected: 'An unexpected error occurred' },
     hotkeys: { title: 'Keyboard shortcuts', newTrn: 'New transaction', help: 'Shortcut help' },
-    common: { back: 'Back', soon: 'This section is coming soon (under development).', save: 'Save', cancel: 'Cancel', delete: 'Delete', edit: 'Edit', add: 'Add', close: 'Close', required: 'Required', list: 'List', rateMissing: 'Rate missing', rateMissingHint: 'Some wallets have no current rate and were excluded from the total. Refresh rates.' },
+    common: {
+      back: 'Back',
+      soon: 'This section is coming soon (under development).',
+      save: 'Save',
+      cancel: 'Cancel',
+      delete: 'Delete',
+      edit: 'Edit',
+      add: 'Add',
+      close: 'Close',
+      required: 'Required',
+      list: 'List',
+      rateMissing: 'Rate missing',
+      rateMissingHint:
+        'Some wallets have no current rate and were excluded from the total. Refresh rates.'
+    },
     dashboard: {
       title: 'Dashboard',
       netWorth: 'Net worth',
@@ -426,7 +552,7 @@ export const messages = {
       projectStateDesc: 'An overview of your records',
       unusedN: '{n} unused',
       trnSpan: 'Record range',
-      noTrns: 'No transactions yet',
+      noTrns: 'No transactions yet'
     },
     stat: {
       day: 'Day',
@@ -446,10 +572,11 @@ export const messages = {
       byTag: 'Breakdown by tag',
       byTagDesc: 'How amounts spread across tags',
       untagged: 'Untagged',
-      byTagNote: 'A transaction can carry several tags; each share is measured against the range total, so the shares do not add up to 100%.',
+      byTagNote:
+        'A transaction can carry several tags; each share is measured against the range total, so the shares do not add up to 100%.',
       noData: 'No data for this range',
       filterWallets: 'Filter by wallet',
-      filterTags: 'Filter by tag',
+      filterTags: 'Filter by tag'
     },
     walletDetail: {
       nSelected: '{n} selected',
@@ -490,8 +617,9 @@ export const messages = {
       byTag: 'Breakdown by tag',
       byTagDesc: 'How expenses spread across tags',
       untagged: 'Untagged',
-      byTagNote: 'A transaction can carry several tags; each share is measured against total expense, so the shares do not add up to 100%.',
-      drillHint: 'See breakdown of {name}',
+      byTagNote:
+        'A transaction can carry several tags; each share is measured against total expense, so the shares do not add up to 100%.',
+      drillHint: 'See breakdown of {name}'
     },
     trnsPage: {
       wallet: 'Wallet',
@@ -500,7 +628,7 @@ export const messages = {
       count: '{n} transactions',
       noTrns: 'No transactions yet',
       total: 'Total',
-      add: 'Add transaction',
+      add: 'Add transaction'
     },
     wallets: {
       title: 'Wallets',
@@ -521,11 +649,28 @@ export const messages = {
       withdrawal: 'Withdrawable',
       deleteConfirm: 'Delete this wallet and its transactions?',
       total: 'Total',
-      types: { cash: 'Cash', credit: 'Credit card', cashless: 'Bank account', deposit: 'Deposit', crypto: 'Crypto', debt: 'Debt' },
+      types: {
+        cash: 'Cash',
+        credit: 'Credit card',
+        cashless: 'Bank account',
+        deposit: 'Deposit',
+        crypto: 'Crypto',
+        debt: 'Debt'
+      },
       search: 'Search wallets',
       noResults: 'No matching wallets',
       stats: { net: 'Net total', assets: 'Assets', debts: 'Debts', debtRatio: 'Debt ratio' },
-      table: { name: 'Wallet name', trnCount: 'Transactions', balance: 'Balance', income: 'Income', expense: 'Expense', default: 'Default', withdrawal: 'Withdrawable', excluded: 'Excluded', archived: 'Archived' },
+      table: {
+        name: 'Wallet name',
+        trnCount: 'Transactions',
+        balance: 'Balance',
+        income: 'Income',
+        expense: 'Expense',
+        default: 'Default',
+        withdrawal: 'Withdrawable',
+        excluded: 'Excluded',
+        archived: 'Archived'
+      },
       setDefault: 'Set as default wallet',
       default: 'Default wallet',
       defaultMovedFrom: '"{name}" is the current default — saving moves it here.',
@@ -533,7 +678,11 @@ export const messages = {
       deleted: 'Wallet deleted',
       added: 'Wallet added',
       updated: 'Wallet updated',
-      errors: { saveFailed: 'Failed to save wallet', orderFailed: 'Failed to save order', deleteFailed: 'Failed to delete wallet' },
+      errors: {
+        saveFailed: 'Failed to save wallet',
+        orderFailed: 'Failed to save order',
+        deleteFailed: 'Failed to delete wallet'
+      }
     },
     categories: {
       title: 'Categories',
@@ -560,7 +709,7 @@ export const messages = {
       deleted: 'Category deleted',
       added: 'Category added',
       updated: 'Category updated',
-      errors: { saveFailed: 'Failed to save category', deleteFailed: 'Failed to delete category' },
+      errors: { saveFailed: 'Failed to save category', deleteFailed: 'Failed to delete category' }
     },
     tags: {
       title: 'Tags',
@@ -582,7 +731,7 @@ export const messages = {
       deleted: 'Tag deleted',
       added: 'Tag added',
       updated: 'Tag updated',
-      errors: { saveFailed: 'Failed to save tag', deleteFailed: 'Failed to delete tag' },
+      errors: { saveFailed: 'Failed to save tag', deleteFailed: 'Failed to delete tag' }
     },
     trns: {
       empty: 'No transactions yet',
@@ -591,7 +740,10 @@ export const messages = {
       deleteConfirm: 'Delete this transaction?',
       added: 'Transaction added',
       updated: 'Transaction updated',
-      errors: { saveFailed: 'Failed to save transaction', deleteFailed: 'Failed to delete transaction' },
+      errors: {
+        saveFailed: 'Failed to save transaction',
+        deleteFailed: 'Failed to delete transaction'
+      }
     },
     trnForm: {
       newTitle: 'New transaction',
@@ -614,15 +766,34 @@ export const messages = {
         amountEmpty: 'Enter an amount',
         transferAmountEmpty: 'Enter transfer amount',
         transferSameWallet: 'Select different wallets',
-        noData: 'Missing data',
-      },
-    },
+        noData: 'Missing data'
+      }
+    }
   },
 
   ru: {
     app: { name: 'Weltoly' },
-    nav: { dashboard: 'Панель', wallets: 'Кошельки', trns: 'Операции', categories: 'Категории', tags: 'Метки', stat: 'Статистика', settings: 'Настройки', add: 'Добавить', more: 'Ещё', menu: 'Меню' },
-    pageDesc: { dashboard: 'Обзор и последние операции', wallets: 'Управление счетами', trns: 'Операции по всем кошелькам', categories: 'Категории доходов и расходов', tags: 'Метки операций', stat: 'Анализ расходов', settings: 'Настройки приложения' },
+    nav: {
+      dashboard: 'Панель',
+      wallets: 'Кошельки',
+      trns: 'Операции',
+      categories: 'Категории',
+      tags: 'Метки',
+      stat: 'Статистика',
+      settings: 'Настройки',
+      add: 'Добавить',
+      more: 'Ещё',
+      menu: 'Меню'
+    },
+    pageDesc: {
+      dashboard: 'Обзор и последние операции',
+      wallets: 'Управление счетами',
+      trns: 'Операции по всем кошелькам',
+      categories: 'Категории доходов и расходов',
+      tags: 'Метки операций',
+      stat: 'Анализ расходов',
+      settings: 'Настройки приложения'
+    },
     settings: {
       title: 'Настройки',
       appearance: 'Внешний вид',
@@ -672,12 +843,13 @@ export const messages = {
         profile: 'Измените отображаемое имя и управляйте PIN-кодом приложения.',
         localization: 'Настройте язык, валюту и форматы чисел/дат.',
         data: 'Создание или восстановление копии, пример данных, удаление всех данных.',
-        rates: 'Выберите источник курсов валют и следите за их актуальностью.',
+        rates: 'Выберите источник курсов валют и следите за их актуальностью.'
       },
       // --- Источник курсов / актуальность ---
       tabRates: 'Курсы',
       rateSource: 'Источник курсов',
-      rateSourceHint: 'Влияет только на ФИАТНЫЕ курсы. Крипто-курсы всегда берутся с CoinGecko — ни один из этих источников не даёт крипту.',
+      rateSourceHint:
+        'Влияет только на ФИАТНЫЕ курсы. Крипто-курсы всегда берутся с CoinGecko — ни один из этих источников не даёт крипту.',
       rateSourceFrankfurterDesc: 'Данные Европейского центрального банка. 29 валют, без ключа.',
       rateSourceTcmbDesc: 'Официальный курс ЦБ Турции. 22 валюты, курс продажи.',
       rateSourceErApiDesc: 'Широкий охват (160+ валют), без ключа.',
@@ -696,27 +868,57 @@ export const messages = {
       ratesStale: 'Устарели',
       ratesUnknown: 'Неизвестно',
       ratesStaleHint: 'Курсы не обновлялись {n} дн. Итоги считаются по старому курсу.',
-      ratesFreshHint: 'Источники публикуют курсы только в рабочие дни; в выходные действует курс последнего рабочего дня.',
-      ratesUnknownHint: 'В этом наборе нет даты источника (старая запись). Появится после обновления.',
+      ratesFreshHint:
+        'Источники публикуют курсы только в рабочие дни; в выходные действует курс последнего рабочего дня.',
+      ratesUnknownHint:
+        'В этом наборе нет даты источника (старая запись). Появится после обновления.',
       ratesTableTitle: 'Сохранённые курсы',
       ratesTableDesc: 'за 1 {base}',
       ratesCrypto: 'Крипто',
       ratesFiat: 'Фиат',
       formatting: 'Форматирование',
-      formattingHint: 'Форматирование не влияет на то, как хранятся данные, и его можно изменить в любое время.',
+      formattingHint:
+        'Форматирование не влияет на то, как хранятся данные, и его можно изменить в любое время.',
       numbers: 'Числа',
       dates: 'Даты',
       firstDayOfWeek: 'Первый день недели',
       hideDecimals: 'Скрыть десятичные',
       formatAuto: 'Авто (по языку)',
       sunday: 'Воскресенье',
-      monday: 'Понедельник',
+      monday: 'Понедельник'
     },
-    lock: { title: 'Заблокировано', subtitle: 'Введите PIN', enterCurrent: 'Текущий PIN', enterNew: 'Новый PIN (мин. 6 цифр)', confirmNew: 'Повторите PIN', pinSet: 'PIN задан', lockedFor: 'Подождите {s} с', notEncryptedNote: 'PIN — только блокировка экрана, он не шифрует данные.' },
-    a11y: { skipToContent: 'Перейти к содержимому', mainNav: 'Главное меню', calcDelete: 'Удалить' },
+    lock: {
+      title: 'Заблокировано',
+      subtitle: 'Введите PIN',
+      enterCurrent: 'Текущий PIN',
+      enterNew: 'Новый PIN (мин. 6 цифр)',
+      confirmNew: 'Повторите PIN',
+      pinSet: 'PIN задан',
+      lockedFor: 'Подождите {s} с',
+      notEncryptedNote: 'PIN — только блокировка экрана, он не шифрует данные.'
+    },
+    a11y: {
+      skipToContent: 'Перейти к содержимому',
+      mainNav: 'Главное меню',
+      calcDelete: 'Удалить'
+    },
     errors: { unexpected: 'Произошла непредвиденная ошибка' },
     hotkeys: { title: 'Горячие клавиши', newTrn: 'Новая операция', help: 'Справка по клавишам' },
-    common: { back: 'Назад', soon: 'Этот раздел скоро появится (в разработке).', save: 'Сохранить', cancel: 'Отмена', delete: 'Удалить', edit: 'Изменить', add: 'Добавить', close: 'Закрыть', required: 'Обязательное поле', list: 'Список', rateMissing: 'Нет курса', rateMissingHint: 'У некоторых кошельков нет актуального курса, они исключены из суммы. Обновите курсы.' },
+    common: {
+      back: 'Назад',
+      soon: 'Этот раздел скоро появится (в разработке).',
+      save: 'Сохранить',
+      cancel: 'Отмена',
+      delete: 'Удалить',
+      edit: 'Изменить',
+      add: 'Добавить',
+      close: 'Закрыть',
+      required: 'Обязательное поле',
+      list: 'Список',
+      rateMissing: 'Нет курса',
+      rateMissingHint:
+        'У некоторых кошельков нет актуального курса, они исключены из суммы. Обновите курсы.'
+    },
     dashboard: {
       title: 'Панель',
       netWorth: 'Чистые активы',
@@ -732,7 +934,7 @@ export const messages = {
       projectStateDesc: 'Общий обзор записей',
       unusedN: 'не используется: {n}',
       trnSpan: 'Диапазон записей',
-      noTrns: 'Пока нет операций',
+      noTrns: 'Пока нет операций'
     },
     stat: {
       day: 'День',
@@ -752,10 +954,11 @@ export const messages = {
       byTag: 'Разбивка по меткам',
       byTagDesc: 'Распределение сумм по меткам',
       untagged: 'Без метки',
-      byTagNote: 'Операция может иметь несколько меток; каждая доля считается от итога периода, поэтому сумма долей не равна 100%.',
+      byTagNote:
+        'Операция может иметь несколько меток; каждая доля считается от итога периода, поэтому сумма долей не равна 100%.',
       noData: 'Нет данных за период',
       filterWallets: 'Фильтр по кошельку',
-      filterTags: 'Фильтр по метке',
+      filterTags: 'Фильтр по метке'
     },
     walletDetail: {
       nSelected: 'Выбрано: {n}',
@@ -796,8 +999,9 @@ export const messages = {
       byTag: 'Разбивка по меткам',
       byTagDesc: 'Распределение расходов по меткам',
       untagged: 'Без метки',
-      byTagNote: 'Операция может иметь несколько меток; каждая доля считается от общих расходов, поэтому сумма долей не равна 100%.',
-      drillHint: 'Показать разбивку: {name}',
+      byTagNote:
+        'Операция может иметь несколько меток; каждая доля считается от общих расходов, поэтому сумма долей не равна 100%.',
+      drillHint: 'Показать разбивку: {name}'
     },
     trnsPage: {
       wallet: 'Кошелёк',
@@ -806,7 +1010,7 @@ export const messages = {
       count: '{n} операций',
       noTrns: 'Пока нет операций',
       total: 'Всего',
-      add: 'Добавить операцию',
+      add: 'Добавить операцию'
     },
     wallets: {
       title: 'Кошельки',
@@ -827,11 +1031,28 @@ export const messages = {
       withdrawal: 'Доступно к снятию',
       deleteConfirm: 'Удалить этот кошелёк и его операции?',
       total: 'Итого',
-      types: { cash: 'Наличные', credit: 'Кредитная карта', cashless: 'Банковский счёт', deposit: 'Депозит', crypto: 'Криптовалюта', debt: 'Долг' },
+      types: {
+        cash: 'Наличные',
+        credit: 'Кредитная карта',
+        cashless: 'Банковский счёт',
+        deposit: 'Депозит',
+        crypto: 'Криптовалюта',
+        debt: 'Долг'
+      },
       search: 'Поиск кошельков',
       noResults: 'Совпадений нет',
       stats: { net: 'Итого', assets: 'Активы', debts: 'Долги', debtRatio: 'Доля долга' },
-      table: { name: 'Название кошелька', trnCount: 'Операций', balance: 'Баланс', income: 'Доходы', expense: 'Расходы', default: 'По умолчанию', withdrawal: 'Снятие', excluded: 'Вне итога', archived: 'В архиве' },
+      table: {
+        name: 'Название кошелька',
+        trnCount: 'Операций',
+        balance: 'Баланс',
+        income: 'Доходы',
+        expense: 'Расходы',
+        default: 'По умолчанию',
+        withdrawal: 'Снятие',
+        excluded: 'Вне итога',
+        archived: 'В архиве'
+      },
       setDefault: 'Сделать кошельком по умолчанию',
       default: 'Кошелёк по умолчанию',
       defaultMovedFrom: 'Сейчас по умолчанию «{name}» — после сохранения станет этот.',
@@ -839,7 +1060,11 @@ export const messages = {
       deleted: 'Кошелёк удалён',
       added: 'Кошелёк добавлен',
       updated: 'Кошелёк обновлён',
-      errors: { saveFailed: 'Не удалось сохранить кошелёк', orderFailed: 'Не удалось сохранить порядок', deleteFailed: 'Не удалось удалить кошелёк' },
+      errors: {
+        saveFailed: 'Не удалось сохранить кошелёк',
+        orderFailed: 'Не удалось сохранить порядок',
+        deleteFailed: 'Не удалось удалить кошелёк'
+      }
     },
     categories: {
       title: 'Категории',
@@ -860,13 +1085,21 @@ export const messages = {
       search: 'Поиск категорий',
       noResults: 'Совпадений нет',
       unused: 'Ещё не используется',
-      stats: { total: 'Всего', root: 'Основные', child: 'Вложенные', usedRatio: 'Доля использования' },
+      stats: {
+        total: 'Всего',
+        root: 'Основные',
+        child: 'Вложенные',
+        usedRatio: 'Доля использования'
+      },
       table: { name: 'Название категории', usage: 'Операции' },
       chart: { other: 'Прочие ({count})' },
       deleted: 'Категория удалена',
       added: 'Категория добавлена',
       updated: 'Категория обновлена',
-      errors: { saveFailed: 'Не удалось сохранить категорию', deleteFailed: 'Не удалось удалить категорию' },
+      errors: {
+        saveFailed: 'Не удалось сохранить категорию',
+        deleteFailed: 'Не удалось удалить категорию'
+      }
     },
     tags: {
       title: 'Метки',
@@ -882,13 +1115,18 @@ export const messages = {
       search: 'Поиск меток',
       noResults: 'Совпадений нет',
       unused: 'Ещё не используется',
-      stats: { total: 'Всего', used: 'Используются', unused: 'Не используются', usedRatio: 'Доля использования' },
+      stats: {
+        total: 'Всего',
+        used: 'Используются',
+        unused: 'Не используются',
+        usedRatio: 'Доля использования'
+      },
       chart: { other: 'Прочие ({count})' },
       table: { name: 'Название метки', usage: 'Использование' },
       deleted: 'Метка удалена',
       added: 'Метка добавлена',
       updated: 'Метка обновлена',
-      errors: { saveFailed: 'Не удалось сохранить метку', deleteFailed: 'Не удалось удалить метку' },
+      errors: { saveFailed: 'Не удалось сохранить метку', deleteFailed: 'Не удалось удалить метку' }
     },
     trns: {
       empty: 'Пока нет операций',
@@ -897,7 +1135,10 @@ export const messages = {
       deleteConfirm: 'Удалить эту операцию?',
       added: 'Операция добавлена',
       updated: 'Операция обновлена',
-      errors: { saveFailed: 'Не удалось сохранить операцию', deleteFailed: 'Не удалось удалить операцию' },
+      errors: {
+        saveFailed: 'Не удалось сохранить операцию',
+        deleteFailed: 'Не удалось удалить операцию'
+      }
     },
     trnForm: {
       newTitle: 'Новая операция',
@@ -920,8 +1161,8 @@ export const messages = {
         amountEmpty: 'Введите сумму',
         transferAmountEmpty: 'Введите сумму перевода',
         transferSameWallet: 'Выберите разные кошельки',
-        noData: 'Недостаточно данных',
-      },
-    },
-  },
+        noData: 'Недостаточно данных'
+      }
+    }
+  }
 }

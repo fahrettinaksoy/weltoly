@@ -3,7 +3,7 @@ import {
   GridComponent,
   LegendComponent,
   MarkLineComponent,
-  TooltipComponent,
+  TooltipComponent
 } from 'echarts/components'
 // ECharts tree-shaking: yalnız kullanılan modülleri kaydet.
 import { use } from 'echarts/core'
@@ -17,5 +17,5 @@ use([
   GridComponent,
   TooltipComponent,
   LegendComponent,
-  MarkLineComponent,
+  MarkLineComponent
 ])

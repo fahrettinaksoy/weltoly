@@ -19,7 +19,7 @@ export const TABLE_COLUMNS = {
     'showInQuickSelector',
     'updatedAt',
     'userId',
-    'desc',
+    'desc'
   ],
   wallets: [
     'id',
@@ -35,7 +35,7 @@ export const TABLE_COLUMNS = {
     'type',
     'updatedAt',
     'userId',
-    'icon',
+    'icon'
   ],
   trns: [
     'id',
@@ -51,11 +51,11 @@ export const TABLE_COLUMNS = {
     'updatedAt',
     'userId',
     'walletId',
-    'tagIds',
+    'tagIds'
   ],
   tags: ['id', 'name', 'color', 'updatedAt', 'userId', 'desc'],
   user_settings: ['id', 'baseCurrency', 'locale', 'userId', 'defaultWalletId', 'rateSource'],
-  rates: ['id', 'date', 'rates', 'source', 'updatedAt', 'rateDate'],
+  rates: ['id', 'date', 'rates', 'source', 'updatedAt', 'rateDate']
 } as const
 
 export type TableName = keyof typeof TABLE_COLUMNS
@@ -74,7 +74,6 @@ export function isKnownTable(t: string): t is TableName {
  * `[A-Za-z0-9_]` karakterlerine izin ver (liste zaten güvenli ama katmanlı savunma).
  */
 export function isKnownColumn(table: TableName, col: string): boolean {
-  if (!/^\w+$/.test(col))
-    return false
+  if (!/^\w+$/.test(col)) return false
   return (TABLE_COLUMNS[table] as readonly string[]).includes(col)
 }

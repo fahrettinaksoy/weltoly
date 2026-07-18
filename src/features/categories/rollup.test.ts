@@ -14,7 +14,16 @@ import { getParentCategoryIdOrReturnSame } from './utils'
 
 /** Testin ilgilendiği tek alan parentId; gerisi ağaç için anlamsız. */
 function cat(name: string, parentId: CategoryId | 0): CategoryItem {
-  return { name, parentId, desc: '', icon: '', color: '', showInLastUsed: true, showInQuickSelector: false, updatedAt: 0 }
+  return {
+    name,
+    parentId,
+    desc: '',
+    icon: '',
+    color: '',
+    showInLastUsed: true,
+    showInQuickSelector: false,
+    updatedAt: 0
+  }
 }
 
 const items: Categories = {
@@ -29,7 +38,7 @@ const items: Categories = {
   // `transfer` opsiyonel DEĞİL — Categories tipi onu şart koşuyor
   // (Record<CategoryId, CategoryItem> & Record<'transfer', CategoryItem>).
   adjustment: cat('Düzeltme', 0),
-  transfer: cat('Transfer', 0),
+  transfer: cat('Transfer', 0)
 }
 
 const root = (id: string) => getParentCategoryIdOrReturnSame(items, id)
@@ -54,7 +63,7 @@ describe('kategori kök toplama', () => {
     expect(root('adjustment')).toBe('adjustment')
   })
 
-  it('bilinmeyen kategori kendi id\'sini verir — çökmez', () => {
+  it("bilinmeyen kategori kendi id'sini verir — çökmez", () => {
     // Kategori silinmiş ama işlem duruyor olabilir.
     expect(root('silinmis-kategori')).toBe('silinmis-kategori')
   })
@@ -68,7 +77,7 @@ describe('kategori kök toplama', () => {
   it('üst kategori silinmişse yaprağın kendisine düşer (isimsiz dilim yok)', () => {
     const orphanItems: Categories = {
       ...items,
-      orphan: cat('Yetim', 'silinmis-ust'), // 'silinmis-ust' items içinde YOK
+      orphan: cat('Yetim', 'silinmis-ust') // 'silinmis-ust' items içinde YOK
     }
     const r = getParentCategoryIdOrReturnSame(orphanItems, 'orphan')
     expect(r).toBe('orphan')

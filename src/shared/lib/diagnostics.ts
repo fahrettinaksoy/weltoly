@@ -14,13 +14,11 @@ import { logger } from '@/shared/lib/logger'
  * @returns Açıldıysa true; Tauri dışıysa (saf tarayıcı) veya hata olursa false.
  */
 export async function revealLogs(): Promise<boolean> {
-  if (!isTauriRuntime())
-    return false
+  if (!isTauriRuntime()) return false
   try {
     await revealItemInDir(await appLogDir())
     return true
-  }
-  catch (e) {
+  } catch (e) {
     logger.error('[diagnostics] log klasörü açılamadı', e)
     return false
   }

@@ -19,7 +19,11 @@ const INTERVAL_COUNT: Record<Period, number> = { day: 14, week: 10, month: 6, ye
 
 export type StatType = 'expense' | 'income'
 
-export interface ChartInterval { range: Range, income: number, expense: number }
+export interface ChartInterval {
+  range: Range
+  income: number
+  expense: number
+}
 export interface BreakdownItem {
   categoryId: string
   amount: number
@@ -27,7 +31,11 @@ export interface BreakdownItem {
   /** Kök inilebilir mi — altında bu aralıkta birden çok yaprak var mı. */
   canDrill: boolean
 }
-export interface TagBreakdownItem { tagId: string, amount: number, percent: number }
+export interface TagBreakdownItem {
+  tagId: string
+  amount: number
+  percent: number
+}
 
 export const useStatStore = defineStore('stat', () => {
   const trnsStore = useTrnsStore()
@@ -71,15 +79,18 @@ export const useStatStore = defineStore('stat', () => {
     resetDrill()
   }
   function next() {
-    if (offset.value < 0)
-      offset.value += 1
+    if (offset.value < 0) offset.value += 1
     resetDrill()
   }
 
-  const currentRange = computed<Range>(() => rangeForPeriod(period.value, offset.value, settings.weekStart))
+  const currentRange = computed<Range>(() =>
+    rangeForPeriod(period.value, offset.value, settings.weekStart)
+  )
 
-  const activeWalletIds = computed(() => filterWalletIds.value.length ? filterWalletIds.value : undefined)
-  const activeTagIds = computed(() => filterTagIds.value.length ? filterTagIds.value : undefined)
+  const activeWalletIds = computed(() =>
+    filterWalletIds.value.length ? filterWalletIds.value : undefined
+  )
+  const activeTagIds = computed(() => (filterTagIds.value.length ? filterTagIds.value : undefined))
 
   /**
    * Bir aralığın toplamları + işlem adedi — TEK süzmeyle (A-5).
@@ -96,7 +107,12 @@ export const useStatStore = defineStore('stat', () => {
   function summaryForRange(range: Range) {
     const items = trnsStore.items ?? {}
     const walletsIds = activeWalletIds.value
-    const ids = filterTrnsIds({ trnsItems: items, dates: range, walletsIds, tagsIds: activeTagIds.value })
+    const ids = filterTrnsIds({
+      trnsItems: items,
+      dates: range,
+      walletsIds,
+      tagsIds: activeTagIds.value
+    })
 
     const totals = getTotal({
       baseCurrencyCode: currenciesStore.base,
@@ -104,14 +120,13 @@ export const useStatStore = defineStore('stat', () => {
       trnsItems: items,
       trnsIds: ids,
       walletsIds,
-      walletsItems: walletsStore.items ?? {},
+      walletsItems: walletsStore.items ?? {}
     })
 
     let count = 0
     for (const id of ids) {
       const trn = items[id]
-      if (trn && trn.type !== TrnType.Transfer && trn.categoryId !== ADJUSTMENT_ID)
-        count++
+      if (trn && trn.type !== TrnType.Transfer && trn.categoryId !== ADJUSTMENT_ID) count++
     }
 
     return { ...totals, count }
@@ -126,7 +141,9 @@ export const useStatStore = defineStore('stat', () => {
    * ay/yıl gibi eşit olmayan uzunluklarda bile doğru takvim aralığını verir
    * (gün sayısı çıkarmak Şubat'ta yanlış olurdu).
    */
-  const prevRange = computed<Range>(() => rangeForPeriod(period.value, offset.value - 1, settings.weekStart))
+  const prevRange = computed<Range>(() =>
+    rangeForPeriod(period.value, offset.value - 1, settings.weekStart)
+  )
   const prevSummary = computed(() => summaryForRange(prevRange.value))
 
   /** Grafik için son N aralığın gelir/gider toplamları (güncel aralık en sonda). */
@@ -150,27 +167,31 @@ export const useStatStore = defineStore('stat', () => {
   const typedTrns = computed(() => {
     const items = trnsStore.items ?? {}
     const type = statType.value === 'income' ? TrnType.Income : TrnType.Expense
-    const ids = filterTrnsIds({ trnsItems: items, dates: currentRange.value, trnsTypes: [type], walletsIds: activeWalletIds.value, tagsIds: activeTagIds.value })
+    const ids = filterTrnsIds({
+      trnsItems: items,
+      dates: currentRange.value,
+      trnsTypes: [type],
+      walletsIds: activeWalletIds.value,
+      tagsIds: activeTagIds.value
+    })
 
-    const out: { categoryId: string, tagIds: string[], amount: number }[] = []
+    const out: { categoryId: string; tagIds: string[]; amount: number }[] = []
     for (const id of ids) {
       const trn = items[id]
-      if (!trn || trn.type === TrnType.Transfer || trn.categoryId === ADJUSTMENT_ID)
-        continue
+      if (!trn || trn.type === TrnType.Transfer || trn.categoryId === ADJUSTMENT_ID) continue
       const wallet = walletsStore.items?.[trn.walletId]
       const amount = getAmountInRate({
         amount: trn.amount,
         baseCurrencyCode: currenciesStore.base,
         currencyCode: wallet?.currency ?? 'USD',
-        rates: currenciesStore.rates,
+        rates: currenciesStore.rates
       })
       // Kur eksikse (null) istatistiğe sokma — sessiz 1:1 varsayma (Y-1).
-      if (amount === null)
-        continue
+      if (amount === null) continue
       out.push({
         categoryId: trn.categoryId,
         tagIds: trn.tagIds ?? [],
-        amount,
+        amount
       })
     }
     return out
@@ -190,8 +211,7 @@ export const useStatStore = defineStore('stat', () => {
     for (const leaf of amountsByLeaf.value.keys()) {
       const root = getParentCategoryIdOrReturnSame(categoriesStore.items, leaf)
       const list = map.get(root)
-      if (list)
-        list.push(leaf)
+      if (list) list.push(leaf)
       else map.set(root, [leaf])
     }
     return map
@@ -206,8 +226,7 @@ export const useStatStore = defineStore('stat', () => {
     if (drillRoot.value) {
       for (const leaf of leavesByRoot.value.get(drillRoot.value) ?? [])
         map.set(leaf, amountsByLeaf.value.get(leaf)!)
-    }
-    else {
+    } else {
       for (const [leaf, amount] of amountsByLeaf.value) {
         const root = getParentCategoryIdOrReturnSame(categoriesStore.items, leaf)
         map.set(root, (map.get(root) ?? 0) + amount)
@@ -222,7 +241,7 @@ export const useStatStore = defineStore('stat', () => {
         percent: total ? (amount / total) * 100 : 0,
         // Tek yapraklı kök inilmez: aynı tutar, aynı isim — tıklamak hiçbir şey
         // değiştirmez, tıklanabilir göstermek yalan olur.
-        canDrill: !drillRoot.value && (leavesByRoot.value.get(categoryId)?.length ?? 0) > 1,
+        canDrill: !drillRoot.value && (leavesByRoot.value.get(categoryId)?.length ?? 0) > 1
       }))
       .sort((a, b) => b.amount - a.amount)
   })
@@ -250,8 +269,7 @@ export const useStatStore = defineStore('stat', () => {
         untagged += t.amount
         continue
       }
-      for (const id of t.tagIds)
-        sums.set(id, (sums.get(id) ?? 0) + t.amount)
+      for (const id of t.tagIds) sums.set(id, (sums.get(id) ?? 0) + t.amount)
     }
 
     const rows = [...sums.entries()]
@@ -260,7 +278,11 @@ export const useStatStore = defineStore('stat', () => {
 
     // Etiketsiz tutar hiçbir çubukta görünmez → sessizce kaybolurdu.
     if (untagged > 0)
-      rows.push({ tagId: '__untagged', amount: untagged, percent: total ? (untagged / total) * 100 : 0 })
+      rows.push({
+        tagId: '__untagged',
+        amount: untagged,
+        percent: total ? (untagged / total) * 100 : 0
+      })
     return rows
   })
 
@@ -277,7 +299,9 @@ export const useStatStore = defineStore('stat', () => {
     filterTagIds.value = []
     resetDrill()
   }
-  const hasFilter = computed(() => filterWalletIds.value.length > 0 || filterTagIds.value.length > 0)
+  const hasFilter = computed(
+    () => filterWalletIds.value.length > 0 || filterTagIds.value.length > 0
+  )
 
   return {
     period,
@@ -302,6 +326,6 @@ export const useStatStore = defineStore('stat', () => {
     setFilterTagIds,
     clearFilters,
     prev,
-    next,
+    next
   }
 })

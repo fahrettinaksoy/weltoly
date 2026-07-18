@@ -8,7 +8,7 @@ export const walletTypeIcon: Record<WalletType, string> = {
   cashless: 'mdi-bank-outline',
   deposit: 'mdi-piggy-bank-outline',
   crypto: 'mdi-bitcoin',
-  debt: 'mdi-hand-coin-outline',
+  debt: 'mdi-hand-coin-outline'
 }
 
 export const walletTypeList = walletTypes
@@ -18,6 +18,6 @@ export const walletTypeList = walletTypes
  * Tek kaynak — çağıranlar '|| walletTypeIcon[type]' fallback'ini tekrarlamasın,
  * yoksa biri güncellenip diğeri unutulur.
  */
-export function walletIcon(wallet: { icon?: string, type: WalletType }): string {
+export function walletIcon(wallet: { icon?: string; type: WalletType }): string {
   return wallet.icon || walletTypeIcon[wallet.type]
 }

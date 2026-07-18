@@ -62,6 +62,14 @@ pub fn run() {
         // yazar → yakalanan tüm hatalar (global errorHandler) kalıcı olur.
         .plugin(
             tauri_plugin_log::Builder::new()
+                // Varsayılan TRACE seviyesi terminali boğuyordu. Genel seviye Info;
+                // gürültülü altyapı modülleri (pencere olayları, her SQL sorgusu,
+                // WebView) Warn'a kısılır. Kendi uygulama loglarımız etkilenmez.
+                .level(log::LevelFilter::Info)
+                .level_for("tao", log::LevelFilter::Warn)
+                .level_for("sqlx", log::LevelFilter::Warn)
+                .level_for("wry", log::LevelFilter::Warn)
+                .level_for("hyper", log::LevelFilter::Warn)
                 .targets([
                     tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::Stdout),
                     tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::LogDir {

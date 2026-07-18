@@ -31,6 +31,8 @@ tauri-plugin-fs = "2"
 # (app log dizini). Yerel-önce/gizlilik odaklı uygulamada uzak telemetri YOK;
 # kullanıcı çöküşü bildirdiğinde teşhis edilecek tek kaynak bu dosyadır.
 tauri-plugin-log = "2"
+# Log seviye filtresi (LevelFilter) için; tauri-plugin-log zaten `log`'a bağlı.
+log = "0.4"
 serde = { version = "1", features = ["derive"] }
 
 # Otomatik güncelleme: imzalı sürümleri GitHub Releases'ten çeker/doğrular.

@@ -26,30 +26,35 @@ const tagsStore = useTagsStore()
 const fmt = useFormat()
 
 const walletFilterItems = computed(() =>
-  walletsStore.sortedIds.map(id => ({ id, name: walletsStore.items?.[id]?.name ?? id })),
+  walletsStore.sortedIds.map((id) => ({ id, name: walletsStore.items?.[id]?.name ?? id }))
 )
 
 const tagFilterItems = computed(() =>
-  tagsStore.sortedIds.map(id => ({ id, name: tagsStore.items[id]?.name ?? id })),
+  tagsStore.sortedIds.map((id) => ({ id, name: tagsStore.items[id]?.name ?? id }))
 )
 
-const periods: { value: Period, label: string }[] = [
+const periods: { value: Period; label: string }[] = [
   { value: 'day', label: t('stat.day') },
   { value: 'week', label: t('stat.week') },
   { value: 'month', label: t('stat.month') },
-  { value: 'year', label: t('stat.year') },
+  { value: 'year', label: t('stat.year') }
 ]
 
 const rangeLabel = computed<string>(() => {
   const { start, end } = stat.currentRange
   switch (stat.period) {
-    case 'day': return format(start, 'd MMMM yyyy')
-    case 'week': return `${format(start, 'd MMM')} – ${format(end, 'd MMM')}`
-    case 'month': return format(start, 'MMMM yyyy')
-    case 'year': return format(start, 'yyyy')
+    case 'day':
+      return format(start, 'd MMMM yyyy')
+    case 'week':
+      return `${format(start, 'd MMM')} – ${format(end, 'd MMM')}`
+    case 'month':
+      return format(start, 'MMMM yyyy')
+    case 'year':
+      return format(start, 'yyyy')
     // Period birliği yukarıdakilerle tükeniyor; default yalnız TS'in dönüş
     // tipini daraltabilmesi için (computed asla undefined dönmemeli).
-    default: return format(start, 'd MMMM yyyy')
+    default:
+      return format(start, 'd MMMM yyyy')
   }
 })
 
@@ -65,16 +70,48 @@ const factCards = computed(() => {
   const s = stat.summary
   const p = stat.prevSummary
   return [
-    { key: 'income', label: t('trnForm.income'), value: s.income, money: true, tone: 'text-success', delta: changeRatio(s.income, p.income), positiveIsGood: true },
-    { key: 'expense', label: t('trnForm.expense'), value: s.expense, money: true, tone: 'text-error', delta: changeRatio(s.expense, p.expense), positiveIsGood: false },
-    { key: 'net', label: t('stat.net'), value: s.sum, money: true, tone: s.sum >= 0 ? '' : 'text-error', delta: null, positiveIsGood: true },
-    { key: 'count', label: t('wallets.table.trnCount'), value: s.count, money: false, tone: '', delta: changeRatio(s.count, p.count), positiveIsGood: true },
+    {
+      key: 'income',
+      label: t('trnForm.income'),
+      value: s.income,
+      money: true,
+      tone: 'text-success',
+      delta: changeRatio(s.income, p.income),
+      positiveIsGood: true
+    },
+    {
+      key: 'expense',
+      label: t('trnForm.expense'),
+      value: s.expense,
+      money: true,
+      tone: 'text-error',
+      delta: changeRatio(s.expense, p.expense),
+      positiveIsGood: false
+    },
+    {
+      key: 'net',
+      label: t('stat.net'),
+      value: s.sum,
+      money: true,
+      tone: s.sum >= 0 ? '' : 'text-error',
+      delta: null,
+      positiveIsGood: true
+    },
+    {
+      key: 'count',
+      label: t('wallets.table.trnCount'),
+      value: s.count,
+      money: false,
+      tone: '',
+      delta: changeRatio(s.count, p.count),
+      positiveIsGood: true
+    }
   ]
 })
 
 /** İnilen kökün adı — kart başlığı onu gösterir. */
 const drillName = computed(() =>
-  stat.drillRoot ? categoriesStore.items[stat.drillRoot]?.name ?? '' : '',
+  stat.drillRoot ? (categoriesStore.items[stat.drillRoot]?.name ?? '') : ''
 )
 
 /**
@@ -85,13 +122,13 @@ const drillName = computed(() =>
 const walletFilterLabel = computed(() => {
   const ids = stat.filterWalletIds
   return ids.length === 1
-    ? walletsStore.items?.[ids[0]!]?.name ?? ids[0]!
+    ? (walletsStore.items?.[ids[0]!]?.name ?? ids[0]!)
     : t('walletDetail.nSelected', { n: ids.length })
 })
 const tagFilterLabel = computed(() => {
   const ids = stat.filterTagIds
   return ids.length === 1
-    ? tagsStore.items[ids[0]!]?.name ?? ids[0]!
+    ? (tagsStore.items[ids[0]!]?.name ?? ids[0]!)
     : t('walletDetail.nSelected', { n: ids.length })
 })
 </script>
@@ -196,7 +233,11 @@ const tagFilterLabel = computed(() => {
             <div v-for="tg in stat.tagBreakdown" :key="tg.tagId" class="stat-tagbar">
               <div class="d-flex align-center ga-2 mb-1">
                 <span class="text-caption text-truncate flex-1-1">
-                  {{ tg.tagId === '__untagged' ? t('stat.untagged') : (tagsStore.items[tg.tagId]?.name ?? tg.tagId) }}
+                  {{
+                    tg.tagId === '__untagged'
+                      ? t('stat.untagged')
+                      : (tagsStore.items[tg.tagId]?.name ?? tg.tagId)
+                  }}
                 </span>
                 <span class="text-caption font-weight-medium">
                   {{ fmt.money(tg.amount, currenciesStore.base) }}
@@ -207,7 +248,9 @@ const tagFilterLabel = computed(() => {
               </div>
               <v-progress-linear
                 :model-value="tg.percent"
-                :color="tg.tagId === '__untagged' ? 'grey' : (tagsStore.items[tg.tagId]?.color || 'grey')"
+                :color="
+                  tg.tagId === '__untagged' ? 'grey' : tagsStore.items[tg.tagId]?.color || 'grey'
+                "
                 height="6"
               />
             </div>
@@ -240,11 +283,23 @@ const tagFilterLabel = computed(() => {
                ("hangi aralık"), sayfanın iki ayrı yerinde durmaları kopuktu.
                İleri butonu gelecekte kilitli — offset 0 = güncel aralık. -->
           <div class="d-flex align-center ga-1">
-            <v-btn icon="mdi-chevron-left" variant="tonal" size="small" :aria-label="t('common.back')" @click="stat.prev()" />
+            <v-btn
+              icon="mdi-chevron-left"
+              variant="tonal"
+              size="small"
+              :aria-label="t('common.back')"
+              @click="stat.prev()"
+            />
             <div class="text-body-2 font-weight-medium text-center flex-1-1 text-truncate">
               {{ rangeLabel }}
             </div>
-            <v-btn icon="mdi-chevron-right" variant="tonal" size="small" :disabled="stat.offset >= 0" @click="stat.next()" />
+            <v-btn
+              icon="mdi-chevron-right"
+              variant="tonal"
+              size="small"
+              :disabled="stat.offset >= 0"
+              @click="stat.next()"
+            />
           </div>
         </SectionCard>
 
@@ -277,7 +332,9 @@ const tagFilterLabel = computed(() => {
             @update:model-value="stat.setFilterWalletIds($event)"
           >
             <template #selection="{ index }">
-              <span v-if="index === 0" class="text-caption text-truncate">{{ walletFilterLabel }}</span>
+              <span v-if="index === 0" class="text-caption text-truncate">{{
+                walletFilterLabel
+              }}</span>
             </template>
           </v-select>
 
@@ -295,7 +352,9 @@ const tagFilterLabel = computed(() => {
             @update:model-value="stat.setFilterTagIds($event)"
           >
             <template #selection="{ index }">
-              <span v-if="index === 0" class="text-caption text-truncate">{{ tagFilterLabel }}</span>
+              <span v-if="index === 0" class="text-caption text-truncate">{{
+                tagFilterLabel
+              }}</span>
             </template>
           </v-select>
         </SectionCard>

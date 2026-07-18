@@ -42,23 +42,27 @@ export const useCurrenciesStore = defineStore('currencies', () => {
   /** En güncel rates satırına abone ol. */
   function initCurrencies(): void {
     watchController?.abort()
-    watchController = watchTable<Row>(['rates'], 'SELECT * FROM rates ORDER BY date DESC LIMIT 1', [], (rows) => {
-      isLoaded.value = true
-      const row = rows[0]
-      if (!row) {
-        meta.value = null
-        return
+    watchController = watchTable<Row>(
+      ['rates'],
+      'SELECT * FROM rates ORDER BY date DESC LIMIT 1',
+      [],
+      (rows) => {
+        isLoaded.value = true
+        const row = rows[0]
+        if (!row) {
+          meta.value = null
+          return
+        }
+        const r = rowToRates(row)
+        if (r) rates.value = r
+        meta.value = {
+          date: String(row.date),
+          rateDate: (row.rateDate as string | null) ?? null,
+          source: (row.source as string | null) ?? null,
+          updatedAt: row.updatedAt != null ? Number(row.updatedAt) : null
+        }
       }
-      const r = rowToRates(row)
-      if (r)
-        rates.value = r
-      meta.value = {
-        date: String(row.date),
-        rateDate: (row.rateDate as string | null) ?? null,
-        source: (row.source as string | null) ?? null,
-        updatedAt: row.updatedAt != null ? Number(row.updatedAt) : null,
-      }
-    })
+    )
   }
 
   function setRates(values: Rates) {

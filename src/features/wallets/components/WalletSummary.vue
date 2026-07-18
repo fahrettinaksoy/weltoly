@@ -31,11 +31,11 @@ const props = defineProps<{
   wallet: WalletItemComputed
   walletId: string
   /** Tüm işlemler (dönemden bağımsız) — "son hareket" için. */
-  allTrns: { id: TrnId, trn: TrnItem }[]
+  allTrns: { id: TrnId; trn: TrnItem }[]
   /** Seçili dönemin işlemleri. */
-  periodTrns: { id: TrnId, trn: TrnItem }[]
+  periodTrns: { id: TrnId; trn: TrnItem }[]
   /** Bir önceki eş uzunluktaki dönem; 'all' seçiliyken null (kıyas yok). */
-  prevPeriodTrns: { id: TrnId, trn: TrnItem }[] | null
+  prevPeriodTrns: { id: TrnId; trn: TrnItem }[] | null
   isDefault: boolean
 }>()
 
@@ -52,20 +52,23 @@ const periodOptions = computed(() => [
   { value: '30' as const, label: t('walletDetail.days', { n: 30 }) },
   { value: '90' as const, label: t('walletDetail.days', { n: 90 }) },
   { value: '365' as const, label: t('walletDetail.days', { n: 365 }) },
-  { value: 'all' as const, label: t('walletDetail.allTime') },
+  { value: 'all' as const, label: t('walletDetail.allTime') }
 ])
 
 /** Durum çipleri: yalnız geçerli olanlar. Şablonda dört ayrı v-if okunmuyordu. */
 const statusChips = computed(() => {
   const w = props.wallet
-  if (!w)
-    return []
+  if (!w) return []
   return [
     props.isDefault && { label: t('wallets.default'), icon: 'mdi-star', color: 'warning' },
     w.isArchived && { label: t('wallets.archived'), icon: 'mdi-archive-outline', color: undefined },
-    w.isExcludeInTotal && { label: t('wallets.excludeInTotal'), icon: 'mdi-calculator-variant-outline', color: 'warning' },
-    w.isWithdrawal && { label: t('wallets.withdrawal'), icon: 'mdi-cash-fast', color: 'success' },
-  ].filter((c): c is { label: string, icon: string, color: string | undefined } => !!c)
+    w.isExcludeInTotal && {
+      label: t('wallets.excludeInTotal'),
+      icon: 'mdi-calculator-variant-outline',
+      color: 'warning'
+    },
+    w.isWithdrawal && { label: t('wallets.withdrawal'), icon: 'mdi-cash-fast', color: 'success' }
+  ].filter((c): c is { label: string; icon: string; color: string | undefined } => !!c)
 })
 
 /** En son hareket. allTrns yeniden eskiye sıralı → ilk eleman. */
@@ -83,12 +86,9 @@ function flowOf(trns: { trn: TrnItem }[]) {
   let count = 0
   for (const { trn } of trns) {
     count++
-    if (trn.type === TrnType.Transfer || trn.categoryId === ADJUSTMENT_ID)
-      continue
-    if (trn.type === TrnType.Income)
-      income += trn.amount
-    else
-      expense += trn.amount
+    if (trn.type === TrnType.Transfer || trn.categoryId === ADJUSTMENT_ID) continue
+    if (trn.type === TrnType.Income) income += trn.amount
+    else expense += trn.amount
   }
   return { income, expense, net: income - expense, count }
 }
@@ -106,10 +106,42 @@ const prevFlow = computed(() => (props.prevPeriodTrns ? flowOf(props.prevPeriodT
 const factCards = computed(() => {
   const p = prevFlow.value
   return [
-    { key: 'income', label: t('trnForm.income'), value: flow.value.income, money: true, tone: 'text-success', delta: p ? changeRatio(flow.value.income, p.income) : null, positiveIsGood: true },
-    { key: 'expense', label: t('trnForm.expense'), value: flow.value.expense, money: true, tone: 'text-error', delta: p ? changeRatio(flow.value.expense, p.expense) : null, positiveIsGood: false },
-    { key: 'net', label: t('walletDetail.net'), value: flow.value.net, money: true, tone: flow.value.net >= 0 ? '' : 'text-error', delta: null, positiveIsGood: true },
-    { key: 'count', label: t('wallets.table.trnCount'), value: flow.value.count, money: false, tone: '', delta: p ? changeRatio(flow.value.count, p.count) : null, positiveIsGood: true },
+    {
+      key: 'income',
+      label: t('trnForm.income'),
+      value: flow.value.income,
+      money: true,
+      tone: 'text-success',
+      delta: p ? changeRatio(flow.value.income, p.income) : null,
+      positiveIsGood: true
+    },
+    {
+      key: 'expense',
+      label: t('trnForm.expense'),
+      value: flow.value.expense,
+      money: true,
+      tone: 'text-error',
+      delta: p ? changeRatio(flow.value.expense, p.expense) : null,
+      positiveIsGood: false
+    },
+    {
+      key: 'net',
+      label: t('walletDetail.net'),
+      value: flow.value.net,
+      money: true,
+      tone: flow.value.net >= 0 ? '' : 'text-error',
+      delta: null,
+      positiveIsGood: true
+    },
+    {
+      key: 'count',
+      label: t('wallets.table.trnCount'),
+      value: flow.value.count,
+      money: false,
+      tone: '',
+      delta: p ? changeRatio(flow.value.count, p.count) : null,
+      positiveIsGood: true
+    }
   ]
 })
 
@@ -124,8 +156,7 @@ const factCards = computed(() => {
  */
 const baseEquivalent = computed(() => {
   const w = props.wallet
-  if (!w || w.currency === currenciesStore.base)
-    return null
+  if (!w || w.currency === currenciesStore.base) return null
   return toBaseAmount(w.amount, w.rate) // kur eksikse null → satır çizilmez
 })
 
@@ -136,15 +167,14 @@ const baseEquivalent = computed(() => {
  */
 const credit = computed(() => {
   const w = props.wallet
-  if (!w || w.type !== 'credit')
-    return null
+  if (!w || w.type !== 'credit') return null
   const limit = w.creditLimit ?? 0
   const used = Math.max(0, -w.amount)
   return {
     limit,
     used,
     available: Math.max(0, limit - used),
-    ratio: limit > 0 ? Math.min(100, (used / limit) * 100) : 0,
+    ratio: limit > 0 ? Math.min(100, (used / limit) * 100) : 0
   }
 })
 
@@ -174,8 +204,7 @@ function rootCategoryId(id: string): string {
 const expenseByLeaf = computed(() => {
   const sums = new Map<string, number>()
   for (const { trn } of props.periodTrns) {
-    if (trn.type !== TrnType.Expense || trn.categoryId === ADJUSTMENT_ID)
-      continue
+    if (trn.type !== TrnType.Expense || trn.categoryId === ADJUSTMENT_ID) continue
     sums.set(trn.categoryId, (sums.get(trn.categoryId) ?? 0) + trn.amount)
   }
   return sums
@@ -187,8 +216,7 @@ const leavesByRoot = computed(() => {
   for (const leaf of expenseByLeaf.value.keys()) {
     const root = rootCategoryId(leaf)
     const list = map.get(root)
-    if (list)
-      list.push(leaf)
+    if (list) list.push(leaf)
     else map.set(root, [leaf])
   }
   return map
@@ -218,7 +246,7 @@ function pieRow(id: string, value: number) {
     value,
     // Tek yapraklı kök inilmez: aynı tutar, aynı isim — tıklamak hiçbir şey
     // değiştirmez, tıklanabilir göstermek yalan olur.
-    canDrill: !drillRoot.value && (leavesByRoot.value.get(id)?.length ?? 0) > 1,
+    canDrill: !drillRoot.value && (leavesByRoot.value.get(id)?.length ?? 0) > 1
   }
 }
 
@@ -227,8 +255,7 @@ const categoryBreakdown = computed(() => {
   if (drillRoot.value) {
     for (const leaf of leavesByRoot.value.get(drillRoot.value) ?? [])
       sums.set(leaf, expenseByLeaf.value.get(leaf)!)
-  }
-  else {
+  } else {
     for (const [leaf, value] of expenseByLeaf.value)
       sums.set(rootCategoryId(leaf), (sums.get(rootCategoryId(leaf)) ?? 0) + value)
   }
@@ -247,14 +274,14 @@ const categoryBreakdown = computed(() => {
       title: t('walletDetail.otherCategories', { count: rows.length - PIE_LIMIT }),
       color: 'grey',
       value: restValue,
-      canDrill: false,
+      canDrill: false
     })
   }
   return top
 })
 
 const drillTitle = computed(() =>
-  drillRoot.value ? categoriesStore.items[drillRoot.value]?.name ?? '' : '',
+  drillRoot.value ? (categoriesStore.items[drillRoot.value]?.name ?? '') : ''
 )
 
 /** Pastada GÖSTERİLEN toplam — inildiğinde o kökün toplamı (donut merkezi). */
@@ -262,7 +289,7 @@ const totalExpense = computed(() => categoryBreakdown.value.reduce((s, r) => s +
 
 /** Dönemin TÜM gideri — inişten etkilenmez. Etiket oranlarının paydası. */
 const periodExpenseTotal = computed(() =>
-  [...expenseByLeaf.value.values()].reduce((s, v) => s + v, 0),
+  [...expenseByLeaf.value.values()].reduce((s, v) => s + v, 0)
 )
 
 // --- Etiket dağılımı ----------------------------------------------------
@@ -287,21 +314,18 @@ const tagBreakdown = computed(() => {
   for (const { trn } of props.periodTrns) {
     // Erken-continue ile daraltma: TrnItem bir birlik tipi, transfer dalında
     // `amount` alanı yok — .filter() TS'i daraltmaz, bu döngü daraltır.
-    if (trn.type !== TrnType.Expense || trn.categoryId === ADJUSTMENT_ID)
-      continue
+    if (trn.type !== TrnType.Expense || trn.categoryId === ADJUSTMENT_ID) continue
     expenses.push({ amount: trn.amount, tagIds: trn.tagIds })
   }
 
-  return buildTagBreakdown(expenses, periodExpenseTotal.value, TAG_LIMIT)
-    .map(row => ({
-      ...row,
-      title: row.key === UNTAGGED_KEY
+  return buildTagBreakdown(expenses, periodExpenseTotal.value, TAG_LIMIT).map((row) => ({
+    ...row,
+    title:
+      row.key === UNTAGGED_KEY
         ? t('walletDetail.untagged')
-        : tagsStore.items[row.key]?.name ?? row.key,
-      color: row.key === UNTAGGED_KEY
-        ? 'grey'
-        : tagsStore.items[row.key]?.color || 'grey',
-    }))
+        : (tagsStore.items[row.key]?.name ?? row.key),
+    color: row.key === UNTAGGED_KEY ? 'grey' : tagsStore.items[row.key]?.color || 'grey'
+  }))
 })
 </script>
 
@@ -319,10 +343,9 @@ const tagBreakdown = computed(() => {
           {{ t('wallets.table.balance') }}
         </div>
         <div class="d-flex align-baseline ga-2 flex-wrap">
-          <span
-            class="text-h5 font-weight-bold"
-            :class="{ 'text-error': wallet.amount < 0 }"
-          >{{ fmt.money(wallet.amount, wallet.currency) }}</span>
+          <span class="text-h5 font-weight-bold" :class="{ 'text-error': wallet.amount < 0 }">{{
+            fmt.money(wallet.amount, wallet.currency)
+          }}</span>
           <!-- Karşılık AYNI satırda: alt satıra alınca blok uzuyor ve şerit
            tek satırlık olmaktan çıkıyordu. Yalnız farklı para biriminde. -->
           <span v-if="baseEquivalent !== null" class="text-caption text-medium-emphasis">
@@ -393,7 +416,8 @@ const tagBreakdown = computed(() => {
       <div class="d-flex align-center justify-space-between mb-2 flex-wrap ga-2">
         <span class="text-subtitle-2 font-weight-bold">{{ t('walletDetail.creditUsage') }}</span>
         <span class="text-body-2">
-          {{ fmt.money(credit.used, wallet.currency) }} / {{ fmt.money(credit.limit, wallet.currency) }}
+          {{ fmt.money(credit.used, wallet.currency) }} /
+          {{ fmt.money(credit.limit, wallet.currency) }}
         </span>
       </div>
       <v-progress-linear
@@ -465,7 +489,9 @@ const tagBreakdown = computed(() => {
       <div class="wallet-col wallet-col--cat">
         <SectionCard
           :title="drillRoot ? drillTitle : t('walletDetail.byCategory')"
-          :subtitle="drillRoot ? t('walletDetail.byCategoryDrillDesc') : t('walletDetail.byCategoryDesc')"
+          :subtitle="
+            drillRoot ? t('walletDetail.byCategoryDrillDesc') : t('walletDetail.byCategoryDesc')
+          "
           icon="mdi-chart-donut"
         >
           <!-- İnildiyse çıkış yolu her zaman görünür olmalı; yoksa kullanıcı
@@ -489,7 +515,14 @@ const tagBreakdown = computed(() => {
           />
 
           <div v-else class="d-flex align-center ga-5 flex-wrap">
-            <v-pie :items="categoryBreakdown" :size="150" :inner-cut="64" :gap="2" rounded="2" tooltip>
+            <v-pie
+              :items="categoryBreakdown"
+              :size="150"
+              :inner-cut="64"
+              :gap="2"
+              rounded="2"
+              tooltip
+            >
               <template #center>
                 <div class="text-caption font-weight-bold">
                   {{ fmt.money(totalExpense, wallet.currency) }}
@@ -538,14 +571,13 @@ const tagBreakdown = computed(() => {
         <!-- density/size verilmez: varsayılan yükseklik (36px) dikeyde nefes
          aldırır. density="comfortable" + size="small" bunu ~28px'e indirip
          butonları sıkıştırıyordu. -->
-        <v-btn-toggle
-          v-model="period"
-          direction="vertical"
-          color="primary"
-          mandatory
-          class="w-100"
-        >
-          <v-btn v-for="opt in periodOptions" :key="opt.value" :value="opt.value" class="justify-start">
+        <v-btn-toggle v-model="period" direction="vertical" color="primary" mandatory class="w-100">
+          <v-btn
+            v-for="opt in periodOptions"
+            :key="opt.value"
+            :value="opt.value"
+            class="justify-start"
+          >
             {{ opt.label }}
           </v-btn>
         </v-btn-toggle>
@@ -565,7 +597,9 @@ const tagBreakdown = computed(() => {
         <div v-for="tg in tagBreakdown" :key="tg.key" class="wallet-tagbar">
           <div class="d-flex align-center ga-2 mb-1">
             <span class="text-caption text-truncate flex-1-1">{{ tg.title }}</span>
-            <span class="text-caption font-weight-medium">{{ fmt.money(tg.value, wallet.currency) }}</span>
+            <span class="text-caption font-weight-medium">{{
+              fmt.money(tg.value, wallet.currency)
+            }}</span>
             <span class="text-caption text-medium-emphasis wallet-tagbar-pct">
               {{ fmt.percent(tg.ratio) }}
             </span>

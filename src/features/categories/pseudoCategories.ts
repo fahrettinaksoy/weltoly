@@ -19,7 +19,7 @@ export const TRANSFER_ID = 'transfer' as const
 export const ADJUSTMENT_ID = 'adjustment' as const
 
 export const PSEUDO_CATEGORY_IDS = [TRANSFER_ID, ADJUSTMENT_ID] as const
-export type PseudoCategoryId = typeof PSEUDO_CATEGORY_IDS[number]
+export type PseudoCategoryId = (typeof PSEUDO_CATEGORY_IDS)[number]
 
 export function isPseudoCategoryId(id: unknown): id is PseudoCategoryId {
   return id === TRANSFER_ID || id === ADJUSTMENT_ID
@@ -27,11 +27,11 @@ export function isPseudoCategoryId(id: unknown): id is PseudoCategoryId {
 
 export const PSEUDO_ICONS: Record<PseudoCategoryId, string> = {
   [TRANSFER_ID]: 'mdi-swap-horizontal',
-  [ADJUSTMENT_ID]: 'mdi-scale-balance',
+  [ADJUSTMENT_ID]: 'mdi-scale-balance'
 }
 
 /** i18n anahtarları (walletDetail bölümünde tr/en/ru üçünde de tanımlı). */
 export const PSEUDO_LABEL_KEYS: Record<PseudoCategoryId, string> = {
   [TRANSFER_ID]: 'walletDetail.transfer',
-  [ADJUSTMENT_ID]: 'walletDetail.adjustment',
+  [ADJUSTMENT_ID]: 'walletDetail.adjustment'
 }

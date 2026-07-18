@@ -12,7 +12,7 @@
  */
 
 export const RATE_SOURCE_KEYS = ['frankfurter', 'tcmb', 'open-er-api'] as const
-export type RateSourceKey = typeof RATE_SOURCE_KEYS[number]
+export type RateSourceKey = (typeof RATE_SOURCE_KEYS)[number]
 
 /** Ayar okunamadığında/boşken kullanılan kaynak. */
 export const DEFAULT_RATE_SOURCE: RateSourceKey = 'frankfurter'
@@ -32,22 +32,22 @@ export interface RateSourceMeta {
 }
 
 export const RATE_SOURCES: Record<RateSourceKey, RateSourceMeta> = {
-  'frankfurter': {
+  frankfurter: {
     key: 'frankfurter',
     label: 'Frankfurter (ECB)',
     descKey: 'settings.rateSourceFrankfurterDesc',
-    currencyCount: 29,
+    currencyCount: 29
   },
-  'tcmb': {
+  tcmb: {
     key: 'tcmb',
     label: 'TCMB',
     descKey: 'settings.rateSourceTcmbDesc',
-    currencyCount: 22,
+    currencyCount: 22
   },
   'open-er-api': {
     key: 'open-er-api',
     label: 'open.er-api.com',
     descKey: 'settings.rateSourceErApiDesc',
-    currencyCount: 160,
-  },
+    currencyCount: 160
+  }
 }

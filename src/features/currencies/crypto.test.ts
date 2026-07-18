@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { CRYPTO_CODES, CRYPTO_CURRENCIES, CRYPTO_IDS, cryptoCurrencyOptions, isCryptoCode } from './crypto'
+import {
+  CRYPTO_CODES,
+  CRYPTO_CURRENCIES,
+  CRYPTO_IDS,
+  cryptoCurrencyOptions,
+  isCryptoCode
+} from './crypto'
 import { allCurrencies } from './list'
 
 // B-3 sonrası kripto TEK KAYNAKTAN türetiliyor, bu yüzden "iki liste aynı mı"
@@ -16,11 +22,11 @@ describe('kripto tek kaynağı', () => {
   it('aynı CoinGecko id iki paraya verilmemiş', () => {
     // İki kod aynı id'ye bakarsa ikisi de AYNI fiyatı alır — sessizce yanlış
     // net değer (ör. ETH'ye bitcoin fiyatı).
-    const ids = CRYPTO_CURRENCIES.map(c => c.coingeckoId)
+    const ids = CRYPTO_CURRENCIES.map((c) => c.coingeckoId)
     expect(new Set(ids).size).toBe(ids.length)
   })
 
-  it('her paranın kodu, adı ve id\'si dolu', () => {
+  it("her paranın kodu, adı ve id'si dolu", () => {
     for (const c of CRYPTO_CURRENCIES) {
       expect(c.code, `kod boş: ${JSON.stringify(c)}`).toBeTruthy()
       expect(c.name, `ad boş: ${c.code}`).toBeTruthy()
@@ -50,7 +56,7 @@ describe('kripto tek kaynağı', () => {
 describe('para birimi listesiyle bütünlük', () => {
   it('her kripto seçicide görünüyor', () => {
     // Görünmezse kullanıcı o cüzdanı hiç oluşturamaz ama fiyatı boşuna çekilir.
-    const codes = new Set(allCurrencies.map(c => c.code))
+    const codes = new Set(allCurrencies.map((c) => c.code))
     for (const code of CRYPTO_CODES)
       expect(codes.has(code), `${code} allCurrencies'te yok`).toBe(true)
   })
@@ -60,18 +66,19 @@ describe('para birimi listesiyle bütünlük', () => {
     // çakışsaydı seçicide iki kez görünür ve kur eşlemesi hangisinin kastedildiğini
     // bilemezdi — sessizce yanlış dönüşüm.
     const seen = new Set<string>()
-    const dupes = allCurrencies.map(c => c.code).filter((code) => {
-      if (seen.has(code))
-        return true
-      seen.add(code)
-      return false
-    })
+    const dupes = allCurrencies
+      .map((c) => c.code)
+      .filter((code) => {
+        if (seen.has(code)) return true
+        seen.add(code)
+        return false
+      })
     expect(dupes).toEqual([])
   })
 
   it('seçici girdileri kaynakla aynı sırada ve içerikte', () => {
     expect(cryptoCurrencyOptions).toEqual(
-      CRYPTO_CURRENCIES.map(({ code, name }) => ({ code, name })),
+      CRYPTO_CURRENCIES.map(({ code, name }) => ({ code, name }))
     )
   })
 })

@@ -11,7 +11,7 @@ import { buildBalanceSeries } from '@/features/wallets/lib/balanceSeries'
 import '@/plugins/echarts'
 
 const props = defineProps<{
-  trns: { id: TrnId, trn: TrnItem }[]
+  trns: { id: TrnId; trn: TrnItem }[]
   walletId: string
   /** Cüzdanın BUGÜNKÜ bakiyesi — seri bundan geriye doğru kurulur. */
   currentBalance: number
@@ -25,7 +25,11 @@ const fmt = useFormat()
 // Seri mantığı features/wallets/lib/balanceSeries.ts'te — TEK KAYNAK (Y-5).
 // Testler de aynı modülü import eder; bileşen içinde kopyası YOK.
 const series = computed(() =>
-  buildBalanceSeries(props.trns.map(x => x.trn), props.walletId, props.currentBalance),
+  buildBalanceSeries(
+    props.trns.map((x) => x.trn),
+    props.walletId,
+    props.currentBalance
+  )
 )
 
 const colors = computed(() => theme.current.value.colors)
@@ -39,35 +43,37 @@ const option = computed(() => {
     grid: { left: 8, right: 12, top: 16, bottom: 24, containLabel: true },
     tooltip: {
       trigger: 'axis',
-      valueFormatter: (v: number) => fmt.money(v, props.currency),
+      valueFormatter: (v: number) => fmt.money(v, props.currency)
     },
     xAxis: {
       type: 'category',
-      data: series.value.map(p => format(p.date, 'd MMM')),
+      data: series.value.map((p) => format(p.date, 'd MMM')),
       axisLabel: { color: onSurface, fontSize: 10 },
-      axisLine: { lineStyle: { color: gridLine } },
+      axisLine: { lineStyle: { color: gridLine } }
     },
     yAxis: {
       type: 'value',
       axisLabel: { color: onSurface, fontSize: 10 },
-      splitLine: { lineStyle: { color: gridLine } },
+      splitLine: { lineStyle: { color: gridLine } }
     },
-    series: [{
-      type: 'line',
-      smooth: true,
-      showSymbol: false,
-      data: series.value.map(p => Math.round(p.balance)),
-      lineStyle: { color: primary, width: 2 },
-      areaStyle: { color: primary, opacity: 0.12 },
-      // Sıfır çizgisi: bakiye eksiye geçtiğinde göz onu arıyor.
-      markLine: {
-        silent: true,
-        symbol: 'none',
-        data: [{ yAxis: 0 }],
-        lineStyle: { color: onSurface, opacity: 0.35, type: 'dashed' },
-        label: { show: false },
-      },
-    }],
+    series: [
+      {
+        type: 'line',
+        smooth: true,
+        showSymbol: false,
+        data: series.value.map((p) => Math.round(p.balance)),
+        lineStyle: { color: primary, width: 2 },
+        areaStyle: { color: primary, opacity: 0.12 },
+        // Sıfır çizgisi: bakiye eksiye geçtiğinde göz onu arıyor.
+        markLine: {
+          silent: true,
+          symbol: 'none',
+          data: [{ yAxis: 0 }],
+          lineStyle: { color: onSurface, opacity: 0.35, type: 'dashed' },
+          label: { show: false }
+        }
+      }
+    ]
   }
 })
 </script>

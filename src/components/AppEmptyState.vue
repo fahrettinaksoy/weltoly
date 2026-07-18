@@ -12,22 +12,25 @@
  *    olayı yayınlanır (çağıran ne yapacağına karar verir: rota, diyalog, sıfırla).
  *  - `#action` slot'u: tamamen özel düğme(ler) gerektiğinde.
  */
-withDefaults(defineProps<{
-  icon: string
-  title: string
-  /** İkincil açıklama; kısa bir cümle. */
-  text?: string
-  /** Eylem düğmesi etiketi. Verilmezse (ve #action slot'u yoksa) düğme çizilmez. */
-  actionText?: string
-  actionIcon?: string
-  /** Vurgu (ikon dairesi) rengi. */
-  color?: string
-  /** Kart içi küçük boşluklar için 'compact'; sayfa/tablo boşları için 'default'. */
-  density?: 'compact' | 'default'
-}>(), {
-  color: 'primary',
-  density: 'default',
-})
+withDefaults(
+  defineProps<{
+    icon: string
+    title: string
+    /** İkincil açıklama; kısa bir cümle. */
+    text?: string
+    /** Eylem düğmesi etiketi. Verilmezse (ve #action slot'u yoksa) düğme çizilmez. */
+    actionText?: string
+    actionIcon?: string
+    /** Vurgu (ikon dairesi) rengi. */
+    color?: string
+    /** Kart içi küçük boşluklar için 'compact'; sayfa/tablo boşları için 'default'. */
+    density?: 'compact' | 'default'
+  }>(),
+  {
+    color: 'primary',
+    density: 'default'
+  }
+)
 
 defineEmits<{ action: [] }>()
 </script>
@@ -53,12 +56,7 @@ defineEmits<{ action: [] }>()
 
     <template v-if="actionText || $slots.action" #actions>
       <slot name="action">
-        <v-btn
-          :prepend-icon="actionIcon"
-          color="primary"
-          variant="tonal"
-          @click="$emit('action')"
-        >
+        <v-btn :prepend-icon="actionIcon" color="primary" variant="tonal" @click="$emit('action')">
           {{ actionText }}
         </v-btn>
       </slot>

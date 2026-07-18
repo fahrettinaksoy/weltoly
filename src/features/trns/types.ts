@@ -6,7 +6,7 @@ import { z } from 'zod'
 export enum TrnType {
   Expense = 0,
   Income = 1,
-  Transfer = 2,
+  Transfer = 2
 }
 
 export type TrnId = string
@@ -23,14 +23,14 @@ const baseTrnSchema = z.object({
   date: z.number(),
   desc: z.string().optional(),
   tagIds: z.array(z.string()).optional(),
-  updatedAt: z.number(),
+  updatedAt: z.number()
 })
 
 const transactionSchema = baseTrnSchema.extend({
   amount: z.number().positive(),
   categoryId: z.string().min(1),
   type: z.union([z.literal(TrnType.Expense), z.literal(TrnType.Income)]),
-  walletId: z.string().min(1),
+  walletId: z.string().min(1)
 })
 
 const transferSchema = baseTrnSchema.extend({
@@ -39,13 +39,10 @@ const transferSchema = baseTrnSchema.extend({
   expenseWalletId: z.string().min(1),
   incomeAmount: z.number().positive(),
   incomeWalletId: z.string().min(1),
-  type: z.literal(TrnType.Transfer),
+  type: z.literal(TrnType.Transfer)
 })
 
-export const trnItemSchema = z.discriminatedUnion('type', [
-  transactionSchema,
-  transferSchema,
-])
+export const trnItemSchema = z.discriminatedUnion('type', [transactionSchema, transferSchema])
 
 export type Transaction = z.infer<typeof transactionSchema>
 export type Transfer = z.infer<typeof transferSchema>
@@ -56,14 +53,16 @@ interface TrnItemFullBase {
   id: TrnId
 }
 
-export type TransactionFull = Transaction & TrnItemFullBase & {
-  wallet: WalletItem
-}
+export type TransactionFull = Transaction &
+  TrnItemFullBase & {
+    wallet: WalletItem
+  }
 
-export type TransferFull = Transfer & TrnItemFullBase & {
-  expenseWallet: WalletItem
-  incomeWallet: WalletItem
-}
+export type TransferFull = Transfer &
+  TrnItemFullBase & {
+    expenseWallet: WalletItem
+    incomeWallet: WalletItem
+  }
 
 export type TrnItemFull = TransactionFull | TransferFull
 

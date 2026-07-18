@@ -20,7 +20,7 @@ export const icons = {
     income: 'mdi-arrow-down',
     expense: 'mdi-arrow-up',
     lock: 'mdi-lock-outline',
-    search: 'mdi-magnify',
+    search: 'mdi-magnify'
   },
-  sets: { mdi },
+  sets: { mdi }
 }

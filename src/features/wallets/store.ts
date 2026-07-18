@@ -1,7 +1,13 @@
 import type { CurrencyCode } from '@/features/currencies/types'
 import type { TrnId } from '@/features/trns/types'
 
-import type { WalletId, WalletItem, WalletItemComputed, Wallets, WalletsComputed } from '@/features/wallets/types'
+import type {
+  WalletId,
+  WalletItem,
+  WalletItemComputed,
+  Wallets,
+  WalletsComputed
+} from '@/features/wallets/types'
 import type { Row, WatchHandle } from '@/services/db'
 import { defineStore } from 'pinia'
 import { useCurrenciesStore } from '@/features/currencies/store'
@@ -19,7 +25,7 @@ import {
   upsertRow,
   upsertRows,
   walletToRow,
-  watchTable,
+  watchTable
 } from '@/services/db'
 import { getAmountInRate, getWalletsTotals } from '@/shared/lib/getTotal'
 import { logger } from '@/shared/lib/logger'
@@ -28,11 +34,9 @@ import { uniqueElementsBy } from '@/shared/lib/simple'
 import { showErrorToast, showSuccessToast } from '@/stores/ui'
 
 function rowsToWallets(rows: Row[]): Wallets | null {
-  if (!rows.length)
-    return null
+  if (!rows.length) return null
   const map: Wallets = {}
-  for (const row of rows)
-    map[row.id] = rowToWallet(row)
+  for (const row of rows) map[row.id] = rowToWallet(row)
   return map
 }
 
@@ -68,14 +72,16 @@ export const useWalletsStore = defineStore('wallets', () => {
     })
   }
 
-  function saveWallet({ id, values }: { id: WalletId, values: WalletItem }) {
+  function saveWallet({ id, values }: { id: WalletId; values: WalletItem }) {
     // İlk cüzdanın para birimi varsayılan temel para birimi olur.
-    if (!hasItems.value)
-      useUserStore().saveUserBaseCurrency(values.currency)
+    if (!hasItems.value) useUserStore().saveUserBaseCurrency(values.currency)
 
     const isNew = !(items.value && id in items.value)
     if (isNew) {
-      const maxOrder = Object.values(items.value ?? {}).reduce((max, w) => Math.max(max, w.order ?? 0), -1)
+      const maxOrder = Object.values(items.value ?? {}).reduce(
+        (max, w) => Math.max(max, w.order ?? 0),
+        -1
+      )
       values = { ...values, order: maxOrder + 1 }
     }
 
@@ -83,13 +89,15 @@ export const useWalletsStore = defineStore('wallets', () => {
     // İyimser güncelleme (anında UI). Watch aynı şekli yeniden yayar.
     setWallets({ ...(items.value ?? {}), [id]: values })
 
-    return upsertRow('wallets', id, walletToRow(values, resolveWriteUid(null))).then(() => {
-      showSuccessToast(isNew ? 'wallets.added' : 'wallets.updated')
-    }).catch((e) => {
-      setWallets(prev)
-      logger.error('[wallets] saveWallet failed', e)
-      showErrorToast('wallets.errors.saveFailed')
-    })
+    return upsertRow('wallets', id, walletToRow(values, resolveWriteUid(null)))
+      .then(() => {
+        showSuccessToast(isNew ? 'wallets.added' : 'wallets.updated')
+      })
+      .catch((e) => {
+        setWallets(prev)
+        logger.error('[wallets] saveWallet failed', e)
+        showErrorToast('wallets.errors.saveFailed')
+      })
   }
 
   function saveWalletsOrder(ids: WalletId[]) {
@@ -97,19 +105,18 @@ export const useWalletsStore = defineStore('wallets', () => {
     const updated = { ...(items.value ?? {}) } as Wallets
     for (let i = 0; i < ids.length; i++) {
       const walletId = ids[i]!
-      if (updated[walletId])
-        updated[walletId] = { ...updated[walletId]!, order: i }
+      if (updated[walletId]) updated[walletId] = { ...updated[walletId]!, order: i }
     }
     setWallets(updated)
 
     upsertRows(
       'wallets',
       ids
-        .filter(walletId => items.value?.[walletId])
+        .filter((walletId) => items.value?.[walletId])
         .map((walletId, index) => ({
           id: walletId,
-          row: walletToRow({ ...items.value![walletId]!, order: index }, resolveWriteUid(null)),
-        })),
+          row: walletToRow({ ...items.value![walletId]!, order: index }, resolveWriteUid(null))
+        }))
     ).catch((e) => {
       setWallets(prev)
       logger.error('[wallets] saveWalletsOrder failed', e)
@@ -118,73 +125,70 @@ export const useWalletsStore = defineStore('wallets', () => {
   }
 
   const sortedIds = computed(() => {
-    if (!hasItems.value)
-      return []
+    if (!hasItems.value) return []
     return Object.keys(items.value ?? {}).sort(
-      (a, b) => (items.value![a]?.order ?? 0) - (items.value![b]?.order ?? 0),
+      (a, b) => (items.value![a]?.order ?? 0) - (items.value![b]?.order ?? 0)
     )
   })
 
   const recentWalletIds = computed<WalletId[]>(() => {
-    if (!hasItems.value || !trnsStore.hasItems)
-      return []
+    if (!hasItems.value || !trnsStore.hasItems) return []
 
     const trnsItems = trnsStore.items
     const latestDateByWallet = new Map<WalletId, number>()
 
     for (const trnId in trnsItems) {
       const trn = trnsItems[trnId]
-      if (!trn)
-        continue
+      if (!trn) continue
 
       if (trn.type === TrnType.Transfer) {
         const e1 = latestDateByWallet.get(trn.expenseWalletId)
-        if (!e1 || trn.date > e1)
-          latestDateByWallet.set(trn.expenseWalletId, trn.date)
+        if (!e1 || trn.date > e1) latestDateByWallet.set(trn.expenseWalletId, trn.date)
         const e2 = latestDateByWallet.get(trn.incomeWalletId)
-        if (!e2 || trn.date > e2)
-          latestDateByWallet.set(trn.incomeWalletId, trn.date)
-      }
-      else {
+        if (!e2 || trn.date > e2) latestDateByWallet.set(trn.incomeWalletId, trn.date)
+      } else {
         const e = latestDateByWallet.get(trn.walletId)
-        if (!e || trn.date > e)
-          latestDateByWallet.set(trn.walletId, trn.date)
+        if (!e || trn.date > e) latestDateByWallet.set(trn.walletId, trn.date)
       }
     }
 
     return [...latestDateByWallet.entries()]
       .toSorted(([, a], [, b]) => b - a)
       .map(([id]) => id)
-      .filter(id => items.value?.[id])
+      .filter((id) => items.value?.[id])
   })
 
   const walletTotals = computed(() =>
     getWalletsTotals({
       trnsItems: trnsStore.items ?? {},
-      walletsItems: items.value ?? {},
-    }),
+      walletsItems: items.value ?? {}
+    })
   )
 
   const itemsComputed = computed<WalletsComputed>(() =>
-    sortedIds.value.reduce((acc, id) => {
-      const wallet = items.value?.[id]
-      if (!wallet)
+    sortedIds.value.reduce(
+      (acc, id) => {
+        const wallet = items.value?.[id]
+        if (!wallet) return acc
+        acc[id] = {
+          ...wallet,
+          amount: walletTotals.value.get(id) ?? 0,
+          rate: getAmountInRate({
+            amount: 1,
+            baseCurrencyCode: currenciesStore.base,
+            currencyCode: wallet.currency,
+            rates: currenciesStore.rates
+          })
+        }
         return acc
-      acc[id] = {
-        ...wallet,
-        amount: walletTotals.value.get(id) ?? 0,
-        rate: getAmountInRate({
-          amount: 1,
-          baseCurrencyCode: currenciesStore.base,
-          currencyCode: wallet.currency,
-          rates: currenciesStore.rates,
-        }),
-      }
-      return acc
-    }, {} as Record<WalletId, WalletItemComputed>),
+      },
+      {} as Record<WalletId, WalletItemComputed>
+    )
   )
 
-  const currenciesUsed = computed<CurrencyCode[]>(() => uniqueElementsBy(itemsComputed.value, 'currency'))
+  const currenciesUsed = computed<CurrencyCode[]>(() =>
+    uniqueElementsBy(itemsComputed.value, 'currency')
+  )
 
   /**
    * Varlık / borç / net — temel para biriminde.
@@ -204,16 +208,14 @@ export const useWalletsStore = defineStore('wallets', () => {
     let debts = 0
     let hasMissingRates = false
     for (const wallet of Object.values(itemsComputed.value)) {
-      if (wallet.isExcludeInTotal)
-        continue
+      if (wallet.isExcludeInTotal) continue
       // Kur eksikse (rate null) cüzdanı NET'e sokma — sessiz 1:1 varsayma (Y-1).
       if (wallet.rate == null) {
         hasMissingRates = true
         continue
       }
       const base = wallet.amount * wallet.rate
-      if (base >= 0)
-        assets = addMoney(assets, base)
+      if (base >= 0) assets = addMoney(assets, base)
       else debts = subMoney(debts, base) // base<0 → -base ekle
     }
     return { assets, debts, net: subMoney(assets, debts), hasMissingRates }
@@ -221,7 +223,7 @@ export const useWalletsStore = defineStore('wallets', () => {
 
   /** Borcun varlığa oranı. Varlık 0 iken tanımsız → 0 (sıfıra bölme). */
   const debtRatio = computed(() =>
-    totals.value.assets ? (totals.value.debts / totals.value.assets) * 100 : 0,
+    totals.value.assets ? (totals.value.debts / totals.value.assets) * 100 : 0
   )
 
   /**
@@ -231,12 +233,10 @@ export const useWalletsStore = defineStore('wallets', () => {
    */
   function referencingTrnIds(walletId: WalletId): TrnId[] {
     const trns = trnsStore.items
-    if (!trns)
-      return []
+    if (!trns) return []
     const ids: TrnId[] = []
     for (const trnId in trns) {
-      if (walletIdsOfTrn(trns[trnId]!).includes(walletId))
-        ids.push(trnId)
+      if (walletIdsOfTrn(trns[trnId]!).includes(walletId)) ids.push(trnId)
     }
     return ids
   }
@@ -249,8 +249,7 @@ export const useWalletsStore = defineStore('wallets', () => {
     delete wallets[id]
     setWallets(wallets)
 
-    if (trnsIds.length)
-      trnsStore.removeTrnsFromStore(trnsIds)
+    if (trnsIds.length) trnsStore.removeTrnsFromStore(trnsIds)
 
     try {
       // TEK transaction: cüzdan + işlemleri ya hep ya hiç. Eskiden `Promise.all`
@@ -260,19 +259,17 @@ export const useWalletsStore = defineStore('wallets', () => {
       //
       // İşlemler cüzdandan ÖNCE: FK açıldığında bu sıra şart olacak.
       await deleteRows([
-        ...trnsIds.map(trnId => ({ table: 'trns', id: trnId })),
-        { table: 'wallets', id },
+        ...trnsIds.map((trnId) => ({ table: 'trns', id: trnId })),
+        { table: 'wallets', id }
       ])
 
       // Silinen cüzdan varsayılansa işaretçiyi temizle: FK yok, dangling
       // referansı uygulama temizlemezse form var olmayan cüzdanla açılır.
       const userStore = useUserStore()
-      if (userStore.defaultWalletId === id)
-        userStore.saveDefaultWalletId(null)
+      if (userStore.defaultWalletId === id) userStore.saveDefaultWalletId(null)
 
       showSuccessToast('wallets.deleted')
-    }
-    catch (e) {
+    } catch (e) {
       setWallets(prevWallets)
       trnsStore.setTrns(prevTrns)
       logger.error('[wallets] deleteWallet failed', e)
@@ -295,6 +292,6 @@ export const useWalletsStore = defineStore('wallets', () => {
     saveWalletsOrder,
     setWallets,
     sortedIds,
-    totals,
+    totals
   }
 })

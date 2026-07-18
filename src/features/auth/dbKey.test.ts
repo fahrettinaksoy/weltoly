@@ -29,12 +29,12 @@ describe('dbKey — SQLCipher ham-anahtar türetme', () => {
     expect(a).not.toBe(b)
   })
 
-  it('pragma ham-anahtar (x\'...\') biçiminde üretilir', async () => {
+  it("pragma ham-anahtar (x'...') biçiminde üretilir", async () => {
     const key = await deriveDbKeyHex('123456', SALT_A)
     expect(sqlcipherKeyPragma(key)).toBe(`PRAGMA key = "x'${key}'"`)
   })
 
-  it('geçersiz anahtar (64 hex değil) reddedilir — passphrase\'e sessizce düşmez', () => {
+  it("geçersiz anahtar (64 hex değil) reddedilir — passphrase'e sessizce düşmez", () => {
     expect(() => sqlcipherKeyPragma('deadbeef')).toThrow()
     expect(() => sqlcipherKeyPragma('z'.repeat(64))).toThrow()
   })

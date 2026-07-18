@@ -11,7 +11,7 @@ import {
   rowToTag,
   tagToRow,
   upsertRow,
-  watchTable,
+  watchTable
 } from '@/services/db'
 import { logger } from '@/shared/lib/logger'
 import { showErrorToast, showSuccessToast } from '@/stores/ui'
@@ -35,8 +35,8 @@ export const useTagsStore = defineStore('tags', () => {
   // Ada göre alfabetik sıralı id listesi.
   const sortedIds = computed<TagId[]>(() =>
     Object.keys(items.value).sort((a, b) =>
-      (items.value[a]?.name ?? '').localeCompare(items.value[b]?.name ?? ''),
-    ),
+      (items.value[a]?.name ?? '').localeCompare(items.value[b]?.name ?? '')
+    )
   )
 
   function initTags(): void {
@@ -45,8 +45,7 @@ export const useTagsStore = defineStore('tags', () => {
     watchController = watchTable<Row>(['tags'], 'SELECT * FROM tags', [], (rows) => {
       isLoaded.value = true
       const map: Tags = {}
-      for (const row of rows)
-        map[row.id] = rowToTag(row)
+      for (const row of rows) map[row.id] = rowToTag(row)
       items.value = map
     })
   }
@@ -57,25 +56,26 @@ export const useTagsStore = defineStore('tags', () => {
 
   /** Var olan etiket id'lerini süz (bilinmeyenleri at) — çip gösteriminde kullanılır. */
   function resolveIds(ids: TagId[] | undefined): TagId[] {
-    if (!ids?.length)
-      return []
-    return ids.filter(id => items.value[id])
+    if (!ids?.length) return []
+    return ids.filter((id) => items.value[id])
   }
 
-  function saveTag({ id, values }: { id: TagId, values: TagItem }) {
+  function saveTag({ id, values }: { id: TagId; values: TagItem }) {
     const prev = items.value
     // İyimser güncellemeden ÖNCE bak: sonrası hep "var" görünürdü.
     const isNew = !items.value[id]
     const next: TagItem = { ...values, name: values.name.trim(), updatedAt: Date.now() }
     setTags({ ...items.value, [id]: next })
 
-    return upsertRow('tags', id, tagToRow(next, resolveWriteUid(null))).then(() => {
-      showSuccessToast(isNew ? 'tags.added' : 'tags.updated')
-    }).catch((e) => {
-      setTags(prev)
-      logger.error('[tags] saveTag failed', e)
-      showErrorToast('tags.errors.saveFailed')
-    })
+    return upsertRow('tags', id, tagToRow(next, resolveWriteUid(null)))
+      .then(() => {
+        showSuccessToast(isNew ? 'tags.added' : 'tags.updated')
+      })
+      .catch((e) => {
+        setTags(prev)
+        logger.error('[tags] saveTag failed', e)
+        showErrorToast('tags.errors.saveFailed')
+      })
   }
 
   /**
@@ -103,7 +103,7 @@ export const useTagsStore = defineStore('tags', () => {
       for (const trnId in trns) {
         const trn = trns[trnId]
         if (trn?.tagIds?.includes(id)) {
-          const tagIds = trn.tagIds.filter(t => t !== id)
+          const tagIds = trn.tagIds.filter((t) => t !== id)
           // silent: bu kullanıcının "işlem kaydet"i değil, silinen etiketin temizliği
           updates.push(trnsStore.saveTrn({ id: trnId, values: { ...trn, tagIds }, silent: true }))
         }
@@ -124,8 +124,7 @@ export const useTagsStore = defineStore('tags', () => {
     try {
       await deleteRow('tags', id)
       showSuccessToast('tags.deleted')
-    }
-    catch (e) {
+    } catch (e) {
       setTags(prev)
       trnsStore.setTrns(prevTrns)
       logger.error('[tags] deleteTag failed', e)
@@ -142,6 +141,6 @@ export const useTagsStore = defineStore('tags', () => {
     setTags,
     resolveIds,
     saveTag,
-    deleteTag,
+    deleteTag
   }
 })

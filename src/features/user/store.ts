@@ -42,19 +42,22 @@ export const useUserStore = defineStore('user', () => {
 
   function initUserSettings(): void {
     watchController?.abort()
-    watchController = watchTable<Row>(['user_settings'], 'SELECT * FROM user_settings LIMIT 1', [], (rows) => {
-      const s = rows[0]
-      if (!s)
-        return
-      if (s.baseCurrency)
-        baseCurrency.value = s.baseCurrency
-      // 004 öncesi satırlarda kolon yok/null → null'a düşer (ilk cüzdan kullanılır)
-      defaultWalletId.value = (s.defaultWalletId as WalletId | null) ?? null
-      // 006 öncesi satırlarda kolon yok/null → varsayılan kaynak.
-      // isRateSourceKey: DB'de tanınmayan bir değer varsa (elle düzenleme,
-      // eski sürümden kalma) sessizce ona güvenme.
-      rateSource.value = isRateSourceKey(s.rateSource) ? s.rateSource : DEFAULT_RATE_SOURCE
-    })
+    watchController = watchTable<Row>(
+      ['user_settings'],
+      'SELECT * FROM user_settings LIMIT 1',
+      [],
+      (rows) => {
+        const s = rows[0]
+        if (!s) return
+        if (s.baseCurrency) baseCurrency.value = s.baseCurrency
+        // 004 öncesi satırlarda kolon yok/null → null'a düşer (ilk cüzdan kullanılır)
+        defaultWalletId.value = (s.defaultWalletId as WalletId | null) ?? null
+        // 006 öncesi satırlarda kolon yok/null → varsayılan kaynak.
+        // isRateSourceKey: DB'de tanınmayan bir değer varsa (elle düzenleme,
+        // eski sürümden kalma) sessizce ona güvenme.
+        rateSource.value = isRateSourceKey(s.rateSource) ? s.rateSource : DEFAULT_RATE_SOURCE
+      }
+    )
   }
 
   function setUserBaseCurrency(value: CurrencyCode) {
@@ -71,13 +74,13 @@ export const useUserStore = defineStore('user', () => {
       baseCurrency: baseCurrency.value,
       defaultWalletId: defaultWalletId.value,
       rateSource: rateSource.value,
-      userId: uid.value,
+      userId: uid.value
     })
   }
 
   function saveUserBaseCurrency(value: CurrencyCode) {
     setUserBaseCurrency(value)
-    saveSettingsRow().catch(e => logger.error('[user] saveUserBaseCurrency failed', e))
+    saveSettingsRow().catch((e) => logger.error('[user] saveUserBaseCurrency failed', e))
   }
 
   /**
@@ -117,6 +120,6 @@ export const useUserStore = defineStore('user', () => {
     saveDefaultWalletId,
     setDisplayName,
     setUserBaseCurrency,
-    saveUserBaseCurrency,
+    saveUserBaseCurrency
   }
 })

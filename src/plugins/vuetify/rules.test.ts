@@ -15,11 +15,11 @@ import { themeConfig } from '@/plugins/vuetify/theme'
 describe('doğrulama kuralları', () => {
   const vuetify = createVuetify({
     theme: themeConfig,
-    locale: { locale: 'tr', messages: { tr: { rules: { required: 'Bu alan zorunludur' } } } },
+    locale: { locale: 'tr', messages: { tr: { rules: { required: 'Bu alan zorunludur' } } } }
   })
   const rules = createRules({}, vuetify.locale)
 
-  it('\'required\' alias\'ı çalıştırılabilir bir kurala çözülüyor', () => {
+  it("'required' alias'ı çalıştırılabilir bir kurala çözülüyor", () => {
     const resolved = rules.resolve(() => ['required'])
     expect(resolved.value).toHaveLength(1)
     expect(typeof resolved.value[0]).toBe('function')

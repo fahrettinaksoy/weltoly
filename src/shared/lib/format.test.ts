@@ -77,11 +77,27 @@ describe('formatPercent', () => {
    */
   it('sayı biçimi tercihi işaretin YERİNİ değiştirmez — tr her zaman önde', () => {
     for (const nf of ['auto', 'comma_dot', 'dot_comma', 'space_comma', 'apos_dot'] as const)
-      expect(formatPercent(57, { numberFormat: nf, dateFormat: 'auto', hideDecimals: false, locale: 'tr' }), nf).toBe('%57')
+      expect(
+        formatPercent(57, {
+          numberFormat: nf,
+          dateFormat: 'auto',
+          hideDecimals: false,
+          locale: 'tr'
+        }),
+        nf
+      ).toBe('%57')
   })
 
   it('sayı biçimi tercihi işaretin YERİNİ değiştirmez — en her zaman arkada', () => {
     for (const nf of ['auto', 'comma_dot', 'dot_comma', 'space_comma', 'apos_dot'] as const)
-      expect(formatPercent(57, { numberFormat: nf, dateFormat: 'auto', hideDecimals: false, locale: 'en' }), nf).toBe('57%')
+      expect(
+        formatPercent(57, {
+          numberFormat: nf,
+          dateFormat: 'auto',
+          hideDecimals: false,
+          locale: 'en'
+        }),
+        nf
+      ).toBe('57%')
   })
 })

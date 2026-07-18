@@ -4,8 +4,5 @@
   "description": "Yalnız masaüstü: otomatik güncelleme (updater) ve yeniden başlatma (process).",
   "platforms": ["linux", "macOS", "windows"],
   "windows": ["main"],
-  "permissions": [
-    "updater:default",
-    "process:default"
-  ]
+  "permissions": ["updater:default", "process:default"]
 }

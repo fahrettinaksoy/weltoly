@@ -6,17 +6,20 @@ import { useI18n } from 'vue-i18n'
  * Her sayfada ayrı v-dialog kopyalamak yerine burada tutulur; metin ve
  * onay rengi dışarıdan verilir.
  */
-withDefaults(defineProps<{
-  /** Onay butonunun metni. Varsayılan: "Sil". */
-  confirmText?: string
-  /** Onay butonunun rengi. Varsayılan: error (yıkıcı işlem). */
-  confirmColor?: string
-  /** Ne olacağını anlatan metin. */
-  message: string
-  title?: string
-}>(), {
-  confirmColor: 'error',
-})
+withDefaults(
+  defineProps<{
+    /** Onay butonunun metni. Varsayılan: "Sil". */
+    confirmText?: string
+    /** Onay butonunun rengi. Varsayılan: error (yıkıcı işlem). */
+    confirmColor?: string
+    /** Ne olacağını anlatan metin. */
+    message: string
+    title?: string
+  }>(),
+  {
+    confirmColor: 'error'
+  }
+)
 
 const emit = defineEmits<{ confirm: [] }>()
 const model = defineModel<boolean>({ required: true })

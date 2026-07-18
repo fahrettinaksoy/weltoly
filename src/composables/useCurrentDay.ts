@@ -34,14 +34,12 @@ let timer: ReturnType<typeof setInterval> | null = null
 
 function ensureTimer(): void {
   // SSR/test ortamında zamanlayıcı kurma — sızıntı yapar, faydası yok.
-  if (timer !== null || typeof window === 'undefined')
-    return
+  if (timer !== null || typeof window === 'undefined') return
   timer = setInterval(() => {
     const day = startOfDay(Date.now()).getTime()
     // Şart: aynı değeri yeniden atamak ref'i tetiklemez ama niyeti açık tutar —
     // yalnız GÜN döndüğünde aşağıdaki zincir yeniden hesaplanır.
-    if (day !== currentDay.value)
-      currentDay.value = day
+    if (day !== currentDay.value) currentDay.value = day
   }, CHECK_INTERVAL_MS)
 }
 

@@ -8,7 +8,12 @@ import { CRYPTO_IDS } from '@/features/currencies/crypto'
 import { DEFAULT_RATE_SOURCE, isRateSourceKey } from '@/features/currencies/sources'
 import { sanitizeRates } from '@/features/currencies/types'
 import { getDb, isTauriRuntime, upsertRow } from '@/services/db'
-import { domXmlParse, parseErApi, parseFrankfurter, parseTcmb } from '@/services/rates/sources/parse'
+import {
+  domXmlParse,
+  parseErApi,
+  parseFrankfurter,
+  parseTcmb
+} from '@/services/rates/sources/parse'
 import { logger } from '@/shared/lib/logger'
 
 // Uzak API asılırsa sonsuz beklememek için üst sınır.
@@ -20,8 +25,7 @@ async function fetchWithTimeout(url: string): Promise<Response> {
   const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS)
   try {
     return await fetch(url, { method: 'GET', signal: ctrl.signal })
-  }
-  finally {
+  } finally {
     clearTimeout(timer)
   }
 }
@@ -32,19 +36,19 @@ async function fetchWithTimeout(url: string): Promise<Response> {
  * Yeni kaynak eklerken capabilities/default.json http allow-list'i de güncelle —
  * yoksa istek SESSİZCE başarısız olur.
  */
-const FIAT_SOURCES: Record<RateSourceKey, { url: string, parse: (text: string) => ParsedRates }> = {
-  'frankfurter': {
+const FIAT_SOURCES: Record<RateSourceKey, { url: string; parse: (text: string) => ParsedRates }> = {
+  frankfurter: {
     url: 'https://api.frankfurter.dev/v1/latest?base=USD',
-    parse: parseFrankfurter,
+    parse: parseFrankfurter
   },
-  'tcmb': {
+  tcmb: {
     url: 'https://www.tcmb.gov.tr/kurlar/today.xml',
-    parse: text => parseTcmb(text, domXmlParse),
+    parse: (text) => parseTcmb(text, domXmlParse)
   },
   'open-er-api': {
     url: 'https://open.er-api.com/v6/latest/USD',
-    parse: parseErApi,
-  },
+    parse: parseErApi
+  }
 }
 
 // Kripto: CoinGecko simple price (USD). rates[CODE] = 1/price (getAmountInRate ile uyumlu).
@@ -71,8 +75,7 @@ async function fetchFiat(source: RateSourceKey): Promise<ParsedRates | null> {
       return null
     }
     return out
-  }
-  catch (e) {
+  } catch (e) {
     logger.warn(`[rates] fiat isteği başarısız (${source})`, e)
     return null
   }
@@ -89,12 +92,11 @@ async function readRateSource(): Promise<RateSourceKey> {
   try {
     const db = await getDb()
     const rows = await db.select<{ rateSource: string | null }[]>(
-      'SELECT rateSource FROM user_settings LIMIT 1',
+      'SELECT rateSource FROM user_settings LIMIT 1'
     )
     const v = rows[0]?.rateSource
     return isRateSourceKey(v) ? v : DEFAULT_RATE_SOURCE
-  }
-  catch {
+  } catch {
     return DEFAULT_RATE_SOURCE
   }
 }
@@ -113,21 +115,24 @@ async function fetchCrypto(): Promise<Rates> {
   try {
     const res = await fetchWithTimeout(CRYPTO_URL)
     if (!res.ok) {
-      logger.warn(`[rates] kripto çekilemedi — HTTP ${res.status}. Kripto cüzdanlar bugün toplamlara giremeyecek.`)
+      logger.warn(
+        `[rates] kripto çekilemedi — HTTP ${res.status}. Kripto cüzdanlar bugün toplamlara giremeyecek.`
+      )
       return out
     }
-    const data = await res.json() as Record<string, { usd?: unknown }>
+    const data = (await res.json()) as Record<string, { usd?: unknown }>
     for (const [code, id] of Object.entries(CRYPTO_IDS)) {
       const price = data[id]?.usd
       // Sadece geçerli fiyatları al: 0/negatif/NaN/Infinity → Infinity/NaN kur üretmesin.
       if (typeof price === 'number' && Number.isFinite(price) && price > 0)
         out[code] = 1 / price // 1 USD kaç birim kripto
-      else
-        logger.warn(`[rates] ${code} fiyatı geçersiz/eksik:`, price)
+      else logger.warn(`[rates] ${code} fiyatı geçersiz/eksik:`, price)
     }
-  }
-  catch (e) {
-    logger.warn('[rates] kripto isteği başarısız (ağ/timeout). Kripto cüzdanlar bugün toplamlara giremeyecek.', e)
+  } catch (e) {
+    logger.warn(
+      '[rates] kripto isteği başarısız (ağ/timeout). Kripto cüzdanlar bugün toplamlara giremeyecek.',
+      e
+    )
   }
   return out
 }
@@ -135,14 +140,13 @@ async function fetchCrypto(): Promise<Rates> {
 /** Kayıtlı kur seti kripto taşıyor mu? (Eksikse gün "tamamlanmış" sayılmaz.) */
 function hasCryptoRates(raw: unknown): boolean {
   const clean = sanitizeRates(typeof raw === 'string' ? safeParse(raw) : raw)
-  return Object.keys(CRYPTO_IDS).some(code => clean[code] !== undefined)
+  return Object.keys(CRYPTO_IDS).some((code) => clean[code] !== undefined)
 }
 
 function safeParse(s: string): unknown {
   try {
     return JSON.parse(s)
-  }
-  catch {
+  } catch {
     return null
   }
 }
@@ -174,8 +178,7 @@ function safeParse(s: string): unknown {
 export type RefreshResult = 'ok' | 'skipped' | 'error'
 
 export async function refreshRates(force = false): Promise<RefreshResult> {
-  if (!isTauriRuntime())
-    return 'skipped'
+  if (!isTauriRuntime()) return 'skipped'
 
   const today = format(new Date(), 'yyyy-MM-dd')
   const source = await readRateSource()
@@ -183,23 +186,23 @@ export async function refreshRates(force = false): Promise<RefreshResult> {
   try {
     const db = await getDb()
     if (!force) {
-      const rows = await db.select<{ date: string, rates: string, source: string | null }[]>(
-        'SELECT date, rates, source FROM rates ORDER BY date DESC LIMIT 1',
+      const rows = await db.select<{ date: string; rates: string; source: string | null }[]>(
+        'SELECT date, rates, source FROM rates ORDER BY date DESC LIMIT 1'
       )
       const latest = rows[0]
       if (latest?.date === today) {
         if (latest.source !== sourceTag(source))
-          logger.warn(`[rates] kaynak değişti (${latest.source} → ${sourceTag(source)}) — yeniden çekiliyor.`)
+          logger.warn(
+            `[rates] kaynak değişti (${latest.source} → ${sourceTag(source)}) — yeniden çekiliyor.`
+          )
         else if (!hasCryptoRates(latest.rates))
           logger.warn('[rates] bugünün kurlarında kripto eksik — yeniden deneniyor.')
-        else
-          return 'skipped' // aynı gün, aynı kaynak, kripto tam → iş yok
+        else return 'skipped' // aynı gün, aynı kaynak, kripto tam → iş yok
       }
     }
 
     const fiat = await fetchFiat(source)
-    if (!fiat)
-      return 'error' // fiat olmadan yazma (kur temeli eksik)
+    if (!fiat) return 'error' // fiat olmadan yazma (kur temeli eksik)
 
     // Kripto fiat'ın ÜSTÜNE: USDT gibi bir kod iki kaynakta da varsa CoinGecko
     // kazanır (piyasa fiyatı, fiat listesindeki sabit değil).
@@ -211,11 +214,10 @@ export async function refreshRates(force = false): Promise<RefreshResult> {
       rateDate: fiat.rateDate, // KAYNAĞIN kur tarihi — bizim çekme günümüz değil
       rates: JSON.stringify(merged),
       source: sourceTag(source),
-      updatedAt: Date.now(),
+      updatedAt: Date.now()
     })
     return 'ok'
-  }
-  catch (e) {
+  } catch (e) {
     logger.error('[rates] refresh failed', e)
     return 'error'
   }

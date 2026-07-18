@@ -12,7 +12,9 @@ const emitTableChange = vi.fn()
 
 vi.mock('./tx', () => ({ runTx }))
 vi.mock('./bus', () => ({ emitTableChange }))
-vi.mock('./schema', () => ({ isKnownTable: (t: string) => ['trns', 'wallets', 'categories'].includes(t) }))
+vi.mock('./schema', () => ({
+  isKnownTable: (t: string) => ['trns', 'wallets', 'categories'].includes(t)
+}))
 
 const { deleteRows } = await import('./mutations')
 
@@ -22,11 +24,11 @@ beforeEach(() => {
 })
 
 describe('deleteRows', () => {
-  it('her şeyi TEK transaction\'da gönderir', async () => {
+  it("her şeyi TEK transaction'da gönderir", async () => {
     await deleteRows([
       { id: 't1', table: 'trns' },
       { id: 't2', table: 'trns' },
-      { id: 'w1', table: 'wallets' },
+      { id: 'w1', table: 'wallets' }
     ])
 
     // Asıl regresyon koruması: eskiden bu 3 ayrı deleteRow → 3 ayrı transaction'dı.
@@ -48,7 +50,7 @@ describe('deleteRows', () => {
   it('çağıranın sırasını korur (referans verenler önce)', async () => {
     await deleteRows([
       { id: 't1', table: 'trns' },
-      { id: 'w1', table: 'wallets' },
+      { id: 'w1', table: 'wallets' }
     ])
 
     // FK'lar açıldığında cüzdan, ona bakan işlemlerden ÖNCE silinirse ihlal olur.
@@ -62,7 +64,7 @@ describe('deleteRows', () => {
       { id: 't1', table: 'trns' },
       { id: 't2', table: 'trns' },
       { id: 't3', table: 'trns' },
-      { id: 'w1', table: 'wallets' },
+      { id: 'w1', table: 'wallets' }
     ])
 
     // 3 trns silindi ama tabloyu 3 kez yeniden okumanın anlamı yok.
@@ -71,7 +73,7 @@ describe('deleteRows', () => {
     expect(emitTableChange).toHaveBeenCalledWith('wallets')
   })
 
-  it('boş listede DB\'ye hiç dokunmaz', async () => {
+  it("boş listede DB'ye hiç dokunmaz", async () => {
     await deleteRows([])
     expect(runTx).not.toHaveBeenCalled()
     // Bildirim de yayılmamalı: yayılırsa her ekran boşuna yeniden okur.
@@ -79,10 +81,12 @@ describe('deleteRows', () => {
   })
 
   it('bilinmeyen tabloyu reddeder — hiçbir şey silmeden', async () => {
-    await expect(deleteRows([
-      { id: 't1', table: 'trns' },
-      { id: 'x', table: 'secrets' },
-    ])).rejects.toThrow(/unknown table/)
+    await expect(
+      deleteRows([
+        { id: 't1', table: 'trns' },
+        { id: 'x', table: 'secrets' }
+      ])
+    ).rejects.toThrow(/unknown table/)
 
     // Doğrulama TÜM listeden önce bitmeli: yoksa geçerli olanlar silinir,
     // sonra patlar — yarım uygulama tam da kaçındığımız şey.

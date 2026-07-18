@@ -51,7 +51,7 @@ describe('useCurrentDay', () => {
     expect(day.value).toBe(startOfDay(new Date(2026, 6, 18)).getTime())
   })
 
-  it('tekil kaynak: her çağrı AYNI ref\'i döndürür', async () => {
+  it("tekil kaynak: her çağrı AYNI ref'i döndürür", async () => {
     vi.resetModules()
     vi.setSystemTime(new Date(2026, 6, 17, 12))
     const { useCurrentDay } = await import('./useCurrentDay')

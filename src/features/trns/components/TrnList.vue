@@ -31,11 +31,10 @@ const fmt = useFormat()
  * varsaymak olurdu, bu bileşen ise sıralamayı kendi yapıyor (aşağıdaki sort).
  */
 const groups = computed(() => {
-  const map = new Map<string, { key: string, label: string, ts: number, ids: string[] }>()
+  const map = new Map<string, { key: string; label: string; ts: number; ids: string[] }>()
   for (const id of props.ids) {
     const trn = trnsStore.items?.[id]
-    if (!trn)
-      continue
+    if (!trn) continue
     const d = new Date(trn.date)
     const key = format(d, 'yyyy-MM-dd')
     if (!map.has(key)) {
@@ -59,11 +58,11 @@ const groups = computed(() => {
  */
 const openPanels = ref<string[]>([])
 watch(
-  () => groups.value.map(g => g.key).join('|'),
+  () => groups.value.map((g) => g.key).join('|'),
   () => {
-    openPanels.value = groups.value.slice(0, OPEN_BY_DEFAULT).map(g => g.key)
+    openPanels.value = groups.value.slice(0, OPEN_BY_DEFAULT).map((g) => g.key)
   },
-  { immediate: true },
+  { immediate: true }
 )
 </script>
 
@@ -81,7 +80,13 @@ watch(
     >
       <v-expansion-panel-title>
         <span class="text-caption text-medium-emphasis text-uppercase">
-          {{ g.label === 'today' ? $t('trns.today') : g.label === 'yesterday' ? $t('trns.yesterday') : g.label }}
+          {{
+            g.label === 'today'
+              ? $t('trns.today')
+              : g.label === 'yesterday'
+                ? $t('trns.yesterday')
+                : g.label
+          }}
         </span>
         <v-spacer />
         <!-- Adet kapalıyken de görünür: paneli açmadan "o gün kaç hareket olmuş"

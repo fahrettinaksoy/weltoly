@@ -6,18 +6,18 @@ import type { ThemeDefinition } from 'vuetify'
 const light: ThemeDefinition = {
   dark: false,
   colors: {
-    'background': '#f6f7f9',
-    'surface': '#ffffff',
+    background: '#f6f7f9',
+    surface: '#ffffff',
     'surface-bright': '#ffffff',
     'surface-light': '#eceef2',
     'surface-variant': '#eceef2',
     'on-surface-variant': '#42474e',
-    'primary': '#635bff',
-    'secondary': '#5b6270',
-    'error': '#e5484d',
-    'info': '#0091ff',
-    'success': '#30a46c',
-    'warning': '#f5a623',
+    primary: '#635bff',
+    secondary: '#5b6270',
+    error: '#e5484d',
+    info: '#0091ff',
+    success: '#30a46c',
+    warning: '#f5a623'
   },
   variables: {
     'border-color': '#000000',
@@ -26,25 +26,25 @@ const light: ThemeDefinition = {
     'medium-emphasis-opacity': 0.62,
     'disabled-opacity': 0.38,
     'theme-kbd': '#212529',
-    'theme-on-kbd': '#ffffff',
-  },
+    'theme-on-kbd': '#ffffff'
+  }
 }
 
 const dark: ThemeDefinition = {
   dark: true,
   colors: {
-    'background': '#0f1115',
-    'surface': '#171a21',
+    background: '#0f1115',
+    surface: '#171a21',
     'surface-bright': '#2a2f3a',
     'surface-light': '#232833',
     'surface-variant': '#232833',
     'on-surface-variant': '#c4c9d2',
-    'primary': '#7c74ff',
-    'secondary': '#9aa2b1',
-    'error': '#ff6369',
-    'info': '#52a9ff',
-    'success': '#4cc38a',
-    'warning': '#ffca62',
+    primary: '#7c74ff',
+    secondary: '#9aa2b1',
+    error: '#ff6369',
+    info: '#52a9ff',
+    success: '#4cc38a',
+    warning: '#ffca62'
   },
   variables: {
     'border-color': '#ffffff',
@@ -53,8 +53,8 @@ const dark: ThemeDefinition = {
     'medium-emphasis-opacity': 0.68,
     'disabled-opacity': 0.4,
     'theme-kbd': '#e9ecef',
-    'theme-on-kbd': '#000000',
-  },
+    'theme-on-kbd': '#000000'
+  }
 }
 
 export const themeConfig = {
@@ -63,7 +63,7 @@ export const themeConfig = {
   variations: {
     colors: ['primary', 'secondary', 'success', 'error', 'warning', 'info'],
     lighten: 3,
-    darken: 3,
+    darken: 3
   },
-  themes: { light, dark },
+  themes: { light, dark }
 }

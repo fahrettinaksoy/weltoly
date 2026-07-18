@@ -25,8 +25,7 @@ function toUtcDay(d: Date): number {
 
 function parseDay(iso: string): Date | null {
   const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/)
-  if (!m)
-    return null
+  if (!m) return null
   const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
   return Number.isNaN(d.getTime()) ? null : d
 }
@@ -42,7 +41,8 @@ function businessDaysBetween(from: Date, to: Date): number {
   while (toUtcDay(cur) < toUtcDay(to)) {
     cur.setDate(cur.getDate() + 1)
     const wd = cur.getDay()
-    if (wd !== 0 && wd !== 6) // 0=Pazar, 6=Cumartesi
+    if (wd !== 0 && wd !== 6)
+      // 0=Pazar, 6=Cumartesi
       n++
   }
   return n
@@ -53,17 +53,14 @@ function businessDaysBetween(from: Date, to: Date): number {
  * @param now Şimdi (test edilebilirlik için enjekte edilir).
  */
 export function rateFreshness(rateDate: string | null, now: Date = new Date()): Freshness {
-  if (!rateDate)
-    return { level: 'unknown', ageDays: null }
+  if (!rateDate) return { level: 'unknown', ageDays: null }
 
   const d = parseDay(rateDate)
-  if (!d)
-    return { level: 'unknown', ageDays: null }
+  if (!d) return { level: 'unknown', ageDays: null }
 
   const ageDays = toUtcDay(now) - toUtcDay(d)
   // Gelecek tarihli kur (saat dilimi kayması/bozuk veri) → bayat sayma.
-  if (ageDays < 0)
-    return { level: 'fresh', ageDays }
+  if (ageDays < 0) return { level: 'fresh', ageDays }
 
   const business = businessDaysBetween(d, now)
   return { level: business >= STALE_BUSINESS_DAYS ? 'stale' : 'fresh', ageDays }

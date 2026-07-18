@@ -7,7 +7,8 @@ import { dateRangeText } from '@/shared/lib/dateRange'
  * yazıyordu ("09.07.2026 - 09.07.2026"). DateRangeField bu metni kendi kuruyor;
  * tek gün tek tarih göstermeli. Sessiz görsel regresyon → testle yakalanmalı.
  */
-const fmt = (d: Date) => `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+const fmt = (d: Date) =>
+  `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
 
 describe('dateRangeText', () => {
   it('boş dizi → boş metin', () => {
@@ -23,7 +24,9 @@ describe('dateRangeText', () => {
   })
 
   it('gerçek aralık → "başlangıç - bitiş"', () => {
-    expect(dateRangeText([new Date(2026, 6, 9), new Date(2026, 6, 15)], fmt)).toBe('09.07.2026 - 15.07.2026')
+    expect(dateRangeText([new Date(2026, 6, 9), new Date(2026, 6, 15)], fmt)).toBe(
+      '09.07.2026 - 15.07.2026'
+    )
   })
 
   it('aralığın uçları ilk ve SON eleman', () => {
