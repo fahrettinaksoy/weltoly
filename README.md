@@ -1,5 +1,10 @@
 # Weltoly
 
+[![CI](https://github.com/fahrettinaksoy/weltoly/actions/workflows/ci.yml/badge.svg)](https://github.com/fahrettinaksoy/weltoly/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/fahrettinaksoy/weltoly?include_prereleases&sort=semver)](https://github.com/fahrettinaksoy/weltoly/releases)
+![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20iOS%20%7C%20Android-blue)
+
 Kişisel finans uygulaması — [finapp](https://github.com/ilkome/finapp)'in **Tauri v2**
 ile tüm platformlara (Windows / macOS / Linux / iOS / Android) taşınmış hâli.
 **Yerel-önce, offline, uzak telemetri yok** — tüm veri cihazında SQLite'ta durur.
