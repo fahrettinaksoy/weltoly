@@ -27,11 +27,11 @@ const fmt = useFormat()
 const busy = ref(false)
 
 const sourceOptions = computed(() =>
-  RATE_SOURCE_KEYS.map(k => ({
+  RATE_SOURCE_KEYS.map((k) => ({
     value: k,
     title: RATE_SOURCES[k].label,
-    subtitle: t(RATE_SOURCES[k].descKey),
-  })),
+    subtitle: t(RATE_SOURCES[k].descKey)
+  }))
 )
 
 const meta = computed(() => currenciesStore.meta)
@@ -45,24 +45,50 @@ const freshness = computed(() => rateFreshness(meta.value?.rateDate ?? null))
 const freshnessMeta = computed(() => {
   switch (freshness.value.level) {
     case 'fresh':
-      return { color: 'success', icon: 'mdi-check-circle-outline', label: t('settings.ratesFresh'), hint: t('settings.ratesFreshHint') }
+      return {
+        color: 'success',
+        icon: 'mdi-check-circle-outline',
+        label: t('settings.ratesFresh'),
+        hint: t('settings.ratesFreshHint')
+      }
     case 'stale':
-      return { color: 'warning', icon: 'mdi-alert-outline', label: t('settings.ratesStale'), hint: t('settings.ratesStaleHint', { n: freshness.value.ageDays ?? 0 }) }
+      return {
+        color: 'warning',
+        icon: 'mdi-alert-outline',
+        label: t('settings.ratesStale'),
+        hint: t('settings.ratesStaleHint', { n: freshness.value.ageDays ?? 0 })
+      }
     default:
-      return { color: 'grey', icon: 'mdi-help-circle-outline', label: t('settings.ratesUnknown'), hint: t('settings.ratesUnknownHint') }
+      return {
+        color: 'grey',
+        icon: 'mdi-help-circle-outline',
+        label: t('settings.ratesUnknown'),
+        hint: t('settings.ratesUnknownHint')
+      }
   }
 })
 
 /** Kayıtlı kur setinin künye satırları. */
 const statusRows = computed(() => {
   const m = meta.value
-  if (!m)
-    return []
+  if (!m) return []
   return [
     { key: 'source', label: t('settings.ratesSource'), value: m.source ?? '—' },
-    { key: 'rateDate', label: t('settings.ratesRateDate'), value: m.rateDate ? fmt.date(new Date(m.rateDate)) : '—' },
-    { key: 'fetchedAt', label: t('settings.ratesFetchedAt'), value: m.updatedAt ? fmt.date(m.updatedAt) : '—' },
-    { key: 'count', label: t('settings.ratesCount'), value: fmt.number(Object.keys(currenciesStore.rates).length) },
+    {
+      key: 'rateDate',
+      label: t('settings.ratesRateDate'),
+      value: m.rateDate ? fmt.date(new Date(m.rateDate)) : '—'
+    },
+    {
+      key: 'fetchedAt',
+      label: t('settings.ratesFetchedAt'),
+      value: m.updatedAt ? fmt.date(m.updatedAt) : '—'
+    },
+    {
+      key: 'count',
+      label: t('settings.ratesCount'),
+      value: fmt.number(Object.keys(currenciesStore.rates).length)
+    }
   ]
 })
 
@@ -81,12 +107,9 @@ async function onRefresh() {
     // üzerinden 30ms throttle ile asenkron dolduğu için `nextTick` yetmiyor ve
     // BAŞARILI çekimde bile "çekilemedi" basılıyordu.
     const r = await refreshRates(true) // force: kullanıcı açıkça istedi
-    if (r === 'error')
-      showErrorToast('settings.ratesRefreshFailed')
-    else
-      showSuccessToast('settings.ratesRefreshed') // 'ok' | 'skipped'
-  }
-  finally {
+    if (r === 'error') showErrorToast('settings.ratesRefreshFailed')
+    else showSuccessToast('settings.ratesRefreshed') // 'ok' | 'skipped'
+  } finally {
     busy.value = false
   }
 }
@@ -140,7 +163,12 @@ async function onRefresh() {
 
     <template v-else>
       <div class="d-flex align-center ga-2 mb-4">
-        <v-chip :color="freshnessMeta.color" :prepend-icon="freshnessMeta.icon" size="small" variant="flat">
+        <v-chip
+          :color="freshnessMeta.color"
+          :prepend-icon="freshnessMeta.icon"
+          size="small"
+          variant="flat"
+        >
           {{ freshnessMeta.label }}
         </v-chip>
         <span class="text-caption text-medium-emphasis">{{ freshnessMeta.hint }}</span>

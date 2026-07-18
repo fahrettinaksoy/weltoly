@@ -23,10 +23,10 @@ const tagsStore = useTagsStore()
 // Renk paleti — kategori formuyla aynı seyreltme (her 6. renk).
 const palette = colorsArray.filter((_, i) => i % 6 === 0)
 
-const form = reactive<{ name: string, color: string, desc: string }>({
+const form = reactive<{ name: string; color: string; desc: string }>({
   name: '',
   color: random(colorsArray),
-  desc: '',
+  desc: ''
 })
 
 const isEdit = computed(() => !!props.tagId)
@@ -35,8 +35,7 @@ const confirmDelete = ref(false)
 
 // Dialog açıldığında formu doldur (düzenleme) ya da sıfırla (oluşturma).
 watch(model, (open) => {
-  if (!open)
-    return
+  if (!open) return
   const existing = props.tagId ? tagsStore.items[props.tagId] : null
   form.name = existing?.name ?? ''
   form.color = existing?.color ?? random(colorsArray)
@@ -45,18 +44,15 @@ watch(model, (open) => {
 })
 
 function save() {
-  if (!isValid.value)
-    return
+  if (!isValid.value) return
   const id = props.tagId ?? generateId()
   tagsStore.saveTag({ id, values: { name: form.name, color: form.color, desc: form.desc.trim() } })
-  if (!props.tagId)
-    emit('created', id)
+  if (!props.tagId) emit('created', id)
   model.value = false
 }
 
 function remove() {
-  if (props.tagId)
-    tagsStore.deleteTag(props.tagId)
+  if (props.tagId) tagsStore.deleteTag(props.tagId)
   model.value = false
 }
 </script>

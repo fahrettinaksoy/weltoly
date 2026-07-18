@@ -14,9 +14,30 @@ import { TrnType } from '@/features/trns/types'
 const D = (iso: string) => new Date(iso).getTime()
 
 const trns: Trns = {
-  a: { type: TrnType.Expense, amount: 10, categoryId: 'food', walletId: 'w1', date: D('2026-03-10T09:00:00Z'), updatedAt: 1 },
-  b: { type: TrnType.Income, amount: 20, categoryId: 'salary', walletId: 'w1', date: D('2026-03-12T18:30:00Z'), updatedAt: 2 },
-  c: { type: TrnType.Expense, amount: 30, categoryId: 'food', walletId: 'w2', date: D('2026-03-15T12:00:00Z'), updatedAt: 3 },
+  a: {
+    type: TrnType.Expense,
+    amount: 10,
+    categoryId: 'food',
+    walletId: 'w1',
+    date: D('2026-03-10T09:00:00Z'),
+    updatedAt: 1
+  },
+  b: {
+    type: TrnType.Income,
+    amount: 20,
+    categoryId: 'salary',
+    walletId: 'w1',
+    date: D('2026-03-12T18:30:00Z'),
+    updatedAt: 2
+  },
+  c: {
+    type: TrnType.Expense,
+    amount: 30,
+    categoryId: 'food',
+    walletId: 'w2',
+    date: D('2026-03-15T12:00:00Z'),
+    updatedAt: 3
+  }
 }
 
 describe('filterTrnsIds — girdi mutasyonu (O-1)', () => {
@@ -44,7 +65,7 @@ describe('filterTrnsIds — tarih sınırı sözleşmesi (O-2)', () => {
     const out = filterTrnsIds({
       trnsItems: trns,
       trnsIds: ['a', 'b', 'c'],
-      dates: { start: D('2026-03-10T09:00:00Z'), end: D('2026-03-15T12:00:00Z') },
+      dates: { start: D('2026-03-10T09:00:00Z'), end: D('2026-03-15T12:00:00Z') }
     })
     expect(out).toEqual(['a', 'b', 'c']) // tam sınırdaki a ve c dahil
   })
@@ -54,7 +75,7 @@ describe('filterTrnsIds — tarih sınırı sözleşmesi (O-2)', () => {
     const out = filterTrnsIds({
       trnsItems: trns,
       trnsIds: ['a', 'b', 'c'],
-      dates: { start: D('2026-03-10T00:00:00Z'), end: D('2026-03-15T00:00:00Z') },
+      dates: { start: D('2026-03-10T00:00:00Z'), end: D('2026-03-15T00:00:00Z') }
     })
     expect(out).not.toContain('c') // 15'i 12:00 > 15'i 00:00 → elendi
     expect(out).toEqual(['a', 'b'])
@@ -64,7 +85,7 @@ describe('filterTrnsIds — tarih sınırı sözleşmesi (O-2)', () => {
     const out = filterTrnsIds({
       trnsItems: trns,
       trnsIds: ['a', 'b', 'c'],
-      dates: { start: D('2026-03-10T00:00:00Z'), end: D('2026-03-15T23:59:59.999Z') },
+      dates: { start: D('2026-03-10T00:00:00Z'), end: D('2026-03-15T23:59:59.999Z') }
     })
     expect(out).toContain('c')
   })
@@ -72,18 +93,24 @@ describe('filterTrnsIds — tarih sınırı sözleşmesi (O-2)', () => {
 
 describe('filterTrnsIds — süzgeçler', () => {
   it('türe göre süzer', () => {
-    expect(filterTrnsIds({ trnsItems: trns, trnsIds: ['a', 'b', 'c'], trnsTypes: [TrnType.Income] })).toEqual(['b'])
+    expect(
+      filterTrnsIds({ trnsItems: trns, trnsIds: ['a', 'b', 'c'], trnsTypes: [TrnType.Income] })
+    ).toEqual(['b'])
   })
 
   it('cüzdana göre süzer', () => {
-    expect(filterTrnsIds({ trnsItems: trns, trnsIds: ['a', 'b', 'c'], walletsIds: ['w2'] })).toEqual(['c'])
+    expect(
+      filterTrnsIds({ trnsItems: trns, trnsIds: ['a', 'b', 'c'], walletsIds: ['w2'] })
+    ).toEqual(['c'])
   })
 
   it('kategoriye göre süzer', () => {
-    expect(filterTrnsIds({ trnsItems: trns, trnsIds: ['a', 'b', 'c'], categoriesIds: ['food'] })).toEqual(['a', 'c'])
+    expect(
+      filterTrnsIds({ trnsItems: trns, trnsIds: ['a', 'b', 'c'], categoriesIds: ['food'] })
+    ).toEqual(['a', 'c'])
   })
 
-  it('süzgeç yoksa tüm id\'leri döndürür', () => {
+  it("süzgeç yoksa tüm id'leri döndürür", () => {
     expect(filterTrnsIds({ trnsItems: trns, trnsIds: ['a', 'b', 'c'] })).toEqual(['a', 'b', 'c'])
   })
 })

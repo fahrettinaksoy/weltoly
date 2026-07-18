@@ -43,11 +43,13 @@ usePageHeader(() => ({
   tabs: {
     items: [
       { value: 'summary', label: t('walletDetail.tabSummary'), icon: 'mdi-view-dashboard-outline' },
-      { value: 'trns', label: t('walletDetail.transactions'), icon: 'mdi-swap-horizontal' },
+      { value: 'trns', label: t('walletDetail.transactions'), icon: 'mdi-swap-horizontal' }
     ],
     model: tab.value,
-    onChange: (v: string) => { tab.value = v as 'summary' | 'trns' },
-  },
+    onChange: (v: string) => {
+      tab.value = v as 'summary' | 'trns'
+    }
+  }
 }))
 
 const isDefault = computed(() => userStore.defaultWalletId === walletId.value)
@@ -74,7 +76,7 @@ useAppBarAction(() => [
     icon: isDefault.value ? 'mdi-star' : 'mdi-star-outline',
     label: isDefault.value ? t('walletDetail.unsetDefault') : t('wallets.setDefault'),
     variant: 'text' as const,
-    onClick: toggleDefault,
+    onClick: toggleDefault
   },
   { icon: 'mdi-pencil-outline', label: t('common.edit'), onClick: () => (showEdit.value = true) },
   {
@@ -82,8 +84,8 @@ useAppBarAction(() => [
     label: t('common.delete'),
     color: 'error',
     variant: 'text' as const,
-    onClick: () => (confirmDelete.value = true),
-  },
+    onClick: () => (confirmDelete.value = true)
+  }
 ])
 
 // --- Dönem süzgeci ------------------------------------------------------
@@ -107,18 +109,16 @@ const periodStart = computed(() => {
 /** Cüzdana dokunan tüm işlemler, yeniden eskiye. Kural: walletIdsOfTrn (tek kaynak). */
 const allTrns = computed(() => {
   const trns = trnsStore.items
-  if (!trns)
-    return [] as { id: TrnId, trn: TrnItem }[]
-  const out: { id: TrnId, trn: TrnItem }[] = []
+  if (!trns) return [] as { id: TrnId; trn: TrnItem }[]
+  const out: { id: TrnId; trn: TrnItem }[] = []
   for (const id in trns) {
     const trn = trns[id]!
-    if (walletIdsOfTrn(trn).includes(walletId.value))
-      out.push({ id, trn })
+    if (walletIdsOfTrn(trn).includes(walletId.value)) out.push({ id, trn })
   }
   return out.toSorted((a, b) => b.trn.date - a.trn.date)
 })
 
-const periodTrns = computed(() => allTrns.value.filter(x => x.trn.date >= periodStart.value))
+const periodTrns = computed(() => allTrns.value.filter((x) => x.trn.date >= periodStart.value))
 
 // --- Önceki dönemle karşılaştırma ---------------------------------------
 /**
@@ -132,11 +132,10 @@ const periodTrns = computed(() => allTrns.value.filter(x => x.trn.date >= period
  * olmadığı için bu durumda null döner ve kartlar rozetsiz çizilir.
  */
 const prevPeriodTrns = computed(() => {
-  if (period.value === 'all')
-    return null
+  if (period.value === 'all') return null
   const len = Number(period.value) * 86_400_000
   const start = periodStart.value - len
-  return allTrns.value.filter(x => x.trn.date >= start && x.trn.date < periodStart.value)
+  return allTrns.value.filter((x) => x.trn.date >= start && x.trn.date < periodStart.value)
 })
 
 // --- Eylemler -----------------------------------------------------------
@@ -161,7 +160,11 @@ function remove() {
 
     <!-- Cüzdan silinmiş/bilinmeyen id: sessizce boş sayfa yerine açık mesaj.
          Artık YALNIZ yükleme bittikten sonra gösterilir. -->
-    <AppEmptyState v-else-if="!wallet" icon="mdi-wallet-outline" :title="t('walletDetail.notFound')">
+    <AppEmptyState
+      v-else-if="!wallet"
+      icon="mdi-wallet-outline"
+      :title="t('walletDetail.notFound')"
+    >
       <template #action>
         <v-btn-primary to="/wallets" prepend-icon="mdi-arrow-left">
           {{ t('nav.wallets') }}

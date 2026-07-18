@@ -8,56 +8,56 @@ const routes: RouteRecordRaw[] = [
     path: '/dashboard',
     name: 'dashboard',
     component: () => import('@/pages/DashboardPage.vue'),
-    meta: { navKey: 'dashboard' },
+    meta: { navKey: 'dashboard' }
   },
   {
     path: '/wallets',
     name: 'wallets',
     component: () => import('@/pages/WalletsPage.vue'),
-    meta: { navKey: 'wallets' },
+    meta: { navKey: 'wallets' }
   },
   {
     // Detay: liste satırına tıklayınca buraya gelinir (düzenleme ayrı butonda).
     path: '/wallets/:id',
     name: 'wallet-detail',
     component: () => import('@/pages/WalletDetailPage.vue'),
-    meta: { navKey: 'wallets' },
+    meta: { navKey: 'wallets' }
   },
   {
     // Cüzdandan bağımsız TÜM işlemler; her satırda hangi cüzdan olduğu ayrı sütunda.
     path: '/trns',
     name: 'trns',
     component: () => import('@/pages/TransactionsPage.vue'),
-    meta: { navKey: 'trns' },
+    meta: { navKey: 'trns' }
   },
   {
     path: '/categories',
     name: 'categories',
     component: () => import('@/pages/CategoriesPage.vue'),
-    meta: { navKey: 'categories' },
+    meta: { navKey: 'categories' }
   },
   {
     path: '/tags',
     name: 'tags',
     component: () => import('@/pages/TagsPage.vue'),
-    meta: { navKey: 'tags' },
+    meta: { navKey: 'tags' }
   },
   {
     path: '/stat',
     name: 'stat',
     component: () => import('@/pages/StatPage.vue'),
-    meta: { navKey: 'stat' },
+    meta: { navKey: 'stat' }
   },
   {
     path: '/settings',
     name: 'settings',
     component: () => import('@/pages/SettingsPage.vue'),
-    meta: { navKey: 'settings' },
+    meta: { navKey: 'settings' }
   },
-  { path: '/:pathMatch(.*)*', redirect: '/dashboard' },
+  { path: '/:pathMatch(.*)*', redirect: '/dashboard' }
 ]
 
 export const router = createRouter({
   history: createWebHistory(),
-  routes,
+  routes
 })

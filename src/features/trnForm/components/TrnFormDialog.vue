@@ -26,9 +26,8 @@ const confirmDelete = ref(false)
 const isShow = computed({
   get: () => store.ui.isShow,
   set: (v: boolean) => {
-    if (!v)
-      store.onClose()
-  },
+    if (!v) store.onClose()
+  }
 })
 
 const isEditing = computed(() => !!store.values.trnId)
@@ -36,35 +35,43 @@ const isEditing = computed(() => !!store.values.trnId)
 const typeItems = computed(() => [
   { value: TrnType.Expense, label: t('trnForm.expense') },
   { value: TrnType.Income, label: t('trnForm.income') },
-  { value: TrnType.Transfer, label: t('trnForm.transfer') },
+  { value: TrnType.Transfer, label: t('trnForm.transfer') }
 ])
 
 // Görüntü: tam sayılar "xxxx,00" olarak, kullanıcı kuruşa dokunmadıkça.
 // Doldurma salt görsel — saklanan amountRaw'a girmez (bkz. padDisplayCents).
 const activeRaw = computed(() =>
-  padDisplayCents(store.values.amountRaw[store.activeAmountIdx] || '0', store.separators),
+  padDisplayCents(store.values.amountRaw[store.activeAmountIdx] || '0', store.separators)
 )
 
 // İpucundaki "= ..." önizlemesi de kuruşlu (matematik sonucu 2 ondalık).
 const sumPreview = computed(() =>
-  formatAmountResult(store.values.amount[store.activeAmountIdx] ?? 0, store.separators),
+  formatAmountResult(store.values.amount[store.activeAmountIdx] ?? 0, store.separators)
 )
 
 const walletItems = computed(() =>
-  walletsStore.sortedIds.map(id => ({ id, name: walletsStore.items?.[id]?.name ?? id, color: walletsStore.items?.[id]?.color })),
+  walletsStore.sortedIds.map((id) => ({
+    id,
+    name: walletsStore.items?.[id]?.name ?? id,
+    color: walletsStore.items?.[id]?.color
+  }))
 )
 
 const categoryItems = computed(() =>
-  categoriesStore.categoriesIdsForTrnValues.map(id => ({
+  categoriesStore.categoriesIdsForTrnValues.map((id) => ({
     id,
     name: categoriesStore.items[id]?.name ?? id,
     icon: categoriesStore.items[id]?.icon,
-    color: categoriesStore.items[id]?.color,
-  })),
+    color: categoriesStore.items[id]?.color
+  }))
 )
 
 const tagItems = computed(() =>
-  tagsStore.sortedIds.map(id => ({ id, name: tagsStore.items[id]?.name ?? id, color: tagsStore.items[id]?.color })),
+  tagsStore.sortedIds.map((id) => ({
+    id,
+    name: tagsStore.items[id]?.name ?? id,
+    color: tagsStore.items[id]?.color
+  }))
 )
 
 /**
@@ -75,12 +82,11 @@ const tagItems = computed(() =>
 const dateModel = computed({
   get: () => new Date(store.values.date),
   set: (v: Date | null) => {
-    if (!v)
-      return
+    if (!v) return
     const dt = new Date(store.values.date)
     dt.setFullYear(v.getFullYear(), v.getMonth(), v.getDate())
     store.values.date = dt.getTime()
-  },
+  }
 })
 
 const isTransfer = computed(() => store.values.trnType === TrnType.Transfer)
@@ -95,21 +101,26 @@ const isTransfer = computed(() => store.values.trnType === TrnType.Transfer)
  * görür.
  */
 const headerIcon = computed(() => {
-  if (isTransfer.value)
-    return '$transfer'
+  if (isTransfer.value) return '$transfer'
   return store.values.trnType === TrnType.Income ? '$income' : '$expense'
 })
 
 const headerSubtitle = computed(() => {
-  const typeLabel = typeItems.value.find(i => i.value === store.values.trnType)?.label ?? ''
+  const typeLabel = typeItems.value.find((i) => i.value === store.values.trnType)?.label ?? ''
 
   if (isTransfer.value) {
-    const from = store.transferExpenseWalletId ? walletsStore.items?.[store.transferExpenseWalletId]?.name : null
-    const to = store.transferIncomeWalletId ? walletsStore.items?.[store.transferIncomeWalletId]?.name : null
+    const from = store.transferExpenseWalletId
+      ? walletsStore.items?.[store.transferExpenseWalletId]?.name
+      : null
+    const to = store.transferIncomeWalletId
+      ? walletsStore.items?.[store.transferIncomeWalletId]?.name
+      : null
     return from && to ? `${from} → ${to}` : typeLabel
   }
 
-  const categoryName = store.values.categoryId ? categoriesStore.items?.[store.values.categoryId]?.name : null
+  const categoryName = store.values.categoryId
+    ? categoriesStore.items?.[store.values.categoryId]?.name
+    : null
   return categoryName ? `${typeLabel} · ${categoryName}` : typeLabel
 })
 
@@ -129,11 +140,9 @@ const amountField = ref<{ focus: () => void } | null>(null)
 
 function onAmountKey(e: KeyboardEvent) {
   // Kopyala/yapıştır gibi kısayollara dokunma.
-  if (e.ctrlKey || e.metaKey || e.altKey)
-    return
+  if (e.ctrlKey || e.metaKey || e.altKey) return
   // Tab: alanlar arası geçiş — engellenirse klavyeyle formda gezilemez.
-  if (e.key === 'Tab')
-    return
+  if (e.key === 'Tab') return
 
   e.preventDefault()
 
@@ -151,7 +160,7 @@ function onAmountKey(e: KeyboardEvent) {
   // "1.5" tuşlaması, seçili biçime bakılmaksızın çalışır — ayrık klavyelerde
   // ikisi de denk gelebiliyor.
   const decimalSep = store.separators.decimal
-  const key = (e.key === decimalSep || e.key === ',' || e.key === '.') ? '.' : e.key
+  const key = e.key === decimalSep || e.key === ',' || e.key === '.' ? '.' : e.key
   if (/^\d$/.test(key) || ['.', '+', '-', '*', '/'].includes(key))
     store.onClickCalculator(key as CalculatorKey)
   // Kalan tuşlar (harfler vb.) yukarıdaki preventDefault ile zaten yutuldu.
@@ -160,16 +169,14 @@ function onAmountKey(e: KeyboardEvent) {
 // Panel açılınca tutara odaklan: form açılır açılmaz klavyeden yazmaya
 // başlanabilsin — hesap makinesi için fareye uzanmak gerekmesin.
 watch(isShow, async (open) => {
-  if (!open)
-    return
+  if (!open) return
   await nextTick()
   amountField.value?.focus()
 })
 
 function onDelete() {
   const id = store.values.trnId
-  if (id)
-    trnsStore.deleteTrn(id)
+  if (id) trnsStore.deleteTrn(id)
   confirmDelete.value = false
   store.onClose()
 }
@@ -189,7 +196,9 @@ function onDelete() {
     <!-- Tür seçimi -->
     <v-btn-toggle
       :model-value="store.values.trnType"
-      color="primary" mandatory class="w-100"
+      color="primary"
+      mandatory
+      class="w-100"
       @update:model-value="store.onChangeTrnType($event)"
     >
       <v-btn v-for="it in typeItems" :key="it.value" :value="it.value" class="flex-grow-1">
@@ -224,22 +233,30 @@ function onDelete() {
       <div class="d-flex align-center ga-2">
         <v-autocomplete
           :model-value="store.transferExpenseWalletId"
-          :items="walletItems" item-title="name" item-value="id"
-          :label="t('trnForm.from')" auto-select-first
+          :items="walletItems"
+          item-title="name"
+          item-value="id"
+          :label="t('trnForm.from')"
+          auto-select-first
           @update:model-value="store.onTransferWalletSelected('expense', $event)"
         />
         <v-btn icon="mdi-swap-horizontal" variant="tonal" @click="store.switchTransferWallets()" />
         <v-autocomplete
           :model-value="store.transferIncomeWalletId"
-          :items="walletItems" item-title="name" item-value="id"
-          :label="t('trnForm.to')" auto-select-first
+          :items="walletItems"
+          item-title="name"
+          item-value="id"
+          :label="t('trnForm.to')"
+          auto-select-first
           @update:model-value="store.onTransferWalletSelected('income', $event)"
         />
       </div>
       <v-btn-toggle
         v-if="!store.isSameCurrencyTransfer"
         :model-value="store.values.transferType"
-        color="primary" mandatory class="w-100"
+        color="primary"
+        mandatory
+        class="w-100"
         @update:model-value="store.onChangeTransferType($event)"
       >
         <v-btn value="expense" class="flex-grow-1">
@@ -259,11 +276,18 @@ function onDelete() {
       <v-autocomplete
         v-else
         v-model="store.values.walletId"
-        :items="walletItems" item-title="name" item-value="id"
-        :label="t('trnForm.wallet')" auto-select-first
+        :items="walletItems"
+        item-title="name"
+        item-value="id"
+        :label="t('trnForm.wallet')"
+        auto-select-first
       >
         <template #prepend-inner>
-          <v-icon icon="mdi-wallet-outline" :color="walletsStore.items?.[store.values.walletId ?? '']?.color" size="20" />
+          <v-icon
+            icon="mdi-wallet-outline"
+            :color="walletsStore.items?.[store.values.walletId ?? '']?.color"
+            size="20"
+          />
         </template>
         <!-- Vuetify 4: slot'un `item`'ı artık HAM öğedir (v3'teki ListItem değil);
              ListItem `internalItem` olarak ayrı geçer. Bu yüzden `.raw` yok. -->
@@ -290,8 +314,11 @@ function onDelete() {
       <v-autocomplete
         v-else
         v-model="store.values.categoryId"
-        :items="categoryItems" item-title="name" item-value="id"
-        :label="t('trnForm.category')" auto-select-first
+        :items="categoryItems"
+        item-title="name"
+        item-value="id"
+        :label="t('trnForm.category')"
+        auto-select-first
       >
         <template #prepend-inner>
           <v-icon
@@ -313,9 +340,15 @@ function onDelete() {
     <!-- Etiketler (tags): çoklu seçim + yanında satır içi yeni etiket butonu -->
     <v-autocomplete
       v-model="store.values.tagIds"
-      :items="tagItems" item-title="name" item-value="id"
-      :label="t('tags.title')" prepend-inner-icon="$navTags"
-      multiple chips closable-chips auto-select-first
+      :items="tagItems"
+      item-title="name"
+      item-value="id"
+      :label="t('tags.title')"
+      prepend-inner-icon="$navTags"
+      multiple
+      chips
+      closable-chips
+      auto-select-first
     >
       <template #chip="{ props: chipProps, item }">
         <v-chip v-bind="chipProps" :color="item.color" size="small" :text="item.name" />
@@ -323,7 +356,11 @@ function onDelete() {
       <template #item="{ props: itemProps, item }">
         <v-list-item v-bind="itemProps" :title="item.name">
           <template #prepend="{ isSelected }">
-            <v-icon :icon="isSelected ? 'mdi-check-circle' : 'mdi-circle-outline'" :color="item.color" size="20" />
+            <v-icon
+              :icon="isSelected ? 'mdi-check-circle' : 'mdi-circle-outline'"
+              :color="item.color"
+              size="20"
+            />
           </template>
         </v-list-item>
       </template>
@@ -352,7 +389,8 @@ function onDelete() {
       v-model="store.values.desc"
       :label="t('trnForm.description')"
       prepend-inner-icon="mdi-text"
-      rows="2" auto-grow
+      rows="2"
+      auto-grow
     />
 
     <!-- Hesap makinesi -->

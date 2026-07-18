@@ -8,7 +8,9 @@ import { keyboardRowProps } from './rowA11y'
  * işlemlerini düzenleyemez hale gelir.
  */
 
-interface Row { id: string }
+interface Row {
+  id: string
+}
 const row: Row = { id: 't1' }
 
 /** `<tr>`'nin kendisi odaktayken gelen olay. */
@@ -18,7 +20,7 @@ function keyEvent(key: string, selfTarget = true) {
     key,
     target: selfTarget ? el : ({} as EventTarget),
     currentTarget: el,
-    preventDefault: vi.fn(),
+    preventDefault: vi.fn()
   } as unknown as KeyboardEvent & { preventDefault: ReturnType<typeof vi.fn> }
 }
 

@@ -3,7 +3,7 @@ import type { CategoryId, CategoryItem } from '@/features/categories/types'
 import {
   isPseudoCategoryId,
   PSEUDO_ICONS,
-  PSEUDO_LABEL_KEYS,
+  PSEUDO_LABEL_KEYS
 } from '@/features/categories/pseudoCategories'
 import { i18n } from '@/plugins/i18n'
 
@@ -25,7 +25,7 @@ export function getPseudoCategory(id: PseudoCategoryId): CategoryItem {
     name: i18n.global.t(PSEUDO_LABEL_KEYS[id]),
     parentId: 0,
     showInLastUsed: false,
-    showInQuickSelector: false,
+    showInQuickSelector: false
   }
 }
 

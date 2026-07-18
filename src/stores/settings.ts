@@ -81,6 +81,6 @@ export const useSettingsStore = defineStore('settings', () => {
     setNumberFormat,
     setDateFormat,
     setWeekStart,
-    setHideDecimals,
+    setHideDecimals
   }
 })

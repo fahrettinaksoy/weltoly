@@ -19,11 +19,9 @@ export type Rates = Record<string, number>
  */
 export function sanitizeRates(input: unknown): Rates {
   const out: Rates = {}
-  if (!input || typeof input !== 'object')
-    return out
+  if (!input || typeof input !== 'object') return out
   for (const [code, value] of Object.entries(input as Record<string, unknown>)) {
-    if (typeof value === 'number' && Number.isFinite(value) && value > 0)
-      out[code] = value
+    if (typeof value === 'number' && Number.isFinite(value) && value > 0) out[code] = value
   }
   return out
 }

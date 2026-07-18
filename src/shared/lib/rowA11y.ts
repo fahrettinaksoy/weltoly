@@ -22,21 +22,21 @@
  * "hiç erişilemiyor"dan iyidir; mevcut üç tablo zaten satır başına 2 buton
  * (kalem/çöp) ile aynı maliyeti taşıyor.
  */
-export interface RowA11yData<T> { item: T }
+export interface RowA11yData<T> {
+  item: T
+}
 
 export function keyboardRowProps<T>(activate: (item: T) => void) {
   return ({ item }: RowA11yData<T>) => ({
     tabindex: 0,
     onKeydown: (e: KeyboardEvent) => {
-      if (e.key !== 'Enter' && e.key !== ' ')
-        return
+      if (e.key !== 'Enter' && e.key !== ' ') return
       // Satırın İÇİNDEKİ bir öğe odaktaysa (ileride buton/çip eklenirse) onun
       // kendi davranışını çalma.
-      if (e.target !== e.currentTarget)
-        return
+      if (e.target !== e.currentTarget) return
       // Space sayfayı kaydırır; Enter form gönderebilir.
       e.preventDefault()
       activate(item)
-    },
+    }
   })
 }

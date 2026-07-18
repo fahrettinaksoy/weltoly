@@ -13,7 +13,10 @@ import { addMoney } from '@/shared/lib/money'
  * makul görünürler). Her çubuk BAĞIMSIZ olarak toplam gidere oranlanır.
  */
 
-export interface TagBreakdownInput { amount: number, tagIds?: string[] }
+export interface TagBreakdownInput {
+  amount: number
+  tagIds?: string[]
+}
 
 export interface TagBreakdownRow {
   /** Etiket id'si; etiketsiz satır için '__untagged'. */
@@ -32,7 +35,7 @@ export const UNTAGGED_KEY = '__untagged'
 export function buildTagBreakdown(
   rows: TagBreakdownInput[],
   total: number,
-  limit = Number.POSITIVE_INFINITY,
+  limit = Number.POSITIVE_INFINITY
 ): TagBreakdownRow[] {
   const sums = new Map<string, number>()
   let untagged = 0
@@ -44,8 +47,7 @@ export function buildTagBreakdown(
       continue
     }
     // Aynı işlem her etiketine TAM tutarla sayılır — çakışma bilinçli.
-    for (const id of ids)
-      sums.set(id, addMoney(sums.get(id) ?? 0, r.amount))
+    for (const id of ids) sums.set(id, addMoney(sums.get(id) ?? 0, r.amount))
   }
 
   const ratio = (v: number) => (total > 0 ? (v / total) * 100 : 0)
@@ -57,8 +59,7 @@ export function buildTagBreakdown(
 
   // Etiketsiz gider ayrı satır: hiçbir çubukta görünmediği için sessizce
   // kaybolurdu — "etiketlerin toplamı neden tutmuyor" sorusunun cevabı bu.
-  if (untagged > 0)
-    out.push({ key: UNTAGGED_KEY, value: untagged, ratio: ratio(untagged) })
+  if (untagged > 0) out.push({ key: UNTAGGED_KEY, value: untagged, ratio: ratio(untagged) })
 
   return out
 }

@@ -37,13 +37,16 @@ describe('ariaSort', () => {
   })
 
   it('çok kolonlu sıralamada doğru kolonu bulur', () => {
-    const sortBy = [{ key: 'kind', order: 'asc' as const }, { key: 'date', order: 'desc' as const }]
+    const sortBy = [
+      { key: 'kind', order: 'asc' as const },
+      { key: 'date', order: 'desc' as const }
+    ]
     expect(ariaSort('date', true, sortBy)).toBe('descending')
     expect(ariaSort('kind', true, sortBy)).toBe('ascending')
     expect(ariaSort('amount', true, sortBy)).toBe('none')
   })
 
-  it('sayısal/karma kolon anahtarı string\'e çevrilir', () => {
+  it("sayısal/karma kolon anahtarı string'e çevrilir", () => {
     expect(ariaSort(1, true, [{ key: '1', order: 'asc' }])).toBe('ascending')
   })
 })

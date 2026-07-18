@@ -13,7 +13,7 @@ export function useFormat() {
     numberFormat: settings.numberFormat,
     dateFormat: settings.dateFormat,
     hideDecimals: settings.hideDecimals,
-    locale: settings.locale,
+    locale: settings.locale
   })
 
   return {
@@ -22,8 +22,9 @@ export function useFormat() {
     /** Para birimsiz sayı. */
     number: (value: number) => fmt.formatNumber(value, opts()),
     /** Yüzde (girdi yüzde biriminde: 42 → "%42" / "42%"). İşaretin yeri dile göre. */
-    percent: (value: number, fractionDigits = 0) => fmt.formatPercent(value, opts(), fractionDigits),
+    percent: (value: number, fractionDigits = 0) =>
+      fmt.formatPercent(value, opts(), fractionDigits),
     /** Sayısal tarih (ayardaki biçime göre). */
-    date: (ts: number | Date) => fmt.formatDate(ts, opts()),
+    date: (ts: number | Date) => fmt.formatDate(ts, opts())
   }
 }

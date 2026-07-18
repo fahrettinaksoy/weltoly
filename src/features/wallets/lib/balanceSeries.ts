@@ -12,7 +12,10 @@ import { addMoney, subMoney } from '@/shared/lib/money'
  * hem test bu modülü import eder.
  */
 
-export interface BalancePoint { date: number, balance: number }
+export interface BalancePoint {
+  date: number
+  balance: number
+}
 
 const DAY_MS = 86_400_000
 
@@ -24,10 +27,8 @@ const DAY_MS = 86_400_000
 export function signedAmount(trn: TrnItem, walletId: string): number {
   if (trn.type === TrnType.Transfer) {
     let sum = 0
-    if (trn.expenseWalletId === walletId)
-      sum = subMoney(sum, trn.expenseAmount)
-    if (trn.incomeWalletId === walletId)
-      sum = addMoney(sum, trn.incomeAmount)
+    if (trn.expenseWalletId === walletId) sum = subMoney(sum, trn.expenseAmount)
+    if (trn.incomeWalletId === walletId) sum = addMoney(sum, trn.incomeAmount)
     return sum
   }
   return trn.type === TrnType.Income ? trn.amount : -trn.amount
@@ -46,11 +47,10 @@ export function signedAmount(trn: TrnItem, walletId: string): number {
 export function buildBalanceSeries(
   trns: TrnItem[],
   walletId: string,
-  currentBalance: number,
+  currentBalance: number
 ): BalancePoint[] {
   const sorted = trns.toSorted((a, b) => a.date - b.date)
-  if (!sorted.length)
-    return []
+  if (!sorted.length) return []
 
   // Sondan başa: bakiye_i = bakiye_{i+1} - etki_{i+1}
   const points: BalancePoint[] = []

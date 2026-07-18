@@ -8,9 +8,11 @@ function envelope(extra: Record<string, unknown>): string {
 
 describe('parseBackup — zarf doğrulama', () => {
   it('geçerli yedeği kabul eder', () => {
-    const { rows } = parseBackup(envelope({
-      wallets: [{ id: 'w1', name: 'Nakit', currency: 'USD' }],
-    }))
+    const { rows } = parseBackup(
+      envelope({
+        wallets: [{ id: 'w1', name: 'Nakit', currency: 'USD' }]
+      })
+    )
     expect(rows.wallets).toEqual([{ id: 'w1', name: 'Nakit', currency: 'USD' }])
   })
 
@@ -19,7 +21,9 @@ describe('parseBackup — zarf doğrulama', () => {
   })
 
   it('yanlış app etiketi reddedilir', () => {
-    expect(() => parseBackup(JSON.stringify({ app: 'other', version: 1 }))).toThrow(/Weltoly yedeği değil/)
+    expect(() => parseBackup(JSON.stringify({ app: 'other', version: 1 }))).toThrow(
+      /Weltoly yedeği değil/
+    )
   })
 
   it('ileri sürüm reddedilir', () => {
@@ -27,20 +31,26 @@ describe('parseBackup — zarf doğrulama', () => {
   })
 
   it('geçersiz sürüm reddedilir', () => {
-    expect(() => parseBackup(JSON.stringify({ app: 'weltoly', version: 0 }))).toThrow(/sürümü geçersiz/)
+    expect(() => parseBackup(JSON.stringify({ app: 'weltoly', version: 0 }))).toThrow(
+      /sürümü geçersiz/
+    )
   })
 })
 
 describe('parseBackup — kolon injection savunması', () => {
   it('bilinmeyen/kötü niyetli kolon adlarını sessizce atar', () => {
-    const { rows } = parseBackup(envelope({
-      wallets: [{
-        'id': 'w1',
-        'name': 'X',
-        'evil"; DROP TABLE wallets;--': 1, // injection denemesi
-        'notAColumn': 42,
-      }],
-    }))
+    const { rows } = parseBackup(
+      envelope({
+        wallets: [
+          {
+            id: 'w1',
+            name: 'X',
+            'evil"; DROP TABLE wallets;--': 1, // injection denemesi
+            notAColumn: 42
+          }
+        ]
+      })
+    )
     expect(rows.wallets[0]).toEqual({ id: 'w1', name: 'X' })
     expect(Object.keys(rows.wallets[0])).not.toContain('notAColumn')
   })

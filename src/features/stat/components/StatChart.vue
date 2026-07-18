@@ -10,7 +10,7 @@ import { useTheme } from 'vuetify'
 // bileşenin lazy chunk'ına düşsün — main.ts'ten alınırsa ana bundle'a girer.
 import '@/plugins/echarts'
 
-const props = defineProps<{ series: ChartInterval[], period: Period }>()
+const props = defineProps<{ series: ChartInterval[]; period: Period }>()
 
 const theme = useTheme()
 const { t } = useI18n()
@@ -19,9 +19,11 @@ const colors = computed(() => theme.current.value.colors)
 
 const labelFmt: Record<Period, string> = { day: 'd MMM', week: 'd MMM', month: 'MMM', year: 'yyyy' }
 
-const labels = computed(() => props.series.map(s => format(s.range.start, labelFmt[props.period])))
-const incomeData = computed(() => props.series.map(s => Math.round(s.income)))
-const expenseData = computed(() => props.series.map(s => Math.round(s.expense)))
+const labels = computed(() =>
+  props.series.map((s) => format(s.range.start, labelFmt[props.period]))
+)
+const incomeData = computed(() => props.series.map((s) => Math.round(s.income)))
+const expenseData = computed(() => props.series.map((s) => Math.round(s.expense)))
 
 const option = computed(() => {
   const onSurface = colors.value['on-surface'] ?? '#888'
@@ -32,25 +34,25 @@ const option = computed(() => {
     legend: {
       data: [t('trnForm.income'), t('trnForm.expense')],
       textStyle: { color: onSurface },
-      top: 0,
+      top: 0
     },
     xAxis: {
       type: 'category',
       data: labels.value,
       axisLabel: { color: onSurface, fontSize: 10 },
-      axisLine: { lineStyle: { color: gridLine } },
+      axisLine: { lineStyle: { color: gridLine } }
     },
     yAxis: {
       type: 'value',
       axisLabel: { color: onSurface, fontSize: 10 },
-      splitLine: { lineStyle: { color: gridLine } },
+      splitLine: { lineStyle: { color: gridLine } }
     },
     series: [
       {
         name: t('trnForm.income'),
         type: 'bar',
         data: incomeData.value,
-        itemStyle: { color: colors.value.success, borderRadius: [4, 4, 0, 0] },
+        itemStyle: { color: colors.value.success, borderRadius: [4, 4, 0, 0] }
       },
       {
         name: t('trnForm.expense'),
@@ -61,14 +63,14 @@ const option = computed(() => {
           silent: true,
           symbol: 'none',
           lineStyle: { color: colors.value.error, type: 'dashed', opacity: 0.6 },
-          data: [{ type: 'average' }],
-        },
-      },
-    ],
+          data: [{ type: 'average' }]
+        }
+      }
+    ]
   }
 })
 </script>
 
 <template>
-  <VChart :option="option" autoresize style="height: 240px;" />
+  <VChart :option="option" autoresize style="height: 240px" />
 </template>

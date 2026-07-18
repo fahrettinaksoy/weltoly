@@ -2,7 +2,10 @@
 
 import { cryptoCurrencyOptions } from '@/features/currencies/crypto'
 
-export interface CurrencyInfo { code: string, name: string }
+export interface CurrencyInfo {
+  code: string
+  name: string
+}
 
 export const allCurrencies: CurrencyInfo[] = [
   { code: 'USD', name: 'US Dollar' },
@@ -157,7 +160,7 @@ export const allCurrencies: CurrencyInfo[] = [
   { code: 'BTN', name: 'Bhutanese Ngultrum' },
   // Kripto TEK KAYNAKTAN türetilir (crypto.ts): burada elle tekrarlanırsa
   // fiyat çekilen liste ile seçilebilen liste sessizce ayrışır.
-  ...cryptoCurrencyOptions,
+  ...cryptoCurrencyOptions
 ]
 
 // Hızlı erişim için sık kullanılanlar (üstte gösterilir).
@@ -178,5 +181,5 @@ export const commonCurrencies: string[] = [
   'BRL',
   'BTC',
   'ETH',
-  'USDT',
+  'USDT'
 ]

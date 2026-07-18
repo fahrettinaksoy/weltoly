@@ -22,7 +22,7 @@ export interface PageHeaderDef {
    * usePageHeader getter aldığı için model her değişimde tazelenir.
    */
   tabs?: {
-    items: { value: string, label: string, icon?: string }[]
+    items: { value: string; label: string; icon?: string }[]
     model: string
     onChange: (value: string) => void
   }

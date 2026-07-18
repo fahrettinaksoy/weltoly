@@ -47,7 +47,7 @@ function onKeydown(e: KeyboardEvent) {
 
 function onPick(value: unknown) {
   // VDatePicker range modunda Date[] döndürür; boş/null'ı da diziye normalize et.
-  emit('update:modelValue', Array.isArray(value) ? value as Date[] : value ? [value as Date] : [])
+  emit('update:modelValue', Array.isArray(value) ? (value as Date[]) : value ? [value as Date] : [])
 }
 
 function clear() {

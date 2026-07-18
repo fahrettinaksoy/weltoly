@@ -20,37 +20,44 @@ yalnızca istediğinde güncel döviz/kripto kurlarını çekmek için kullanıl
 ## ✨ Öne çıkan özellikler
 
 ### Cüzdanlar
+
 - Sınırsız cüzdan; nakit, banka ve **kredi kartı** (limit + kullanılabilir bakiye) türleri
 - Cüzdana özel ikon ve renk, sürükle-bırak sıralama
 - Cüzdan başına bakiye grafiği, dönemsel özet ve etiket bazlı dağılım
 
 ### İşlemler
+
 - **Gelir**, **gider**, **transfer** ve **bakiye düzeltme** türleri
 - Yerleşik **hesap makinesi** ile hızlı tutar girişi
 - Kategori, etiket, açıklama ve tarih; güçlü filtreleme
 - Tüm cüzdanları tek listede gösteren birleşik işlemler sayfası
 
 ### Kategoriler ve etiketler
+
 - Gelir/gider kategorileri, ikon ve renk seçici
 - Alt kategori toplama (rollup) ile hiyerarşik raporlama
 - Serbest etiketlerle çapraz kesit analiz
 
 ### Çoklu para birimi
+
 - **Seçilebilir kur kaynağı:** ER-API, Frankfurter, TCMB
 - **Kripto** fiyatları CoinGecko üzerinden
 - Kur **güncellik paneli** — en son ne zaman güncellendiği şeffaf
 - Tüm bakiyeler tek bir temel para biriminde birleştirilir
 
 ### İstatistik ve analiz
+
 - Dönem karşılaştırmalı harcama grafikleri (ECharts)
 - Kategori kırılımı ve trend görünümleri
 
 ### Kişiselleştirme
+
 - Açık / koyu / sistem teması
 - Özelleştirilebilir ana renk, nötr palet ve köşe yuvarlaklığı
 - **tr / en / ru** dil desteği (RTL-hazır altyapı)
 
 ### Güvenlik ve veri
+
 - **PIN kilidi** — üstel gecikmeli (backoff) deneme koruması; arka plana alınınca otomatik kilit
 - Yedeği **dışa/içe aktarma** (JSON)
 - Örnek veri ile hızlı deneme
@@ -60,18 +67,18 @@ yalnızca istediğinde güncel döviz/kripto kurlarını çekmek için kullanıl
 
 ## 🧱 Teknoloji yığını
 
-| Katman | Teknoloji |
-|---|---|
+| Katman          | Teknoloji                                                     |
+| --------------- | ------------------------------------------------------------- |
 | Uygulama kabuğu | **Tauri v2** (Rust) — Windows / macOS / Linux / iOS / Android |
-| Arayüz | **Vue 3** + **Vuetify 4** (Material) |
-| Durum yönetimi | **Pinia** |
-| Yönlendirme | **Vue Router** |
-| Yerelleştirme | **vue-i18n** (tr/en/ru) |
-| Grafikler | **ECharts** (`vue-echarts`) |
-| Doğrulama | **Zod** |
-| Tarih | **date-fns** |
-| Veritabanı | **SQLite** — `tauri-plugin-sql` (derlemeye gömülü / bundled) |
-| Derleme | **Vite** + TypeScript (strict) |
+| Arayüz          | **Vue 3** + **Vuetify 4** (Material)                          |
+| Durum yönetimi  | **Pinia**                                                     |
+| Yönlendirme     | **Vue Router**                                                |
+| Yerelleştirme   | **vue-i18n** (tr/en/ru)                                       |
+| Grafikler       | **ECharts** (`vue-echarts`)                                   |
+| Doğrulama       | **Zod**                                                       |
+| Tarih           | **date-fns**                                                  |
+| Veritabanı      | **SQLite** — `tauri-plugin-sql` (derlemeye gömülü / bundled)  |
+| Derleme         | **Vite** + TypeScript (strict)                                |
 
 ---
 
@@ -116,11 +123,13 @@ weltoly/
 ## 🚀 Kurulum ve çalıştırma
 
 ### Gereksinimler
+
 - **Node.js ≥ 20** (`.nvmrc` → `nvm use`), npm
 - **Rust** — araç zinciri `src-tauri/rust-toolchain.toml` ile sabittir, `rustup` otomatik kurar
 - Masaüstü: platform WebView bağımlılıkları · Mobil: Android SDK+NDK / Xcode
 
 ### Komutlar
+
 ```bash
 npm install          # bağımlılıklar + git hook'ları
 npm run dev          # yalnız web önizleme (Vite) — http://localhost:1420
@@ -141,13 +150,13 @@ npm run tauri ios init && npm run tauri ios dev
 
 Her push/PR'da CI şunları zorunlu kılar (bkz. [.github/workflows/ci.yml](.github/workflows/ci.yml)):
 
-| Kapı | Komut |
-| ---- | ----- |
-| Tip | `npm run typecheck` |
-| Lint | `npm run lint` (@antfu) |
-| Frontend test + kapsam | `npm run test:coverage` (Vitest) |
-| Rust biçim/lint/test | `cargo fmt --check` · `cargo clippy -D warnings` · `cargo test` |
-| Tedarik zinciri | `npm audit` (prod) · `cargo audit` |
+| Kapı                   | Komut                                                           |
+| ---------------------- | --------------------------------------------------------------- |
+| Tip                    | `npm run typecheck`                                             |
+| Lint                   | `npm run lint` (@antfu)                                         |
+| Frontend test + kapsam | `npm run test:coverage` (Vitest)                                |
+| Rust biçim/lint/test   | `cargo fmt --check` · `cargo clippy -D warnings` · `cargo test` |
+| Tedarik zinciri        | `npm audit` (prod) · `cargo audit`                              |
 
 Bağımlılıklar **Dependabot** ile haftalık güncellenir; kod taraması **CodeQL** ile
 yapılır. Tanılama logları çalışma anında app log dizinindeki dönen dosyaya yazılır

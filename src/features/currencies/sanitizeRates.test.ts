@@ -8,7 +8,9 @@ describe('sanitizeRates — Y-2 kur doğrulama', () => {
   })
 
   it('0/negatif/NaN/Infinity kurları atar', () => {
-    expect(sanitizeRates({ USD: 1, A: 0, B: -1, C: Number.NaN, D: Number.POSITIVE_INFINITY })).toEqual({ USD: 1 })
+    expect(
+      sanitizeRates({ USD: 1, A: 0, B: -1, C: Number.NaN, D: Number.POSITIVE_INFINITY })
+    ).toEqual({ USD: 1 })
   })
 
   it('sayı olmayan değerleri atar', () => {

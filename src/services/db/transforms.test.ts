@@ -8,7 +8,6 @@ import { describe, expect, it } from 'vitest'
 import { TrnType } from '@/features/trns/types'
 import {
   categoryToRow,
-
   rowToCategory,
   rowToRates,
   rowToTag,
@@ -16,7 +15,7 @@ import {
   rowToWallet,
   tagToRow,
   trnToRow,
-  walletToRow,
+  walletToRow
 } from './transforms'
 
 describe('wallet transforms', () => {
@@ -32,7 +31,7 @@ describe('wallet transforms', () => {
       name: 'Cash',
       order: 2,
       updatedAt: 5,
-      type: 'cash',
+      type: 'cash'
     }
     const row = walletToRow(item, 'local')
     expect(row.isArchived).toBe(1)
@@ -60,7 +59,7 @@ describe('wallet transforms', () => {
       order: 0,
       updatedAt: 0,
       type: 'credit',
-      creditLimit: 500,
+      creditLimit: 500
     }
     const back = rowToWallet({ id: 'w2', ...walletToRow(item, 'local') } as Row)
     expect(back.type).toBe('credit')
@@ -78,7 +77,7 @@ describe('category transforms', () => {
       parentId: 0,
       showInLastUsed: true,
       showInQuickSelector: false,
-      updatedAt: 1,
+      updatedAt: 1
     }
     const row = categoryToRow(root, 'local')
     expect(row.parentId).toBeNull()
@@ -101,7 +100,7 @@ describe('desc alanı (003 migrasyonu)', () => {
       parentId: 0,
       showInLastUsed: true,
       showInQuickSelector: false,
-      updatedAt: 1,
+      updatedAt: 1
     }
     const row = categoryToRow(withDesc, 'local')
     expect(row.desc).toBe('Aylık sabit gider')
@@ -112,7 +111,12 @@ describe('desc alanı (003 migrasyonu)', () => {
   })
 
   it('etiket desc round-trip; boş desc null olarak yazılır', () => {
-    const tag: TagItem = { name: 'Zorunlu', color: '#ef4444', desc: 'Kısılamaz giderler', updatedAt: 1 }
+    const tag: TagItem = {
+      name: 'Zorunlu',
+      color: '#ef4444',
+      desc: 'Kısılamaz giderler',
+      updatedAt: 1
+    }
     const row = tagToRow(tag, 'local')
     expect(row.desc).toBe('Kısılamaz giderler')
     expect(rowToTag({ id: 't1', ...row } as Row).desc).toBe('Kısılamaz giderler')
@@ -122,7 +126,16 @@ describe('desc alanı (003 migrasyonu)', () => {
 
   it('003 ÖNCESİ satırlar: desc kolonu null gelir, boş stringe düşer', () => {
     // Migrasyon eski satırlara desc eklemez → null. UI'ın undefined görmemesi şart.
-    const legacyCategory = { id: 'c1', color: '#fff', icon: 'mdi:home', name: 'Eski', parentId: null, showInLastUsed: 1, showInQuickSelector: 0, updatedAt: 1 }
+    const legacyCategory = {
+      id: 'c1',
+      color: '#fff',
+      icon: 'mdi:home',
+      name: 'Eski',
+      parentId: null,
+      showInLastUsed: 1,
+      showInQuickSelector: 0,
+      updatedAt: 1
+    }
     expect(rowToCategory(legacyCategory as unknown as Row).desc).toBe('')
 
     const legacyTag = { id: 't1', name: 'Eski', color: '#000', updatedAt: 1 }
@@ -132,7 +145,14 @@ describe('desc alanı (003 migrasyonu)', () => {
 
 describe('trn transforms', () => {
   it('gelir işlemi round-trip', () => {
-    const trn: TrnItem = { type: TrnType.Expense, amount: 25, categoryId: 'food', walletId: 'w1', date: 10, updatedAt: 11 }
+    const trn: TrnItem = {
+      type: TrnType.Expense,
+      amount: 25,
+      categoryId: 'food',
+      walletId: 'w1',
+      date: 10,
+      updatedAt: 11
+    }
     const back = rowToTrn({ id: 't1', ...trnToRow(trn, 'local') } as Row)
     expect(back.type).toBe(TrnType.Expense)
     expect((back as any).amount).toBe(25)
@@ -148,7 +168,7 @@ describe('trn transforms', () => {
       incomeWalletId: 'w2',
       incomeAmount: 30,
       date: 12,
-      updatedAt: 13,
+      updatedAt: 13
     }
     const row = trnToRow(trn, 'local')
     expect(row.categoryId).toBe('transfer')
@@ -161,7 +181,10 @@ describe('trn transforms', () => {
 
 describe('rates transforms', () => {
   it('jSON rates parse eder, bozuksa null döner', () => {
-    expect(rowToRates({ id: 'r1', rates: JSON.stringify({ USD: 1, EUR: 0.9 }) } as Row)).toEqual({ USD: 1, EUR: 0.9 })
+    expect(rowToRates({ id: 'r1', rates: JSON.stringify({ USD: 1, EUR: 0.9 }) } as Row)).toEqual({
+      USD: 1,
+      EUR: 0.9
+    })
     expect(rowToRates({ id: 'r2', rates: 'bozuk{' } as Row)).toBeNull()
     expect(rowToRates({ id: 'r3' } as Row)).toBeNull()
   })

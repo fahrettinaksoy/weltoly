@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { createExpressionString, evaluateAbsExpression, formatAmountResult, formatInput, padDisplayCents } from './calculate'
+import {
+  createExpressionString,
+  evaluateAbsExpression,
+  formatAmountResult,
+  formatInput,
+  padDisplayCents
+} from './calculate'
 
 describe('evaluateAbsExpression', () => {
   it('işlem önceliğini uygular', () => {

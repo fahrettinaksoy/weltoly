@@ -25,25 +25,22 @@ export function getAmountInRate({
   amount,
   baseCurrencyCode,
   currencyCode,
-  rates,
+  rates
 }: {
   amount: number
   baseCurrencyCode?: CurrencyCode
   currencyCode: CurrencyCode
   rates?: Rates
 }): number | null {
-  if (!baseCurrencyCode || !rates)
-    return amount
+  if (!baseCurrencyCode || !rates) return amount
 
-  if (baseCurrencyCode === currencyCode)
-    return amount
+  if (baseCurrencyCode === currencyCode) return amount
 
   const from = rates[currencyCode]
   const to = rates[baseCurrencyCode]
-  if (!validRate(from) || !validRate(to))
-    return null // eksik/geçersiz kur → sessizce 1:1 varsayma
+  if (!validRate(from) || !validRate(to)) return null // eksik/geçersiz kur → sessizce 1:1 varsayma
 
-  return amount / from * to
+  return (amount / from) * to
 }
 
 interface TotalProps {
@@ -76,8 +73,7 @@ export function getTotal(props: TotalProps): TotalReturns {
   // Kuru çözülemeyen tutar null döner → hariç tut ve bayrağı kaldır.
   function getAmount(amount: number, currencyCode: CurrencyCode): number | null {
     const v = getAmountInRate({ amount, baseCurrencyCode, currencyCode, rates })
-    if (v === null)
-      hasMissingRates = true
+    if (v === null) hasMissingRates = true
     return v
   }
 
@@ -89,33 +85,29 @@ export function getTotal(props: TotalProps): TotalReturns {
 
   for (const trnId of trnsIds || []) {
     const trn = trnsItems[trnId]
-    if (!trn)
-      continue
+    if (!trn) continue
 
     if (trn.type === TrnType.Income || trn.type === TrnType.Expense) {
       if (trn.categoryId === ADJUSTMENT_ID) {
         const wallet = walletsItems[trn.walletId]
         const amount = getAmount(trn.amount, wallet?.currency ?? 'USD')
         if (amount !== null)
-          adjustment = trn.type === TrnType.Income ? addMoney(adjustment, amount) : subMoney(adjustment, amount)
+          adjustment =
+            trn.type === TrnType.Income
+              ? addMoney(adjustment, amount)
+              : subMoney(adjustment, amount)
         continue
       }
       const wallet = walletsItems[trn.walletId]
       const sum = getAmount(trn.amount, wallet?.currency ?? 'USD')
-      if (sum === null)
-        continue
+      if (sum === null) continue
 
-      if (trn.type === TrnType.Income)
-        income = addMoney(income, sum)
-      else
-        expense = addMoney(expense, sum)
-    }
-
-    else if (trn.type === TrnType.Transfer && 'incomeWalletId' in trn) {
+      if (trn.type === TrnType.Income) income = addMoney(income, sum)
+      else expense = addMoney(expense, sum)
+    } else if (trn.type === TrnType.Transfer && 'incomeWalletId' in trn) {
       const incomeWallet = walletsItems[trn.incomeWalletId]
       const expenseWallet = walletsItems[trn.expenseWalletId]
-      if (!incomeWallet || !expenseWallet)
-        continue
+      if (!incomeWallet || !expenseWallet) continue
 
       const incomeAmount = getAmount(trn.incomeAmount, incomeWallet.currency)
       const expenseAmount = getAmount(trn.expenseAmount, expenseWallet.currency)
@@ -126,12 +118,9 @@ export function getTotal(props: TotalProps): TotalReturns {
 
         if (expenseAmount !== null && walletsSet.has(trn.expenseWalletId))
           expenseTransfers = addMoney(expenseTransfers, expenseAmount)
-      }
-      else {
-        if (incomeAmount !== null)
-          incomeTransfers = addMoney(incomeTransfers, incomeAmount)
-        if (expenseAmount !== null)
-          expenseTransfers = addMoney(expenseTransfers, expenseAmount)
+      } else {
+        if (incomeAmount !== null) incomeTransfers = addMoney(incomeTransfers, incomeAmount)
+        if (expenseAmount !== null) expenseTransfers = addMoney(expenseTransfers, expenseAmount)
       }
     }
   }
@@ -147,7 +136,7 @@ export function getTotal(props: TotalProps): TotalReturns {
     incomeTransfers,
     sum,
     sumTransfers,
-    hasMissingRates,
+    hasMissingRates
   }
 }
 
@@ -168,17 +157,13 @@ export function getWalletsTotals(props: {
 
   for (const trnId of Object.keys(trnsItems)) {
     const trn = trnsItems[trnId]
-    if (!trn)
-      continue
+    if (!trn) continue
 
     if (trn.type === TrnType.Income || trn.type === TrnType.Expense) {
-      if (!walletsItems[trn.walletId])
-        continue
+      if (!walletsItems[trn.walletId]) continue
       addToWallet(trn.walletId, trn.type === TrnType.Income ? trn.amount : -trn.amount)
-    }
-    else if (trn.type === TrnType.Transfer && 'incomeWalletId' in trn) {
-      if (!walletsItems[trn.incomeWalletId] || !walletsItems[trn.expenseWalletId])
-        continue
+    } else if (trn.type === TrnType.Transfer && 'incomeWalletId' in trn) {
+      if (!walletsItems[trn.incomeWalletId] || !walletsItems[trn.expenseWalletId]) continue
       addToWallet(trn.incomeWalletId, trn.incomeAmount)
       addToWallet(trn.expenseWalletId, -trn.expenseAmount)
     }

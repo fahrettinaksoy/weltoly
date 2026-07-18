@@ -26,7 +26,7 @@ describe('cüzdan bakiye serisi', () => {
   it('son nokta GÜNCEL bakiyeye eşit', () => {
     const trns = [
       { ...base, type: TrnType.Income, amount: 100, walletId: W, date: 1 },
-      { ...base, type: TrnType.Expense, amount: 30, walletId: W, date: 2 },
+      { ...base, type: TrnType.Expense, amount: 30, walletId: W, date: 2 }
     ] as TrnItem[]
     const s = buildBalanceSeries(trns, W, 70)
     expect(s.at(-1)!.balance).toBe(70)
@@ -36,7 +36,7 @@ describe('cüzdan bakiye serisi', () => {
     const trns = [
       { ...base, type: TrnType.Income, amount: 100, walletId: W, date: 1 },
       { ...base, type: TrnType.Expense, amount: 30, walletId: W, date: 2 },
-      { ...base, type: TrnType.Income, amount: 50, walletId: W, date: 3 },
+      { ...base, type: TrnType.Income, amount: 50, walletId: W, date: 3 }
     ] as TrnItem[]
     const s = buildBalanceSeries(trns, W, 120)
     // Başlangıç noktası + tüm etkiler = güncel bakiye
@@ -53,31 +53,35 @@ describe('cüzdan bakiye serisi', () => {
   })
 
   it('transfer: GÖNDEREN tarafta bakiye düşer', () => {
-    const trns = [{
-      ...base,
-      type: TrnType.Transfer,
-      categoryId: 'transfer',
-      expenseWalletId: W,
-      expenseAmount: 300,
-      incomeWalletId: other,
-      incomeAmount: 300,
-      date: 1,
-    }] as unknown as TrnItem[]
+    const trns = [
+      {
+        ...base,
+        type: TrnType.Transfer,
+        categoryId: 'transfer',
+        expenseWalletId: W,
+        expenseAmount: 300,
+        incomeWalletId: other,
+        incomeAmount: 300,
+        date: 1
+      }
+    ] as unknown as TrnItem[]
     expect(signedAmount(trns[0]!, W)).toBe(-300)
     expect(buildBalanceSeries(trns, W, 700)[0]!.balance).toBe(1000)
   })
 
   it('transfer: ALAN tarafta bakiye artar', () => {
-    const trns = [{
-      ...base,
-      type: TrnType.Transfer,
-      categoryId: 'transfer',
-      expenseWalletId: other,
-      expenseAmount: 300,
-      incomeWalletId: W,
-      incomeAmount: 300,
-      date: 1,
-    }] as unknown as TrnItem[]
+    const trns = [
+      {
+        ...base,
+        type: TrnType.Transfer,
+        categoryId: 'transfer',
+        expenseWalletId: other,
+        expenseAmount: 300,
+        incomeWalletId: W,
+        incomeAmount: 300,
+        date: 1
+      }
+    ] as unknown as TrnItem[]
     expect(signedAmount(trns[0]!, W)).toBe(300)
     expect(buildBalanceSeries(trns, W, 1300)[0]!.balance).toBe(1000)
   })
@@ -91,7 +95,7 @@ describe('cüzdan bakiye serisi', () => {
       expenseAmount: 300,
       incomeWalletId: W,
       incomeAmount: 300,
-      date: 1,
+      date: 1
     } as unknown as TrnItem
     expect(signedAmount(trn, W)).toBe(0)
   })

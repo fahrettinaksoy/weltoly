@@ -39,8 +39,7 @@ const pendingDelete = ref<WalletRow | null>(null)
  */
 function confirmDelete() {
   const row = pendingDelete.value
-  if (!row)
-    return
+  if (!row) return
   walletsStore.deleteWallet(row.id)
   pendingDelete.value = null
 }
@@ -97,19 +96,15 @@ interface WalletRow {
  * taşımak her ikisinde de sahte gelir/gider üretirdi.
  */
 const flowsByWallet = computed(() => {
-  const map = new Map<WalletId, { income: number, expense: number }>()
+  const map = new Map<WalletId, { income: number; expense: number }>()
   const trns = trnsStore.items
-  if (!trns)
-    return map
+  if (!trns) return map
   for (const trnId in trns) {
     const trn = trns[trnId]!
-    if (trn.type === TrnType.Transfer || trn.categoryId === ADJUSTMENT_ID)
-      continue
+    if (trn.type === TrnType.Transfer || trn.categoryId === ADJUSTMENT_ID) continue
     const entry = map.get(trn.walletId) ?? { income: 0, expense: 0 }
-    if (trn.type === TrnType.Income)
-      entry.income += trn.amount
-    else
-      entry.expense += trn.amount
+    if (trn.type === TrnType.Income) entry.income += trn.amount
+    else entry.expense += trn.amount
     map.set(trn.walletId, entry)
   }
   return map
@@ -123,8 +118,7 @@ const flowsByWallet = computed(() => {
 const trnCountByWallet = computed(() => {
   const map = new Map<WalletId, number>()
   const trns = trnsStore.items
-  if (!trns)
-    return map
+  if (!trns) return map
   for (const trnId in trns) {
     for (const walletId of walletIdsOfTrn(trns[trnId]!))
       map.set(walletId, (map.get(walletId) ?? 0) + 1)
@@ -132,35 +126,38 @@ const trnCountByWallet = computed(() => {
   return map
 })
 
-const baseRows = computed(() => walletsStore.sortedIds.flatMap((id) => {
-  const w = walletsStore.itemsComputed[id]
-  if (!w)
-    return []
-  // Kur eksikse base karşılığı YOK (toBaseAmount null döner) — pay çubuğu ve
-  // pasta onu atlar, store.totals da net'e katmıyor. Kural tek kaynakta.
-  const toBase = (v: number) => toBaseAmount(v, w.rate)
-  const flow = flowsByWallet.value.get(id) ?? { income: 0, expense: 0 }
-  return [{
-    id,
-    name: w.name,
-    color: w.color,
-    icon: walletIcon(w), // seçilmişse o, değilse tür varsayılanı
-    typeLabel: t(`wallets.types.${w.type}`),
-    desc: w.desc,
-    currency: w.currency,
-    amount: w.amount,
-    base: toBase(w.amount),
-    income: flow.income,
-    expense: flow.expense,
-    incomeBase: toBase(flow.income),
-    expenseBase: toBase(flow.expense),
-    trnCount: trnCountByWallet.value.get(id) ?? 0,
-    withdrawal: w.isWithdrawal,
-    excluded: w.isExcludeInTotal,
-    archived: w.isArchived,
-    isDefault: userStore.defaultWalletId === id,
-  }]
-}))
+const baseRows = computed(() =>
+  walletsStore.sortedIds.flatMap((id) => {
+    const w = walletsStore.itemsComputed[id]
+    if (!w) return []
+    // Kur eksikse base karşılığı YOK (toBaseAmount null döner) — pay çubuğu ve
+    // pasta onu atlar, store.totals da net'e katmıyor. Kural tek kaynakta.
+    const toBase = (v: number) => toBaseAmount(v, w.rate)
+    const flow = flowsByWallet.value.get(id) ?? { income: 0, expense: 0 }
+    return [
+      {
+        id,
+        name: w.name,
+        color: w.color,
+        icon: walletIcon(w), // seçilmişse o, değilse tür varsayılanı
+        typeLabel: t(`wallets.types.${w.type}`),
+        desc: w.desc,
+        currency: w.currency,
+        amount: w.amount,
+        base: toBase(w.amount),
+        income: flow.income,
+        expense: flow.expense,
+        incomeBase: toBase(flow.income),
+        expenseBase: toBase(flow.expense),
+        trnCount: trnCountByWallet.value.get(id) ?? 0,
+        withdrawal: w.isWithdrawal,
+        excluded: w.isExcludeInTotal,
+        archived: w.isArchived,
+        isDefault: userStore.defaultWalletId === id
+      }
+    ]
+  })
+)
 
 /**
  * Varlık/borç/net artık STORE'da (walletsStore.totals) — Panel de aynı rakamı
@@ -169,16 +166,31 @@ const baseRows = computed(() => walletsStore.sortedIds.flatMap((id) => {
 const totals = computed(() => walletsStore.totals)
 const debtRatio = computed(() => walletsStore.debtRatio)
 
-const rows = computed<WalletRow[]>(() => baseRows.value.map(r => ({
-  ...r,
-  share: r.base != null && r.base > 0 && totals.value.assets ? (r.base / totals.value.assets) * 100 : 0,
-})))
+const rows = computed<WalletRow[]>(() =>
+  baseRows.value.map((r) => ({
+    ...r,
+    share:
+      r.base != null && r.base > 0 && totals.value.assets ? (r.base / totals.value.assets) * 100 : 0
+  }))
+)
 
 /** Özet sayaçları: cüzdanlarda anlamlı olan para, adet değil. */
 const kpis = computed(() => [
-  { key: 'net', label: t('wallets.stats.net'), value: fmt.money(totals.value.net, currenciesStore.base) },
-  { key: 'assets', label: t('wallets.stats.assets'), value: fmt.money(totals.value.assets, currenciesStore.base) },
-  { key: 'debts', label: t('wallets.stats.debts'), value: fmt.money(totals.value.debts, currenciesStore.base) },
+  {
+    key: 'net',
+    label: t('wallets.stats.net'),
+    value: fmt.money(totals.value.net, currenciesStore.base)
+  },
+  {
+    key: 'assets',
+    label: t('wallets.stats.assets'),
+    value: fmt.money(totals.value.assets, currenciesStore.base)
+  },
+  {
+    key: 'debts',
+    label: t('wallets.stats.debts'),
+    value: fmt.money(totals.value.debts, currenciesStore.base)
+  }
 ])
 
 /** Donut'ta ayrı dilim olarak gösterilecek en yüksek bakiyeli cüzdan sayısı. */
@@ -196,11 +208,11 @@ const pieItems = computed(() => {
     .filter((r): r is typeof r & { base: number } => !r.excluded && r.base != null && r.base > 0)
     .toSorted((a, b) => b.base - a.base)
 
-  const items = assets.slice(0, PIE_LIMIT).map(r => ({
+  const items = assets.slice(0, PIE_LIMIT).map((r) => ({
     key: r.id,
     title: r.name,
     value: r.base,
-    color: r.color,
+    color: r.color
   }))
 
   const restBase = assets.slice(PIE_LIMIT).reduce((sum, r) => sum + r.base, 0)
@@ -209,7 +221,7 @@ const pieItems = computed(() => {
       key: '__rest',
       title: t('wallets.chart.other', { count: assets.length - PIE_LIMIT }),
       value: restBase,
-      color: 'grey',
+      color: 'grey'
     })
   }
   return items
@@ -236,31 +248,97 @@ const pieItems = computed(() => {
  */
 const TIGHT = { headerProps: { noPadding: true }, cellProps: { noPadding: true } } as const
 
-const headers = computed(() => [
-  {
-    title: t('wallets.table.name'),
-    key: 'name',
-    sortable: true,
-    width: 280,
-    nowrap: true,
-    // Açıklamanın ayrı kolonu yok, ad hücresinin ALTINDA duruyor. Arama kolonlar
-    // üzerinden çalışır (VDataTable: transform → item.columns), yani kolon kalkınca
-    // açıklamaya göre arama da SESSİZCE ölürdü. Bu filtre onu geri verir:
-    // hücrede ne görünüyorsa arama da onu bulur.
-    filter: (value: string, query: string, item?: { raw?: WalletRow }) =>
-      `${value} ${item?.raw?.desc ?? ''}`.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
-  },
-  { title: t('wallets.type'), key: 'typeLabel', sortable: true, width: 130, nowrap: true },
-  { title: t('wallets.table.balance'), key: 'base', align: 'end', sortable: true, width: 260, nowrap: true },
-  { title: t('wallets.table.income'), key: 'incomeBase', align: 'end', sortable: true, width: 130, nowrap: true },
-  { title: t('wallets.table.expense'), key: 'expenseBase', align: 'end', sortable: true, width: 130, nowrap: true },
-  { title: t('wallets.table.trnCount'), key: 'trnCount', align: 'end', sortable: true, width: 84, nowrap: true, ...TIGHT },
-  { title: t('wallets.table.withdrawal'), key: 'withdrawal', align: 'center', sortable: true, width: 112, nowrap: true, ...TIGHT },
-  { title: t('wallets.table.excluded'), key: 'excluded', align: 'center', sortable: true, width: 100, nowrap: true, ...TIGHT },
-  { title: t('wallets.table.archived'), key: 'archived', align: 'center', sortable: true, width: 88, nowrap: true, ...TIGHT },
-  { title: t('wallets.table.default'), key: 'isDefault', align: 'center', sortable: true, width: 104, nowrap: true, ...TIGHT },
-  { title: '', key: 'actions', align: 'end', sortable: false, width: 104 },
-] as const)
+const headers = computed(
+  () =>
+    [
+      {
+        title: t('wallets.table.name'),
+        key: 'name',
+        sortable: true,
+        width: 280,
+        nowrap: true,
+        // Açıklamanın ayrı kolonu yok, ad hücresinin ALTINDA duruyor. Arama kolonlar
+        // üzerinden çalışır (VDataTable: transform → item.columns), yani kolon kalkınca
+        // açıklamaya göre arama da SESSİZCE ölürdü. Bu filtre onu geri verir:
+        // hücrede ne görünüyorsa arama da onu bulur.
+        filter: (value: string, query: string, item?: { raw?: WalletRow }) =>
+          `${value} ${item?.raw?.desc ?? ''}`
+            .toLocaleLowerCase()
+            .includes(query.toLocaleLowerCase())
+      },
+      { title: t('wallets.type'), key: 'typeLabel', sortable: true, width: 130, nowrap: true },
+      {
+        title: t('wallets.table.balance'),
+        key: 'base',
+        align: 'end',
+        sortable: true,
+        width: 260,
+        nowrap: true
+      },
+      {
+        title: t('wallets.table.income'),
+        key: 'incomeBase',
+        align: 'end',
+        sortable: true,
+        width: 130,
+        nowrap: true
+      },
+      {
+        title: t('wallets.table.expense'),
+        key: 'expenseBase',
+        align: 'end',
+        sortable: true,
+        width: 130,
+        nowrap: true
+      },
+      {
+        title: t('wallets.table.trnCount'),
+        key: 'trnCount',
+        align: 'end',
+        sortable: true,
+        width: 84,
+        nowrap: true,
+        ...TIGHT
+      },
+      {
+        title: t('wallets.table.withdrawal'),
+        key: 'withdrawal',
+        align: 'center',
+        sortable: true,
+        width: 112,
+        nowrap: true,
+        ...TIGHT
+      },
+      {
+        title: t('wallets.table.excluded'),
+        key: 'excluded',
+        align: 'center',
+        sortable: true,
+        width: 100,
+        nowrap: true,
+        ...TIGHT
+      },
+      {
+        title: t('wallets.table.archived'),
+        key: 'archived',
+        align: 'center',
+        sortable: true,
+        width: 88,
+        nowrap: true,
+        ...TIGHT
+      },
+      {
+        title: t('wallets.table.default'),
+        key: 'isDefault',
+        align: 'center',
+        sortable: true,
+        width: 104,
+        nowrap: true,
+        ...TIGHT
+      },
+      { title: '', key: 'actions', align: 'end', sortable: false, width: 104 }
+    ] as const
+)
 
 /** Varsayılanı ayarla; zaten varsayılansa seçimi kaldır (tek işaretçi). */
 function toggleDefault(row: WalletRow) {
@@ -276,8 +354,7 @@ type WalletFlag = 'isWithdrawal' | 'isExcludeInTotal' | 'isArchived'
  */
 function toggleFlag(row: WalletRow, field: WalletFlag) {
   const wallet = walletsStore.items?.[row.id]
-  if (!wallet)
-    return
+  if (!wallet) return
   walletsStore.saveWallet({ id: row.id, values: { ...wallet, [field]: !wallet[field] } })
 }
 
@@ -321,10 +398,7 @@ function onRowClick(_event: unknown, { item }: { item: WalletRow }) {
           </template>
         </v-pie>
 
-        <div
-          v-for="kpi in kpis"
-          :key="kpi.key"
-        >
+        <div v-for="kpi in kpis" :key="kpi.key">
           <div class="text-h5 font-weight-bold">
             {{ kpi.value }}
           </div>

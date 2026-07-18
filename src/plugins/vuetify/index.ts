@@ -24,6 +24,6 @@ export const vuetify = createVuetify({
   locale: {
     // internationalization: Vuetify bileşen metinleri vue-i18n üzerinden çevrilir.
     // Not: adapter gevşek-tipli I18n bekler; güçlü tipli örneğimizi bu sınırda cast'liyoruz.
-    adapter: createVueI18nAdapter({ i18n: i18n as any, useI18n }),
-  },
+    adapter: createVueI18nAdapter({ i18n: i18n as any, useI18n })
+  }
 })

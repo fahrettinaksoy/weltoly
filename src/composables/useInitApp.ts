@@ -22,7 +22,9 @@ export function useInitApp() {
 
   function init() {
     if (!isTauriRuntime()) {
-      logger.warn('[app] Tauri dışı ortam - yerel SQLite atlandı (npm run tauri:dev ile çalıştırın).')
+      logger.warn(
+        '[app] Tauri dışı ortam - yerel SQLite atlandı (npm run tauri:dev ile çalıştırın).'
+      )
       return
     }
     userStore.initUserSettings()

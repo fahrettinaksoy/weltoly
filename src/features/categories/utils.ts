@@ -1,16 +1,14 @@
 import type { Categories, CategoryId, CategoryItem } from '@/features/categories/types'
 
 export function getTransactibleCategoriesIds(items: Categories, ids?: CategoryId[]) {
-  if (!items)
-    return []
+  if (!items) return []
 
   const childrenMap = new Map<CategoryId, CategoryId[]>()
   for (const id of Object.keys(items)) {
     const parentId = items[id]?.parentId
     if (parentId) {
       const pid = String(parentId)
-      if (!childrenMap.has(pid))
-        childrenMap.set(pid, [])
+      if (!childrenMap.has(pid)) childrenMap.set(pid, [])
       childrenMap.get(pid)!.push(id)
     }
   }
@@ -28,8 +26,7 @@ export function getTransactibleCategoriesIds(items: Categories, ids?: CategoryId
           result.push(childId)
         }
       }
-    }
-    else if (!seen.has(id)) {
+    } else if (!seen.has(id)) {
       seen.add(id)
       result.push(id)
     }
@@ -49,19 +46,24 @@ export function getTransactibleCategoriesIds(items: Categories, ids?: CategoryId
  * anlamsız bir dilim taşır. Artık üst kategorinin GERÇEKTEN var olduğu
  * doğrulanır; yoksa yaprağın kendisi kök sayılır.
  */
-export function getParentCategoryIdOrReturnSame(items: Categories, categoryId: CategoryId): CategoryId {
+export function getParentCategoryIdOrReturnSame(
+  items: Categories,
+  categoryId: CategoryId
+): CategoryId {
   const category = items[categoryId]
-  if (!category || category.parentId === 0)
-    return categoryId
+  if (!category || category.parentId === 0) return categoryId
 
   const parentId = category.parentId
-  if (!parentId)
-    return categoryId
+  if (!parentId) return categoryId
 
   return items[parentId] ? parentId : categoryId
 }
 
-export function compareCategoriesByParentAndName(a: CategoryItem, b: CategoryItem, items: Categories): number {
+export function compareCategoriesByParentAndName(
+  a: CategoryItem,
+  b: CategoryItem,
+  items: Categories
+): number {
   const parentNameA = items[a.parentId]?.name ?? ''
   const parentNameB = items[b.parentId]?.name ?? ''
   return parentNameA.localeCompare(parentNameB) || a.name.localeCompare(b.name)
@@ -70,16 +72,18 @@ export function compareCategoriesByParentAndName(a: CategoryItem, b: CategoryIte
 export function compareCategoryIds(idA: CategoryId, idB: CategoryId, items: Categories): number {
   const catA = items[idA]
   const catB = items[idB]
-  if (!catA || !catB)
-    return 0
+  if (!catA || !catB) return 0
   return compareCategoriesByParentAndName(catA, catB, items)
 }
 
-export function computeChildrenDiff(prev: CategoryId[], next: CategoryId[]): { added: CategoryId[], removed: CategoryId[] } {
+export function computeChildrenDiff(
+  prev: CategoryId[],
+  next: CategoryId[]
+): { added: CategoryId[]; removed: CategoryId[] } {
   const prevSet = new Set(prev)
   const nextSet = new Set(next)
   return {
-    added: next.filter(id => !prevSet.has(id)),
-    removed: prev.filter(id => !nextSet.has(id)),
+    added: next.filter((id) => !prevSet.has(id)),
+    removed: prev.filter((id) => !nextSet.has(id))
   }
 }

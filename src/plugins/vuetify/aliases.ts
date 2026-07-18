@@ -6,7 +6,7 @@ export const aliases = {
   VBtnPrimary: VBtn,
   VBtnDanger: VBtn,
   VBtnGhost: VBtn,
-  VCardSection: VCard,
+  VCardSection: VCard
 }
 
 // Alias'lara özel varsayılanlar (index.ts'te global defaults ile birleşir).
@@ -14,7 +14,7 @@ export const aliasDefaults = {
   VBtnPrimary: { color: 'primary', variant: 'flat', rounded: 'lg' },
   VBtnDanger: { color: 'error', variant: 'flat', rounded: 'lg' },
   VBtnGhost: { variant: 'text', rounded: 'lg' },
-  VCardSection: { variant: 'tonal', rounded: 'lg' },
+  VCardSection: { variant: 'tonal', rounded: 'lg' }
 }
 
 // TS: alias'lı bileşenleri şablonlarda tanı (vue-tsc + IDE için).

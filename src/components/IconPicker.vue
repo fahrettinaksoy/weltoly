@@ -18,7 +18,7 @@ const search = ref('')
 
 const filtered = computed(() => {
   const q = search.value.trim().toLowerCase()
-  return q ? categoryIcons.filter(i => i.toLowerCase().includes(q)) : categoryIcons
+  return q ? categoryIcons.filter((i) => i.toLowerCase().includes(q)) : categoryIcons
 })
 
 function pick(value: string) {
@@ -33,10 +33,16 @@ function pick(value: string) {
       <v-card-title class="d-flex align-center">
         {{ title }}
         <v-spacer />
-        <v-btn icon="mdi-close" variant="text" size="small" :aria-label="t('$vuetify.dismiss')" @click="model = false" />
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          size="small"
+          :aria-label="t('$vuetify.dismiss')"
+          @click="model = false"
+        />
       </v-card-title>
 
-      <v-card-text style="max-height: 60vh;">
+      <v-card-text style="max-height: 60vh">
         <v-text-field
           v-model="search"
           prepend-inner-icon="mdi-magnify"

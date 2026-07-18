@@ -14,7 +14,13 @@ import { useLockStore } from '@/features/auth/useLockStore'
 import RatesPanel from '@/features/currencies/components/RatesPanel.vue'
 import { allCurrencies } from '@/features/currencies/list'
 import { clearAllData, seedDemoData } from '@/features/demo/seed'
-import { MAX_RADIUS, MIN_RADIUS, neutralKeys, neutralPalettes, primaryPalette } from '@/features/theme/palette'
+import {
+  MAX_RADIUS,
+  MIN_RADIUS,
+  neutralKeys,
+  neutralPalettes,
+  primaryPalette
+} from '@/features/theme/palette'
 import { useUserStore } from '@/features/user/store'
 import { exportBackup, importBackup } from '@/services/backup'
 import { checkForUpdates } from '@/services/updater'
@@ -32,15 +38,42 @@ const lock = useLockStore()
 // Sağdaki dikey sekmeler — etiket, bölüm başlığı görevini görür.
 const tab = ref('appearance')
 const tabItems = computed(() => [
-  { value: 'appearance', icon: 'mdi-palette-outline', label: t('settings.appearance'), desc: t('settings.tabDesc.appearance') },
-  { value: 'profile', icon: 'mdi-account-outline', label: t('settings.profile'), desc: t('settings.tabDesc.profile') },
-  { value: 'localization', icon: 'mdi-translate', label: t('settings.localization'), desc: t('settings.tabDesc.localization') },
-  { value: 'rates', icon: 'mdi-swap-horizontal-bold', label: t('settings.tabRates'), desc: t('settings.tabDesc.rates') },
-  { value: 'data', icon: 'mdi-database-outline', label: t('settings.data'), desc: t('settings.tabDesc.data') },
+  {
+    value: 'appearance',
+    icon: 'mdi-palette-outline',
+    label: t('settings.appearance'),
+    desc: t('settings.tabDesc.appearance')
+  },
+  {
+    value: 'profile',
+    icon: 'mdi-account-outline',
+    label: t('settings.profile'),
+    desc: t('settings.tabDesc.profile')
+  },
+  {
+    value: 'localization',
+    icon: 'mdi-translate',
+    label: t('settings.localization'),
+    desc: t('settings.tabDesc.localization')
+  },
+  {
+    value: 'rates',
+    icon: 'mdi-swap-horizontal-bold',
+    label: t('settings.tabRates'),
+    desc: t('settings.tabDesc.rates')
+  },
+  {
+    value: 'data',
+    icon: 'mdi-database-outline',
+    label: t('settings.data'),
+    desc: t('settings.tabDesc.data')
+  }
 ])
 
 // İçerik başlığı aktif sekmeyi izler: "burada ne yapılır" açıklaması.
-const activeTab = computed(() => tabItems.value.find(i => i.value === tab.value) ?? tabItems.value[0]!)
+const activeTab = computed(
+  () => tabItems.value.find((i) => i.value === tab.value) ?? tabItems.value[0]!
+)
 
 const showSetPin = ref(false)
 
@@ -68,33 +101,40 @@ async function onRemovePinConfirm(pin: string) {
   }, 400)
 }
 
-const themeOptions = computed<{ value: ThemeMode, label: string, icon: string }[]>(() => [
+const themeOptions = computed<{ value: ThemeMode; label: string; icon: string }[]>(() => [
   { value: 'system', label: t('settings.themeSystem'), icon: 'mdi-theme-light-dark' },
   { value: 'light', label: t('settings.themeLight'), icon: 'mdi-white-balance-sunny' },
-  { value: 'dark', label: t('settings.themeDark'), icon: 'mdi-weather-night' },
+  { value: 'dark', label: t('settings.themeDark'), icon: 'mdi-weather-night' }
 ])
 
-const localeOptions: { value: LocaleCode, label: string }[] = [
+const localeOptions: { value: LocaleCode; label: string }[] = [
   { value: 'tr', label: 'Türkçe' },
   { value: 'en', label: 'English' },
-  { value: 'ru', label: 'Русский' },
+  { value: 'ru', label: 'Русский' }
 ]
 
 // Varsayılan (temel) para birimi seçenekleri — "USD — US Dollar".
-const currencyOptions = allCurrencies.map(c => ({ value: c.code, label: `${c.code} — ${c.name}` }))
+const currencyOptions = allCurrencies.map((c) => ({
+  value: c.code,
+  label: `${c.code} — ${c.name}`
+}))
 
 // Biçimlendirme seçenekleri — 'auto' dile göre; diğerleri örnek gösterimle.
-const numberFormatOptions = computed(() => NUMBER_FORMATS.map(f => ({
-  value: f.key,
-  label: f.key === 'auto' ? t('settings.formatAuto') : f.sample,
-})))
-const dateFormatOptions = computed(() => DATE_FORMATS.map(f => ({
-  value: f.key,
-  label: f.key === 'auto' ? t('settings.formatAuto') : f.sample,
-})))
+const numberFormatOptions = computed(() =>
+  NUMBER_FORMATS.map((f) => ({
+    value: f.key,
+    label: f.key === 'auto' ? t('settings.formatAuto') : f.sample
+  }))
+)
+const dateFormatOptions = computed(() =>
+  DATE_FORMATS.map((f) => ({
+    value: f.key,
+    label: f.key === 'auto' ? t('settings.formatAuto') : f.sample
+  }))
+)
 const weekStartOptions = computed(() => [
   { value: 1 as WeekStart, label: t('settings.monday') },
-  { value: 0 as WeekStart, label: t('settings.sunday') },
+  { value: 0 as WeekStart, label: t('settings.sunday') }
 ])
 
 const busy = ref(false)
@@ -103,28 +143,23 @@ async function onExport() {
   busy.value = true
   const r = await exportBackup()
   busy.value = false
-  if (r === 'ok')
-    ui.showToast(t('settings.backupOk'), 'success')
-  else if (r === 'error')
-    ui.showToast(t('settings.backupError'), 'error')
+  if (r === 'ok') ui.showToast(t('settings.backupOk'), 'success')
+  else if (r === 'error') ui.showToast(t('settings.backupError'), 'error')
 }
 
 async function onImport() {
   busy.value = true
   const r = await importBackup()
   busy.value = false
-  if (r === 'ok')
-    ui.showToast(t('settings.importOk'), 'success')
-  else if (r === 'error')
-    ui.showToast(t('settings.backupError'), 'error')
+  if (r === 'ok') ui.showToast(t('settings.importOk'), 'success')
+  else if (r === 'error') ui.showToast(t('settings.backupError'), 'error')
 }
 
 const confirmClear = ref(false)
 
 async function onRevealLogs() {
   const ok = await revealLogs()
-  if (!ok)
-    ui.showToast(t('settings.openLogsError'), 'error')
+  if (!ok) ui.showToast(t('settings.openLogsError'), 'error')
 }
 
 const checkingUpdate = ref(false)
@@ -134,12 +169,9 @@ async function onCheckUpdates() {
   const outcome = await checkForUpdates()
   checkingUpdate.value = false
   // 'updated' durumunda uygulama yeniden başladığı için buraya nadiren gelinir.
-  if (outcome === 'none')
-    ui.showToast(t('settings.updateNone'), 'success')
-  else if (outcome === 'unsupported')
-    ui.showToast(t('settings.updateUnsupported'), 'info')
-  else if (outcome === 'error')
-    ui.showToast(t('settings.updateError'), 'error')
+  if (outcome === 'none') ui.showToast(t('settings.updateNone'), 'success')
+  else if (outcome === 'unsupported') ui.showToast(t('settings.updateUnsupported'), 'info')
+  else if (outcome === 'error') ui.showToast(t('settings.updateError'), 'error')
 }
 
 async function onLoadDemo() {
@@ -147,11 +179,12 @@ async function onLoadDemo() {
   try {
     await seedDemoData()
     ui.showToast(t('settings.demoLoaded'), 'success')
-  }
-  catch (e) {
-    ui.showToast(`${t('settings.backupError')}: ${e instanceof Error ? e.message : String(e)}`, 'error')
-  }
-  finally {
+  } catch (e) {
+    ui.showToast(
+      `${t('settings.backupError')}: ${e instanceof Error ? e.message : String(e)}`,
+      'error'
+    )
+  } finally {
     busy.value = false
   }
 }
@@ -162,11 +195,12 @@ async function onClearData() {
   try {
     await clearAllData()
     ui.showToast(t('settings.dataCleared'), 'success')
-  }
-  catch (e) {
-    ui.showToast(`${t('settings.backupError')}: ${e instanceof Error ? e.message : String(e)}`, 'error')
-  }
-  finally {
+  } catch (e) {
+    ui.showToast(
+      `${t('settings.backupError')}: ${e instanceof Error ? e.message : String(e)}`,
+      'error'
+    )
+  } finally {
     busy.value = false
   }
 }
@@ -206,10 +240,18 @@ async function onClearData() {
               </div>
               <v-btn-toggle
                 :model-value="settings.themeMode"
-                color="primary" density="comfortable" mandatory class="mb-4"
+                color="primary"
+                density="comfortable"
+                mandatory
+                class="mb-4"
                 @update:model-value="settings.setThemeMode($event as ThemeMode)"
               >
-                <v-btn v-for="opt in themeOptions" :key="opt.value" :value="opt.value" :prepend-icon="opt.icon">
+                <v-btn
+                  v-for="opt in themeOptions"
+                  :key="opt.value"
+                  :value="opt.value"
+                  :prepend-icon="opt.icon"
+                >
                   {{ opt.label }}
                 </v-btn>
               </v-btn-toggle>
@@ -229,13 +271,22 @@ async function onClearData() {
               </div>
               <div class="d-flex flex-wrap ga-2 mb-4">
                 <button
-                  v-for="n in neutralKeys" :key="n" type="button" class="neutral-swatch"
+                  v-for="n in neutralKeys"
+                  :key="n"
+                  type="button"
+                  class="neutral-swatch"
                   :style="{ background: neutralPalettes[n].dark.surface }"
                   :title="n"
                   :aria-pressed="settings.neutral === n"
                   @click="settings.setNeutral(n as NeutralKey)"
                 >
-                  <v-icon v-if="settings.neutral === n" icon="mdi-check" size="18" color="white" class="neutral-check" />
+                  <v-icon
+                    v-if="settings.neutral === n"
+                    icon="mdi-check"
+                    size="18"
+                    color="white"
+                    class="neutral-check"
+                  />
                 </button>
               </div>
 
@@ -244,8 +295,12 @@ async function onClearData() {
               </div>
               <v-slider
                 :model-value="settings.radius"
-                :min="MIN_RADIUS" :max="MAX_RADIUS" :step="1"
-                color="primary" hide-details density="compact"
+                :min="MIN_RADIUS"
+                :max="MAX_RADIUS"
+                :step="1"
+                color="primary"
+                hide-details
+                density="compact"
                 @update:model-value="settings.setRadius($event)"
               />
             </SectionCard>
@@ -266,20 +321,32 @@ async function onClearData() {
                 @update:model-value="userStore.setDisplayName($event)"
               />
               <div class="d-flex ga-2 flex-wrap">
-                <v-btn v-if="!lock.hasPin" variant="tonal" prepend-icon="mdi-lock-outline" @click="showSetPin = true">
+                <v-btn
+                  v-if="!lock.hasPin"
+                  variant="tonal"
+                  prepend-icon="mdi-lock-outline"
+                  @click="showSetPin = true"
+                >
                   {{ t('settings.setPin') }}
                 </v-btn>
                 <template v-else>
                   <v-btn variant="tonal" prepend-icon="mdi-lock-reset" @click="showSetPin = true">
                     {{ t('settings.changePin') }}
                   </v-btn>
-                  <v-btn variant="tonal" color="error" prepend-icon="mdi-lock-open-variant-outline" @click="askRemovePin">
+                  <v-btn
+                    variant="tonal"
+                    color="error"
+                    prepend-icon="mdi-lock-open-variant-outline"
+                    @click="askRemovePin"
+                  >
                     {{ t('settings.removePin') }}
                   </v-btn>
                 </template>
               </div>
               <div class="text-caption text-medium-emphasis mt-2">
-                <v-icon icon="mdi-information-outline" size="14" class="mr-1" />{{ t('lock.notEncryptedNote') }}
+                <v-icon icon="mdi-information-outline" size="14" class="mr-1" />{{
+                  t('lock.notEncryptedNote')
+                }}
               </div>
             </SectionCard>
           </v-tabs-window-item>
@@ -298,7 +365,10 @@ async function onClearData() {
               </div>
               <v-select
                 :model-value="settings.locale"
-                :items="localeOptions" item-title="label" item-value="value" hide-details
+                :items="localeOptions"
+                item-title="label"
+                item-value="value"
+                hide-details
                 class="mb-4"
                 @update:model-value="settings.setAppLocale($event as LocaleCode)"
               />
@@ -308,7 +378,10 @@ async function onClearData() {
               </div>
               <v-select
                 :model-value="userStore.baseCurrency"
-                :items="currencyOptions" item-title="label" item-value="value" hide-details
+                :items="currencyOptions"
+                item-title="label"
+                item-value="value"
+                hide-details
                 prepend-inner-icon="mdi-currency-usd"
                 @update:model-value="userStore.saveUserBaseCurrency($event as CurrencyCode)"
               />
@@ -324,7 +397,10 @@ async function onClearData() {
                 <v-col cols="12" sm="4">
                   <v-select
                     :model-value="settings.numberFormat"
-                    :items="numberFormatOptions" item-title="label" item-value="value" hide-details
+                    :items="numberFormatOptions"
+                    item-title="label"
+                    item-value="value"
+                    hide-details
                     :label="t('settings.numbers')"
                     @update:model-value="settings.setNumberFormat($event as NumberFormatKey)"
                   />
@@ -332,7 +408,10 @@ async function onClearData() {
                 <v-col cols="12" sm="4">
                   <v-select
                     :model-value="settings.dateFormat"
-                    :items="dateFormatOptions" item-title="label" item-value="value" hide-details
+                    :items="dateFormatOptions"
+                    item-title="label"
+                    item-value="value"
+                    hide-details
                     :label="t('settings.dates')"
                     @update:model-value="settings.setDateFormat($event as DateFormatKey)"
                   />
@@ -340,7 +419,10 @@ async function onClearData() {
                 <v-col cols="12" sm="4">
                   <v-select
                     :model-value="settings.weekStart"
-                    :items="weekStartOptions" item-title="label" item-value="value" hide-details
+                    :items="weekStartOptions"
+                    item-title="label"
+                    item-value="value"
+                    hide-details
                     :label="t('settings.firstDayOfWeek')"
                     @update:model-value="settings.setWeekStart($event as WeekStart)"
                   />
@@ -349,7 +431,10 @@ async function onClearData() {
 
               <v-checkbox
                 :model-value="settings.hideDecimals"
-                :label="t('settings.hideDecimals')" hide-details density="comfortable" class="mt-2"
+                :label="t('settings.hideDecimals')"
+                hide-details
+                density="comfortable"
+                class="mt-2"
                 @update:model-value="settings.setHideDecimals(!!$event)"
               />
             </SectionCard>
@@ -375,10 +460,21 @@ async function onClearData() {
                 <v-btn variant="tonal" prepend-icon="mdi-import" :loading="busy" @click="onImport">
                   {{ t('settings.importBackup') }}
                 </v-btn>
-                <v-btn variant="tonal" prepend-icon="mdi-database-plus-outline" :loading="busy" @click="onLoadDemo">
+                <v-btn
+                  variant="tonal"
+                  prepend-icon="mdi-database-plus-outline"
+                  :loading="busy"
+                  @click="onLoadDemo"
+                >
                   {{ t('settings.loadDemo') }}
                 </v-btn>
-                <v-btn variant="tonal" color="error" prepend-icon="mdi-delete-outline" :loading="busy" @click="confirmClear = true">
+                <v-btn
+                  variant="tonal"
+                  color="error"
+                  prepend-icon="mdi-delete-outline"
+                  :loading="busy"
+                  @click="confirmClear = true"
+                >
                   {{ t('settings.clearData') }}
                 </v-btn>
               </div>
@@ -496,10 +592,19 @@ async function onClearData() {
 }
 /* Vuetify bileşeni değil (düz <button>) → defaults ulaşmaz. */
 .neutral-swatch {
-  width: 32px; height: 32px; border-radius: var(--app-radius); cursor: pointer;
-  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--app-radius);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: transform 0.12s ease;
 }
-.neutral-swatch:hover { transform: scale(1.12); }
-.neutral-check { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6)); }
+.neutral-swatch:hover {
+  transform: scale(1.12);
+}
+.neutral-check {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+}
 </style>

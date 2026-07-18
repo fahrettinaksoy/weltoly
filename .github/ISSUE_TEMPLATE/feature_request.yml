@@ -7,7 +7,7 @@ body:
     attributes:
       label: Hangi sorunu çözüyor?
       description: Öneri bir kullanıcı ihtiyacına bağlı olmalı.
-      placeholder: "... yapmak istiyorum ama şu an mümkün değil çünkü ..."
+      placeholder: '... yapmak istiyorum ama şu an mümkün değil çünkü ...'
     validations:
       required: true
   - type: textarea

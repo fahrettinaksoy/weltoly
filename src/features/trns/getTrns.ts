@@ -21,8 +21,7 @@ import { TrnType } from '@/features/trns/types'
  * GİRDİ MUTASYONU YOK (O-1): `props.trnsIds` asla yerinde sıralanmaz.
  */
 export function filterTrnsIds(props: TrnsGetterProps) {
-  if (!props.trnsIds && !props.trnsItems)
-    return []
+  if (!props.trnsIds && !props.trnsItems) return []
 
   const trnsIds: TrnId[] = props.trnsIds || Object.keys(props.trnsItems ?? {})
 
@@ -33,32 +32,27 @@ export function filterTrnsIds(props: TrnsGetterProps) {
   const start = props.dates?.start
   const end = props.dates?.end
 
-  const hasFilters = typesSet || start !== undefined || end !== undefined || walletsSet || categoriesSet || tagsSet
+  const hasFilters =
+    typesSet || start !== undefined || end !== undefined || walletsSet || categoriesSet || tagsSet
 
   const result = hasFilters
     ? trnsIds.filter((id) => {
         const trn = props.trnsItems?.[id]
-        if (!trn)
-          return false
-        if (typesSet && !typesSet.has(trn.type))
-          return false
-        if (start !== undefined && trn.date < start)
-          return false
-        if (end !== undefined && trn.date > end)
-          return false
+        if (!trn) return false
+        if (typesSet && !typesSet.has(trn.type)) return false
+        if (start !== undefined && trn.date < start) return false
+        if (end !== undefined && trn.date > end) return false
         if (walletsSet) {
-          const matchesWallet = trn.type === TrnType.Transfer
-            ? walletsSet.has(trn.expenseWalletId) || walletsSet.has(trn.incomeWalletId)
-            : walletsSet.has(trn.walletId)
-          if (!matchesWallet)
-            return false
+          const matchesWallet =
+            trn.type === TrnType.Transfer
+              ? walletsSet.has(trn.expenseWalletId) || walletsSet.has(trn.incomeWalletId)
+              : walletsSet.has(trn.walletId)
+          if (!matchesWallet) return false
         }
-        if (categoriesSet && !categoriesSet.has(trn.categoryId))
-          return false
+        if (categoriesSet && !categoriesSet.has(trn.categoryId)) return false
         if (tagsSet) {
           // Herhangi bir seçili etiketi taşıyan işlemler (OR eşleşmesi).
-          if (!trn.tagIds?.some(id => tagsSet.has(id)))
-            return false
+          if (!trn.tagIds?.some((id) => tagsSet.has(id))) return false
         }
         return true
       })

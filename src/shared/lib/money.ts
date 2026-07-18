@@ -19,20 +19,19 @@ const FACTOR = 10 ** MONEY_SCALE
 
 /** n'i `decimals` ondalığa yuvarlar (yarı-yukarı, EPSILON ile ikili-temsil düzeltmesi). */
 export function roundMoney(n: number, decimals: number = MONEY_SCALE): number {
-  if (!Number.isFinite(n))
-    return 0
+  if (!Number.isFinite(n)) return 0
   const f = 10 ** decimals
   return Math.round((n + Number.EPSILON * Math.sign(n)) * f) / f
 }
 
 /** Yuvarlama-güvenli toplama (a + b), sonuç minor-unit ızgarasına snap'lenir. */
 export function addMoney(a: number, b: number): number {
-  return Math.round((a * FACTOR + b * FACTOR)) / FACTOR
+  return Math.round(a * FACTOR + b * FACTOR) / FACTOR
 }
 
 /** Yuvarlama-güvenli çıkarma (a - b). */
 export function subMoney(a: number, b: number): number {
-  return Math.round((a * FACTOR - b * FACTOR)) / FACTOR
+  return Math.round(a * FACTOR - b * FACTOR) / FACTOR
 }
 
 /**
@@ -42,8 +41,7 @@ export function subMoney(a: number, b: number): number {
 export function sumMoney(values: Iterable<number>): number {
   let acc = 0
   for (const v of values) {
-    if (Number.isFinite(v))
-      acc += Math.round(v * FACTOR)
+    if (Number.isFinite(v)) acc += Math.round(v * FACTOR)
   }
   return acc / FACTOR
 }

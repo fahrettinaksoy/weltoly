@@ -11,7 +11,7 @@ body:
     attributes:
       label: Ne oldu?
       description: Beklenen ve gerçekleşen davranışı yaz.
-      placeholder: "... yaptığımda ... olmasını bekledim ama ... oldu."
+      placeholder: '... yaptığımda ... olmasını bekledim ama ... oldu.'
     validations:
       required: true
   - type: textarea
@@ -28,7 +28,7 @@ body:
     id: logs
     attributes:
       label: Loglar
-      description: "Ayarlar → Veri → \"Log klasörünü aç\" ile eriştiğin ilgili log satırlarını yapıştır."
+      description: 'Ayarlar → Veri → "Log klasörünü aç" ile eriştiğin ilgili log satırlarını yapıştır.'
       render: shell
   - type: dropdown
     id: platform
@@ -41,6 +41,6 @@ body:
     id: version
     attributes:
       label: Uygulama sürümü
-      placeholder: "0.1.0"
+      placeholder: '0.1.0'
     validations:
       required: true

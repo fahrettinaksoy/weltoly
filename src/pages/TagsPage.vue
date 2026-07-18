@@ -28,8 +28,7 @@ const pendingDelete = ref<TagRow | null>(null)
  */
 function confirmDelete() {
   const row = pendingDelete.value
-  if (!row)
-    return
+  if (!row) return
   tagsStore.deleteTag(row.id)
   pendingDelete.value = null
 }
@@ -54,40 +53,55 @@ function onRowClick(_event: unknown, { item }: { item: TagRow }) {
 const usageById = computed<Record<TagId, number>>(() => {
   const counts: Record<TagId, number> = {}
   const trns = trnsStore.items
-  if (!trns)
-    return counts
+  if (!trns) return counts
   for (const trnId in trns) {
-    for (const tagId of trns[trnId]?.tagIds ?? [])
-      counts[tagId] = (counts[tagId] ?? 0) + 1
+    for (const tagId of trns[trnId]?.tagIds ?? []) counts[tagId] = (counts[tagId] ?? 0) + 1
   }
   return counts
 })
 
-interface TagRow { id: TagId, name: string, color: string, desc: string, usage: number, share: number }
+interface TagRow {
+  id: TagId
+  name: string
+  color: string
+  desc: string
+  usage: number
+  share: number
+}
 
-const baseRows = computed(() => tagsStore.sortedIds.map(id => ({
-  id,
-  name: tagsStore.items[id]?.name ?? '',
-  color: tagsStore.items[id]?.color ?? 'primary',
-  desc: tagsStore.items[id]?.desc ?? '',
-  usage: usageById.value[id] ?? 0,
-})))
+const baseRows = computed(() =>
+  tagsStore.sortedIds.map((id) => ({
+    id,
+    name: tagsStore.items[id]?.name ?? '',
+    color: tagsStore.items[id]?.color ?? 'primary',
+    desc: tagsStore.items[id]?.desc ?? '',
+    usage: usageById.value[id] ?? 0
+  }))
+)
 
-const usedCount = computed(() => baseRows.value.filter(r => r.usage > 0).length)
+const usedCount = computed(() => baseRows.value.filter((r) => r.usage > 0).length)
 const totalUsage = computed(() => baseRows.value.reduce((sum, r) => sum + r.usage, 0))
 
 /** Tablo satırları: kullanımın toplam içindeki payı (%) burada eklenir. */
-const rows = computed<TagRow[]>(() => baseRows.value.map(r => ({
-  ...r,
-  share: totalUsage.value ? (r.usage / totalUsage.value) * 100 : 0,
-})))
-const usedRatio = computed(() => rows.value.length ? (usedCount.value / rows.value.length) * 100 : 0)
+const rows = computed<TagRow[]>(() =>
+  baseRows.value.map((r) => ({
+    ...r,
+    share: totalUsage.value ? (r.usage / totalUsage.value) * 100 : 0
+  }))
+)
+const usedRatio = computed(() =>
+  rows.value.length ? (usedCount.value / rows.value.length) * 100 : 0
+)
 
 /** Özet sayaçları. */
 const kpis = computed(() => [
   { key: 'total', label: t('tags.stats.total'), value: fmt.number(rows.value.length) },
   { key: 'used', label: t('tags.stats.used'), value: fmt.number(usedCount.value) },
-  { key: 'unused', label: t('tags.stats.unused'), value: fmt.number(rows.value.length - usedCount.value) },
+  {
+    key: 'unused',
+    label: t('tags.stats.unused'),
+    value: fmt.number(rows.value.length - usedCount.value)
+  }
 ])
 
 /** Donut'ta ayrı dilim olarak gösterilecek en çok kullanılan etiket sayısı. */
@@ -98,12 +112,12 @@ const PIE_LIMIT = 6
  * "Diğer" diliminde. Renk her etiketin kendi rengi (VPie: item.color ?? palette).
  */
 const pieItems = computed(() => {
-  const used = rows.value.filter(r => r.usage > 0).toSorted((a, b) => b.usage - a.usage)
-  const items = used.slice(0, PIE_LIMIT).map(r => ({
+  const used = rows.value.filter((r) => r.usage > 0).toSorted((a, b) => b.usage - a.usage)
+  const items = used.slice(0, PIE_LIMIT).map((r) => ({
     key: r.id,
     title: r.name,
     value: r.usage,
-    color: r.color,
+    color: r.color
   }))
 
   const restUsage = used.slice(PIE_LIMIT).reduce((sum, r) => sum + r.usage, 0)
@@ -112,7 +126,7 @@ const pieItems = computed(() => {
       key: '__rest',
       title: t('tags.chart.other', { count: used.length - PIE_LIMIT }),
       value: restUsage,
-      color: 'grey',
+      color: 'grey'
     })
   }
   return items
@@ -123,12 +137,22 @@ const pieItems = computed(() => {
  * sıralama düğmesi kolon başlıklarıyla çakışırdı.
  * 'share' ayrı kolon değil, kullanım kolonunun içinde çubuk olarak gösterilir.
  */
-const headers = computed(() => [
-  { title: t('tags.table.name'), key: 'name', sortable: true, width: 240, nowrap: true },
-  { title: t('tags.description'), key: 'desc', sortable: true, width: 340, nowrap: true },
-  { title: t('tags.table.usage'), key: 'usage', align: 'end', sortable: true, width: 260, nowrap: true },
-  { title: '', key: 'actions', align: 'end', sortable: false, width: 104 },
-] as const)
+const headers = computed(
+  () =>
+    [
+      { title: t('tags.table.name'), key: 'name', sortable: true, width: 240, nowrap: true },
+      { title: t('tags.description'), key: 'desc', sortable: true, width: 340, nowrap: true },
+      {
+        title: t('tags.table.usage'),
+        key: 'usage',
+        align: 'end',
+        sortable: true,
+        width: 260,
+        nowrap: true
+      },
+      { title: '', key: 'actions', align: 'end', sortable: false, width: 104 }
+    ] as const
+)
 </script>
 
 <template>
@@ -165,10 +189,7 @@ const headers = computed(() => [
           </template>
         </v-pie>
 
-        <div
-          v-for="kpi in kpis"
-          :key="kpi.key"
-        >
+        <div v-for="kpi in kpis" :key="kpi.key">
           <div class="text-h5 font-weight-bold">
             {{ kpi.value }}
           </div>

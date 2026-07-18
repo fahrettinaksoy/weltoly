@@ -26,7 +26,7 @@ import { ariaSort } from '@/shared/lib/sortA11y'
  */
 const props = defineProps<{
   /** Gösterilecek işlemler (sayfa dönem süzgecini uygulamış olarak verir). */
-  trns: { id: TrnId, trn: TrnItem }[]
+  trns: { id: TrnId; trn: TrnItem }[]
   /** Tutarların işaretini bu cüzdanın bakış açısıyla hesaplamak için. */
   walletId: string
   /** Cüzdanın para birimi — tutar biçimlendirmesi. */
@@ -61,27 +61,30 @@ interface TrnRow extends TrnFilterRow {
   tagNames: string[]
 }
 
-const trnRows = computed<TrnRow[]>(() => props.trns.map(({ id, trn }) => {
-  const category = categoriesStore.items[trn.categoryId]
-  const tagIds = trn.tagIds ?? []
-  return {
-    id,
-    date: trn.date,
-    kind: trnKind(trn),
-    categoryId: trn.categoryId,
-    categoryName: trn.categoryId === TRANSFER_ID
-      ? t('walletDetail.transfer')
-      : trn.categoryId === ADJUSTMENT_ID
-        ? t('walletDetail.adjustment')
-        : category?.name ?? trn.categoryId,
-    categoryIcon: category?.icon || 'mdi-help-circle-outline',
-    categoryColor: category?.color || 'grey',
-    desc: trn.desc ?? '',
-    tagIds,
-    tagNames: tagIds.map(tid => tagsStore.items[tid]?.name).filter((x): x is string => !!x),
-    amount: signedAmountFor(trn, props.walletId),
-  }
-}))
+const trnRows = computed<TrnRow[]>(() =>
+  props.trns.map(({ id, trn }) => {
+    const category = categoriesStore.items[trn.categoryId]
+    const tagIds = trn.tagIds ?? []
+    return {
+      id,
+      date: trn.date,
+      kind: trnKind(trn),
+      categoryId: trn.categoryId,
+      categoryName:
+        trn.categoryId === TRANSFER_ID
+          ? t('walletDetail.transfer')
+          : trn.categoryId === ADJUSTMENT_ID
+            ? t('walletDetail.adjustment')
+            : (category?.name ?? trn.categoryId),
+      categoryIcon: category?.icon || 'mdi-help-circle-outline',
+      categoryColor: category?.color || 'grey',
+      desc: trn.desc ?? '',
+      tagIds,
+      tagNames: tagIds.map((tid) => tagsStore.items[tid]?.name).filter((x): x is string => !!x),
+      amount: signedAmountFor(trn, props.walletId)
+    }
+  })
+)
 
 /**
  * İşlem tablosu süzgeçleri (tablo başlığının ALTINDAKİ ikinci satır).
@@ -99,7 +102,7 @@ const trnFilters = reactive<TrnFilters>(emptyTrnFilters())
 
 /** Tür seçenekleri: dört türün hepsi sabit — cüzdanda geçmese de anlamlı. */
 const filterKindOptions = computed(() =>
-  (Object.keys(KIND_META) as TrnKind[]).map(k => ({ value: k, title: kindLabel(k) })),
+  (Object.keys(KIND_META) as TrnKind[]).map((k) => ({ value: k, title: kindLabel(k) }))
 )
 
 /**
@@ -108,9 +111,10 @@ const filterKindOptions = computed(() =>
  */
 const filterCategoryOptions = computed(() => {
   const byId = new Map<string, string>()
-  for (const r of trnRows.value)
-    byId.set(r.categoryId, r.categoryName)
-  return [...byId].map(([value, title]) => ({ value, title })).toSorted((a, b) => a.title.localeCompare(b.title))
+  for (const r of trnRows.value) byId.set(r.categoryId, r.categoryName)
+  return [...byId]
+    .map(([value, title]) => ({ value, title }))
+    .toSorted((a, b) => a.title.localeCompare(b.title))
 })
 
 const filterTagOptions = computed(() => {
@@ -118,16 +122,17 @@ const filterTagOptions = computed(() => {
   for (const r of trnRows.value) {
     r.tagIds.forEach((id, i) => {
       const name = r.tagNames[i]
-      if (name)
-        byId.set(id, name)
+      if (name) byId.set(id, name)
     })
   }
-  return [...byId].map(([value, title]) => ({ value, title })).toSorted((a, b) => a.title.localeCompare(b.title))
+  return [...byId]
+    .map(([value, title]) => ({ value, title }))
+    .toSorted((a, b) => a.title.localeCompare(b.title))
 })
 
 /** Seçili tek öğenin ADI (özet metni için) — seçim id tutuyor, ekranda ad yazmalı. */
-function optionTitle(options: { value: string, title: string }[], id: string | undefined): string {
-  return options.find(o => o.value === id)?.title ?? id ?? ''
+function optionTitle(options: { value: string; title: string }[], id: string | undefined): string {
+  return options.find((o) => o.value === id)?.title ?? id ?? ''
 }
 
 const hasFilter = computed(() => hasAnyTrnFilter(trnFilters))
@@ -145,14 +150,30 @@ const filteredTrnRows = computed(() => applyTrnFilters(trnRows.value, trnFilters
  * ("15.07.2026 - 30.07.2026") + takvim ve temizle ikonları.
  * Açıklama ile etiketler genişlik vermez → kalan yeri paylaşırlar.
  */
-const trnHeaders = computed(() => [
-  { title: t('trnForm.date'), key: 'date', sortable: true, width: 230, nowrap: true },
-  { title: t('walletDetail.type'), key: 'kind', sortable: true, width: 150, nowrap: true },
-  { title: t('trnForm.category'), key: 'categoryName', sortable: true, width: 220, nowrap: true },
-  { title: t('trnForm.description'), key: 'desc', sortable: true, nowrap: true },
-  { title: t('walletDetail.tags'), key: 'tagNames', sortable: false, nowrap: true },
-  { title: t('trnForm.amount'), key: 'amount', align: 'end', sortable: true, width: 170, nowrap: true },
-] as const)
+const trnHeaders = computed(
+  () =>
+    [
+      { title: t('trnForm.date'), key: 'date', sortable: true, width: 230, nowrap: true },
+      { title: t('walletDetail.type'), key: 'kind', sortable: true, width: 150, nowrap: true },
+      {
+        title: t('trnForm.category'),
+        key: 'categoryName',
+        sortable: true,
+        width: 220,
+        nowrap: true
+      },
+      { title: t('trnForm.description'), key: 'desc', sortable: true, nowrap: true },
+      { title: t('walletDetail.tags'), key: 'tagNames', sortable: false, nowrap: true },
+      {
+        title: t('trnForm.amount'),
+        key: 'amount',
+        align: 'end',
+        sortable: true,
+        width: 170,
+        nowrap: true
+      }
+    ] as const
+)
 
 function openTrn(item: TrnRow) {
   trnForm.openFormForEdit(item.id)
@@ -197,7 +218,7 @@ const rowProps = keyboardRowProps(openTrn)
             class="v-data-table__th"
             :class="[
               column.sortable && 'v-data-table__th--sortable',
-              `v-data-table-column--align-${column.align ?? 'start'}`,
+              `v-data-table-column--align-${column.align ?? 'start'}`
             ]"
             :style="{ width: column.width ? `${column.width}px` : undefined }"
             :aria-sort="ariaSort(column.key, column.sortable, sortBy)"
@@ -212,7 +233,8 @@ const rowProps = keyboardRowProps(openTrn)
                 v-if="column.sortable"
                 :icon="getSortIcon(column)"
                 size="small"
-                class="v-data-table-header__sort-icon" :class="[!isSorted(column) && 'text-disabled']"
+                class="v-data-table-header__sort-icon"
+                :class="[!isSorted(column) && 'text-disabled']"
               />
             </div>
           </th>
@@ -240,7 +262,11 @@ const rowProps = keyboardRowProps(openTrn)
             >
               <template #selection="{ index, item: opt }">
                 <span v-if="index === 0" class="text-caption text-truncate">
-                  {{ trnFilters.kinds.length === 1 ? opt.title : t('walletDetail.nSelected', { n: trnFilters.kinds.length }) }}
+                  {{
+                    trnFilters.kinds.length === 1
+                      ? opt.title
+                      : t('walletDetail.nSelected', { n: trnFilters.kinds.length })
+                  }}
                 </span>
               </template>
             </v-select>
@@ -272,9 +298,11 @@ const rowProps = keyboardRowProps(openTrn)
               <template #selection="{ index }">
                 <!-- Çip yerine özet: çipler hücreyi büyütüp satırı taşırıyordu. -->
                 <span v-if="index === 0" class="text-caption text-truncate">
-                  {{ trnFilters.categoryIds.length === 1
-                    ? optionTitle(filterCategoryOptions, trnFilters.categoryIds[0])
-                    : t('walletDetail.nSelected', { n: trnFilters.categoryIds.length }) }}
+                  {{
+                    trnFilters.categoryIds.length === 1
+                      ? optionTitle(filterCategoryOptions, trnFilters.categoryIds[0])
+                      : t('walletDetail.nSelected', { n: trnFilters.categoryIds.length })
+                  }}
                 </span>
               </template>
             </v-select>
@@ -294,9 +322,11 @@ const rowProps = keyboardRowProps(openTrn)
               <template #selection="{ index }">
                 <!-- Çip yerine özet: çipler hücreyi büyütüp satırı taşırıyordu. -->
                 <span v-if="index === 0" class="text-caption text-truncate">
-                  {{ trnFilters.tagIds.length === 1
-                    ? optionTitle(filterTagOptions, trnFilters.tagIds[0])
-                    : t('walletDetail.nSelected', { n: trnFilters.tagIds.length }) }}
+                  {{
+                    trnFilters.tagIds.length === 1
+                      ? optionTitle(filterTagOptions, trnFilters.tagIds[0])
+                      : t('walletDetail.nSelected', { n: trnFilters.tagIds.length })
+                  }}
                 </span>
               </template>
             </v-select>
@@ -309,7 +339,9 @@ const rowProps = keyboardRowProps(openTrn)
               variant="outlined"
               hide-details
               clearable
-              @update:model-value="trnFilters.minAmount = $event === '' || $event === null ? null : Number($event)"
+              @update:model-value="
+                trnFilters.minAmount = $event === '' || $event === null ? null : Number($event)
+              "
             />
           </td>
         </tr>

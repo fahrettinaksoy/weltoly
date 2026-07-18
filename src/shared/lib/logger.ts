@@ -1,6 +1,11 @@
 /* eslint-disable no-console -- Bu modül projenin TEK yetkili console sarmalayıcısıdır;
    info/debug dahil tüm seviyeleri BİLEREK kullanır. Başka yerde console yasak kalır. */
-import { debug as sinkDebug, error as sinkError, info as sinkInfo, warn as sinkWarn } from '@tauri-apps/plugin-log'
+import {
+  debug as sinkDebug,
+  error as sinkError,
+  info as sinkInfo,
+  warn as sinkWarn
+} from '@tauri-apps/plugin-log'
 
 import { isTauriRuntime } from '@/services/db/client'
 
@@ -16,22 +21,18 @@ type Sink = (message: string) => Promise<void>
 
 /** console gibi değişken argümanları tek satıra indirger; Error'ı stack'iyle korur. */
 function serialize(arg: unknown): string {
-  if (arg instanceof Error)
-    return arg.stack || `${arg.name}: ${arg.message}`
-  if (typeof arg === 'string')
-    return arg
+  if (arg instanceof Error) return arg.stack || `${arg.name}: ${arg.message}`
+  if (typeof arg === 'string') return arg
   try {
     return JSON.stringify(arg)
-  }
-  catch {
+  } catch {
     // Döngüsel/serileştirilemeyen değer — en azından tipini yaz.
     return String(arg)
   }
 }
 
 function persist(sink: Sink, args: unknown[]): void {
-  if (!isTauriRuntime())
-    return
+  if (!isTauriRuntime()) return
   // Sink'in KENDİ hatası yutulur — log'lamayı log'lamak sonsuz döngü olurdu.
   void sink(args.map(serialize).join(' ')).catch(() => {})
 }
@@ -52,5 +53,5 @@ export const logger = {
   debug: (...args: unknown[]): void => {
     console.debug(...args)
     persist(sinkDebug, args)
-  },
+  }
 }

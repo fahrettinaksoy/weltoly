@@ -30,7 +30,7 @@ describe('vDateInput varsayılanları', () => {
     return { el, app }
   }
 
-  it('outlined variant ile render edilir (VTextField default\'u inmediği için ayrıca verilmeli)', () => {
+  it("outlined variant ile render edilir (VTextField default'u inmediği için ayrıca verilmeli)", () => {
     const { el, app } = mountDateInput()
     expect(el.querySelector('.v-field--variant-outlined')).not.toBeNull()
     expect(el.querySelector('.v-field--variant-filled')).toBeNull()

@@ -55,7 +55,10 @@ const totals = computed(() => walletsStore.totals)
 // budadığı için gün granülerliği yeterli — davranış değişmez, yalnız tazelenir.
 const today = useCurrentDay()
 
-const thisMonth = computed(() => ({ from: startOfMonth(today.value).getTime(), to: endOfMonth(today.value).getTime() }))
+const thisMonth = computed(() => ({
+  from: startOfMonth(today.value).getTime(),
+  to: endOfMonth(today.value).getTime()
+}))
 const lastMonth = computed(() => {
   const d = subMonths(today.value, 1)
   return { from: startOfMonth(d).getTime(), to: endOfMonth(d).getTime() }
@@ -66,17 +69,15 @@ const lastMonth = computed(() => {
  * Transfer ve düzeltme HARİÇ (muhasebe kuralı): transfer para kazanmak değil,
  * düzeltme gerçek bir hareket değil. Uygulamanın her yerindeki tanımla aynı.
  */
-function flowIn(range: { from: number, to: number }) {
+function flowIn(range: { from: number; to: number }) {
   let income = 0
   let expense = 0
   let count = 0
   let hasMissingRates = false
   for (const id of trnsStore.getStoreTrnsIds({ sort: false })) {
     const trn = trnsStore.items?.[id]
-    if (!trn || trn.date < range.from || trn.date > range.to)
-      continue
-    if (trn.type === TrnType.Transfer || trn.categoryId === ADJUSTMENT_ID)
-      continue
+    if (!trn || trn.date < range.from || trn.date > range.to) continue
+    if (trn.type === TrnType.Transfer || trn.categoryId === ADJUSTMENT_ID) continue
     const wallet = walletsStore.itemsComputed[trn.walletId]
     // Y-1: kur eksikse tutarın temel karşılığı BİLİNMİYOR. Eskiden `?? 1` ile
     // 1:1 sayılıyordu — 0,4 BTC'lik bir gider "0,40 $" olarak akışa giriyordu.
@@ -88,8 +89,7 @@ function flowIn(range: { from: number, to: number }) {
       continue
     }
     count++
-    if (trn.type === TrnType.Income)
-      income += amount
+    if (trn.type === TrnType.Income) income += amount
     else expense += amount
   }
   return { income, expense, net: income - expense, count, hasMissingRates }
@@ -102,10 +102,42 @@ const monthCards = computed(() => {
   const c = monthFlow.value
   const p = prevMonthFlow.value
   return [
-    { key: 'income', label: t('trnForm.income'), value: c.income, money: true, tone: 'text-success', delta: changeRatio(c.income, p.income), positiveIsGood: true },
-    { key: 'expense', label: t('trnForm.expense'), value: c.expense, money: true, tone: 'text-error', delta: changeRatio(c.expense, p.expense), positiveIsGood: false },
-    { key: 'net', label: t('stat.net'), value: c.net, money: true, tone: c.net >= 0 ? '' : 'text-error', delta: null, positiveIsGood: true },
-    { key: 'count', label: t('wallets.table.trnCount'), value: c.count, money: false, tone: '', delta: changeRatio(c.count, p.count), positiveIsGood: true },
+    {
+      key: 'income',
+      label: t('trnForm.income'),
+      value: c.income,
+      money: true,
+      tone: 'text-success',
+      delta: changeRatio(c.income, p.income),
+      positiveIsGood: true
+    },
+    {
+      key: 'expense',
+      label: t('trnForm.expense'),
+      value: c.expense,
+      money: true,
+      tone: 'text-error',
+      delta: changeRatio(c.expense, p.expense),
+      positiveIsGood: false
+    },
+    {
+      key: 'net',
+      label: t('stat.net'),
+      value: c.net,
+      money: true,
+      tone: c.net >= 0 ? '' : 'text-error',
+      delta: null,
+      positiveIsGood: true
+    },
+    {
+      key: 'count',
+      label: t('wallets.table.trnCount'),
+      value: c.count,
+      money: false,
+      tone: '',
+      delta: changeRatio(c.count, p.count),
+      positiveIsGood: true
+    }
   ]
 })
 
@@ -121,26 +153,24 @@ const monthCards = computed(() => {
 const assetsByType = computed(() => {
   const sums = new Map<string, number>()
   for (const wallet of Object.values(walletsStore.itemsComputed)) {
-    if (wallet.isExcludeInTotal)
-      continue
+    if (wallet.isExcludeInTotal) continue
     // Y-1: kuru eksik cüzdanı 1:1 saymak burada İKİ KAT yanlıştı — yüzdeler
     // `totals.assets`'e bölünüyor ve o toplam bu cüzdanları ZATEN hariç tutuyor.
     // Pay onları sayarken payda saymıyordu → yüzdeler %100'ü aşabiliyordu.
     const value = toBaseAmount(wallet.amount, wallet.rate)
-    if (value === null || value <= 0)
-      continue
+    if (value === null || value <= 0) continue
     sums.set(wallet.type, (sums.get(wallet.type) ?? 0) + value)
   }
   const total = totals.value.assets
   return walletTypes
-    .filter(type => sums.has(type))
-    .map(type => ({
+    .filter((type) => sums.has(type))
+    .map((type) => ({
       key: type,
       title: t(`wallets.types.${type}`),
       // Satır bir cüzdanı değil TÜRÜ temsil ediyor → türün ikonu.
       icon: walletTypeIcon[type],
       value: sums.get(type)!,
-      percent: total ? (sums.get(type)! / total) * 100 : 0,
+      percent: total ? (sums.get(type)! / total) * 100 : 0
     }))
     .toSorted((a, b) => b.value - a.value)
 })
@@ -167,10 +197,10 @@ const creditCards = computed(() =>
         color: w.color,
         currency: w.currency,
         used,
-        ratio: limit > 0 ? Math.min(100, (used / limit) * 100) : 0,
+        ratio: limit > 0 ? Math.min(100, (used / limit) * 100) : 0
       }
     })
-    .toSorted((a, b) => b.ratio - a.ratio),
+    .toSorted((a, b) => b.ratio - a.ratio)
 )
 
 /**
@@ -182,8 +212,7 @@ const creditTotal = computed(() => {
   let used = 0
   let hasMissingRates = false
   for (const card of Object.values(walletsStore.itemsComputed)) {
-    if (card.type !== 'credit' || card.isArchived)
-      continue
+    if (card.type !== 'credit' || card.isArchived) continue
     // Y-1: kuru eksik kartı 1:1 saymak doluluk ORANINI bozardı (limit ve
     // kullanım farklı oranda sapar). Kartı tamamen dışarıda bırakmak dürüst.
     const rate = card.rate
@@ -194,7 +223,12 @@ const creditTotal = computed(() => {
     limit += (('creditLimit' in card ? card.creditLimit : 0) ?? 0) * rate
     used += Math.max(0, -card.amount) * rate
   }
-  return { limit, used, hasMissingRates, ratio: limit > 0 ? Math.min(100, (used / limit) * 100) : 0 }
+  return {
+    limit,
+    used,
+    hasMissingRates,
+    ratio: limit > 0 ? Math.min(100, (used / limit) * 100) : 0
+  }
 })
 
 /**
@@ -205,11 +239,12 @@ const creditTotal = computed(() => {
  * uyarıp diğerlerini sessizce eksik göstermek, uyarmamaktan beter olurdu:
  * kullanıcı rozeti görmeyip rakamı tam sanardı.
  */
-const anyMissingRates = computed(() =>
-  totals.value.hasMissingRates
-  || monthFlow.value.hasMissingRates
-  || prevMonthFlow.value.hasMissingRates
-  || creditTotal.value.hasMissingRates,
+const anyMissingRates = computed(
+  () =>
+    totals.value.hasMissingRates ||
+    monthFlow.value.hasMissingRates ||
+    prevMonthFlow.value.hasMissingRates ||
+    creditTotal.value.hasMissingRates
 )
 
 /** Doluluk rengi: %80 üstü kırmızı, %50 üstü sarı. Cüzdan detayıyla aynı eşik. */
@@ -229,17 +264,31 @@ const projectStats = computed(() => {
   const usedTags = new Set<string>()
   for (const id of allTrnIds.value) {
     const trn = trnsStore.items?.[id]
-    if (!trn)
-      continue
+    if (!trn) continue
     usedCategories.add(trn.categoryId)
-    for (const tid of trn.tagIds ?? [])
-      usedTags.add(tid)
+    for (const tid of trn.tagIds ?? []) usedTags.add(tid)
   }
   // Sentetik kategoriler sayılmaz: kullanıcının oluşturduğu bir şey değiller.
-  const catIds = Object.keys(categoriesStore.items ?? {}).filter(id => id !== 'transfer' && id !== 'adjustment')
+  const catIds = Object.keys(categoriesStore.items ?? {}).filter(
+    (id) => id !== 'transfer' && id !== 'adjustment'
+  )
   return [
-    { key: 'wallets', icon: 'mdi-wallet-outline', label: t('nav.wallets'), value: walletsStore.sortedIds.length, hint: undefined as string | undefined, to: '/wallets' as string | undefined },
-    { key: 'trns', icon: 'mdi-swap-horizontal', label: t('walletDetail.transactions'), value: allTrnIds.value.length, hint: undefined, to: undefined },
+    {
+      key: 'wallets',
+      icon: 'mdi-wallet-outline',
+      label: t('nav.wallets'),
+      value: walletsStore.sortedIds.length,
+      hint: undefined as string | undefined,
+      to: '/wallets' as string | undefined
+    },
+    {
+      key: 'trns',
+      icon: 'mdi-swap-horizontal',
+      label: t('walletDetail.transactions'),
+      value: allTrnIds.value.length,
+      hint: undefined,
+      to: undefined
+    },
     {
       key: 'categories',
       icon: 'mdi-shape-outline',
@@ -247,25 +296,26 @@ const projectStats = computed(() => {
       value: catIds.length,
       // Kullanılmayan sayısı: taksonomi büyüdükçe ölü kategori birikir ve hiçbir
       // yerde görünmez.
-      hint: t('dashboard.unusedN', { n: catIds.filter(id => !usedCategories.has(id)).length }),
-      to: '/categories',
+      hint: t('dashboard.unusedN', { n: catIds.filter((id) => !usedCategories.has(id)).length }),
+      to: '/categories'
     },
     {
       key: 'tags',
       icon: 'mdi-tag-outline',
       label: t('nav.tags'),
       value: tagsStore.sortedIds.length,
-      hint: t('dashboard.unusedN', { n: tagsStore.sortedIds.filter(id => !usedTags.has(id)).length }),
-      to: '/tags',
-    },
+      hint: t('dashboard.unusedN', {
+        n: tagsStore.sortedIds.filter((id) => !usedTags.has(id)).length
+      }),
+      to: '/tags'
+    }
   ]
 })
 
 /** Defterin kapsadığı zaman aralığı — "ne kadar geçmişim var". */
 const trnSpan = computed(() => {
   const ids = allTrnIds.value
-  if (!ids.length)
-    return null
+  if (!ids.length) return null
   // getStoreTrnsIds sort:true → en yeni başta, en eski sonda.
   const last = trnsStore.items?.[ids[0]!]
   const first = trnsStore.items?.[ids.at(-1)!]
@@ -274,7 +324,7 @@ const trnSpan = computed(() => {
 
 const defaultWallet = computed(() => {
   const id = userStore.defaultWalletId
-  return id ? walletsStore.itemsComputed[id] ?? null : null
+  return id ? (walletsStore.itemsComputed[id] ?? null) : null
 })
 
 // --- Son işlemler --------------------------------------------------------
@@ -296,8 +346,8 @@ const RECENT_DAYS = 5
 const recentIds = computed(() =>
   trnsStore.getStoreTrnsIds({
     sort: true,
-    tagsIds: filterTagIds.value.length ? filterTagIds.value : undefined,
-  }),
+    tagsIds: filterTagIds.value.length ? filterTagIds.value : undefined
+  })
 )
 </script>
 
@@ -307,11 +357,7 @@ const recentIds = computed(() =>
          Aksi halde şerit bir an "0,00 $" yazıp sonra gerçek rakama sıçrıyordu:
          bir finans uygulamasında "net varlığın sıfır" demek, en kötü ilk izlenim.
          Skeleton, rakam bilinene kadar hiçbir iddiada bulunmaz. -->
-    <v-skeleton-loader
-      v-if="!walletsStore.isLoaded"
-      type="heading@2"
-      class="mb-4 bg-transparent"
-    />
+    <v-skeleton-loader v-if="!walletsStore.isLoaded" type="heading@2" class="mb-4 bg-transparent" />
 
     <!-- Net varlık şeridi: tek rakam yerine üçlü. Net tek başına dengeyi gizler. -->
     <v-sheet v-else color="primary" class="pa-5 mb-4 dash-hero">
@@ -332,7 +378,10 @@ const recentIds = computed(() =>
                bağlıyor, odaklanabilirlik yeterli. -->
           <v-chip
             v-if="anyMissingRates"
-            size="x-small" color="warning" variant="flat" class="mt-1"
+            size="x-small"
+            color="warning"
+            variant="flat"
+            class="mt-1"
             prepend-icon="mdi-alert-outline"
             tabindex="0"
           >
@@ -391,9 +440,7 @@ const recentIds = computed(() =>
         :label="card.label"
         :delta-title="t('dashboard.vsPrevMonth')"
       >
-        <template #label>
-          {{ t('dashboard.thisMonth') }} · {{ card.label }}
-        </template>
+        <template #label> {{ t('dashboard.thisMonth') }} · {{ card.label }} </template>
       </KpiCard>
     </div>
 
@@ -411,7 +458,9 @@ const recentIds = computed(() =>
             <v-icon :icon="row.icon" size="18" class="text-medium-emphasis" />
             <span class="text-body-2 text-truncate flex-1-1">{{ row.title }}</span>
             <span class="text-body-2 font-weight-medium">{{ fmt.money(row.value, base) }}</span>
-            <span class="text-caption text-medium-emphasis dash-pct">{{ fmt.percent(row.percent) }}</span>
+            <span class="text-caption text-medium-emphasis dash-pct">{{
+              fmt.percent(row.percent)
+            }}</span>
           </div>
           <v-progress-linear :model-value="row.percent" color="primary" height="6" />
         </div>
@@ -433,15 +482,23 @@ const recentIds = computed(() =>
               {{ fmt.money(creditTotal.used, base) }} / {{ fmt.money(creditTotal.limit, base) }}
             </span>
           </div>
-          <v-progress-linear :model-value="creditTotal.ratio" :color="usageTone(creditTotal.ratio)" height="10" />
+          <v-progress-linear
+            :model-value="creditTotal.ratio"
+            :color="usageTone(creditTotal.ratio)"
+            height="10"
+          />
         </div>
 
         <div v-for="card in creditCards" :key="card.id" class="mb-3">
           <div class="d-flex align-center ga-2 mb-1">
             <v-avatar :color="card.color" size="10" />
             <span class="text-caption text-truncate flex-1-1">{{ card.name }}</span>
-            <span class="text-caption text-medium-emphasis">{{ fmt.money(card.used, card.currency) }}</span>
-            <span class="text-caption text-medium-emphasis dash-pct">{{ fmt.percent(card.ratio) }}</span>
+            <span class="text-caption text-medium-emphasis">{{
+              fmt.money(card.used, card.currency)
+            }}</span>
+            <span class="text-caption text-medium-emphasis dash-pct">{{
+              fmt.percent(card.ratio)
+            }}</span>
           </div>
           <v-progress-linear :model-value="card.ratio" :color="usageTone(card.ratio)" height="6" />
         </div>
@@ -472,7 +529,13 @@ const recentIds = computed(() =>
         <!-- Etiketler tek satırda kayar: 20 etiket sarınca üç sıra oluyor ve
              kartın tepesini yiyordu. Seçimi slide-group'un kendi grup modeli
              taşıyor (multiple + v-model) — ayrı bir toggle fonksiyonu gerekmiyor. -->
-        <v-slide-group v-if="tagsStore.hasItems" v-model="filterTagIds" multiple show-arrows class="mb-3">
+        <v-slide-group
+          v-if="tagsStore.hasItems"
+          v-model="filterTagIds"
+          multiple
+          show-arrows
+          class="mb-3"
+        >
           <v-slide-group-item
             v-for="id in tagsStore.sortedIds"
             :key="id"

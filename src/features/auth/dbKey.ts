@@ -33,7 +33,6 @@ export async function deriveDbKeyHex(pin: string, saltHex: string): Promise<stri
  * kendi KDF'ini uygular ve bizim türettiğimiz anahtarla eşleşmez.
  */
 export function sqlcipherKeyPragma(keyHex: string): string {
-  if (!KEY_HEX_RE.test(keyHex))
-    throw new Error('geçersiz DB anahtarı: 64 hex karakter bekleniyor')
+  if (!KEY_HEX_RE.test(keyHex)) throw new Error('geçersiz DB anahtarı: 64 hex karakter bekleniyor')
   return `PRAGMA key = "x'${keyHex}'"`
 }

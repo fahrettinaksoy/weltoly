@@ -1,7 +1,14 @@
 import { useLocalStorage } from '@vueuse/core'
 import { defineStore } from 'pinia'
 
-import { backoffMs, legacyHashHex, NEW_MIN_LEN, PBKDF2_ITER, pbkdf2Hex, randomSaltHex } from './pinCrypto'
+import {
+  backoffMs,
+  legacyHashHex,
+  NEW_MIN_LEN,
+  PBKDF2_ITER,
+  pbkdf2Hex,
+  randomSaltHex
+} from './pinCrypto'
 
 // Uygulama içi PIN kilidi.
 //
@@ -18,8 +25,17 @@ const REC_KEY = 'weltoly.pin' // v2 kayıt (JSON)
 const LEGACY_KEY = 'weltoly.pinHash' // v1: düz SHA-256 hex (4 haneli, koda gömülü salt)
 const ATTEMPTS_KEY = 'weltoly.pinAttempts'
 
-interface PinRecord { v: 2, salt: string, iter: number, hash: string, len: number }
-interface Attempts { fails: number, lockedUntil: number }
+interface PinRecord {
+  v: 2
+  salt: string
+  iter: number
+  hash: string
+  len: number
+}
+interface Attempts {
+  fails: number
+  lockedUntil: number
+}
 
 export const useLockStore = defineStore('lock', () => {
   const recordRaw = useLocalStorage<string>(REC_KEY, '')
@@ -27,13 +43,11 @@ export const useLockStore = defineStore('lock', () => {
   const attempts = useLocalStorage<Attempts>(ATTEMPTS_KEY, { fails: 0, lockedUntil: 0 })
 
   const record = computed<PinRecord | null>(() => {
-    if (!recordRaw.value)
-      return null
+    if (!recordRaw.value) return null
     try {
       const r = JSON.parse(recordRaw.value)
-      return (r && r.v === 2 && typeof r.hash === 'string') ? r as PinRecord : null
-    }
-    catch {
+      return r && r.v === 2 && typeof r.hash === 'string' ? (r as PinRecord) : null
+    } catch {
       return null
     }
   })
@@ -49,8 +63,7 @@ export const useLockStore = defineStore('lock', () => {
   const lockedUntil = computed(() => attempts.value.lockedUntil)
 
   async function setPin(pin: string): Promise<void> {
-    if (pin.length < NEW_MIN_LEN)
-      throw new Error(`PIN en az ${NEW_MIN_LEN} haneli olmalı`)
+    if (pin.length < NEW_MIN_LEN) throw new Error(`PIN en az ${NEW_MIN_LEN} haneli olmalı`)
     const salt = randomSaltHex()
     const hash = await pbkdf2Hex(pin, salt, PBKDF2_ITER)
     const rec: PinRecord = { v: 2, salt, iter: PBKDF2_ITER, hash, len: pin.length }
@@ -70,20 +83,16 @@ export const useLockStore = defineStore('lock', () => {
   /** Sadece hash karşılaştırması (deneme sayacına DOKUNMAZ). Değişim/kaldırma doğrulaması için. */
   async function matchesPin(pin: string): Promise<boolean> {
     const rec = record.value
-    if (rec)
-      return (await pbkdf2Hex(pin, rec.salt, rec.iter)) === rec.hash
-    if (legacyHash.value)
-      return (await legacyHashHex(pin)) === legacyHash.value
+    if (rec) return (await pbkdf2Hex(pin, rec.salt, rec.iter)) === rec.hash
+    if (legacyHash.value) return (await legacyHashHex(pin)) === legacyHash.value
     return false
   }
 
   /** Kilit açma denemesi: backoff'u uygular, başarıda eski format'ı v2'ye yükseltir. */
   async function verifyPin(pin: string): Promise<boolean> {
-    if (!hasPin.value)
-      return false
+    if (!hasPin.value) return false
     // Kilit süresi dolmadıysa denemeyi reddet.
-    if (Date.now() < attempts.value.lockedUntil)
-      return false
+    if (Date.now() < attempts.value.lockedUntil) return false
 
     const ok = await matchesPin(pin)
     if (ok) {
@@ -91,7 +100,13 @@ export const useLockStore = defineStore('lock', () => {
       if (!record.value && legacyHash.value) {
         const salt = randomSaltHex()
         const hash = await pbkdf2Hex(pin, salt, PBKDF2_ITER)
-        recordRaw.value = JSON.stringify({ v: 2, salt, iter: PBKDF2_ITER, hash, len: pin.length } satisfies PinRecord)
+        recordRaw.value = JSON.stringify({
+          v: 2,
+          salt,
+          iter: PBKDF2_ITER,
+          hash,
+          len: pin.length
+        } satisfies PinRecord)
         legacyHash.value = ''
       }
       attempts.value = { fails: 0, lockedUntil: 0 }
@@ -106,15 +121,13 @@ export const useLockStore = defineStore('lock', () => {
 
   /** Mevcut PIN doğrulanmadan değiştirilemez (O-13). */
   async function changePin(current: string, next: string): Promise<boolean> {
-    if (hasPin.value && !(await matchesPin(current)))
-      return false
+    if (hasPin.value && !(await matchesPin(current))) return false
     await setPin(next)
     return true
   }
 
   function lock(): void {
-    if (hasPin.value)
-      isLocked.value = true
+    if (hasPin.value) isLocked.value = true
   }
 
   function unlock(): void {
@@ -132,6 +145,6 @@ export const useLockStore = defineStore('lock', () => {
     matchesPin,
     changePin,
     lock,
-    unlock,
+    unlock
   }
 })

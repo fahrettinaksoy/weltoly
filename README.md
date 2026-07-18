@@ -21,37 +21,44 @@ fiat/crypto exchange rates.
 ## ✨ Highlights
 
 ### Wallets
+
 - Unlimited wallets; cash, bank, and **credit card** (limit + available balance) types
 - Per-wallet icon and color, drag-and-drop ordering
 - Per-wallet balance chart, period summary, and tag-based breakdown
 
 ### Transactions
+
 - **Income**, **expense**, **transfer**, and **balance correction** types
 - Built-in **calculator** for fast amount entry
 - Category, tag, description, and date; powerful filtering
 - Unified transactions page showing every wallet in one list
 
 ### Categories and tags
+
 - Income/expense categories with icon and color pickers
 - Sub-category rollup for hierarchical reporting
 - Free-form tags for cross-cutting analysis
 
 ### Multi-currency
+
 - **Selectable rate source:** ER-API, Frankfurter, TCMB
 - **Crypto** prices via CoinGecko
 - Rate **freshness panel** — transparent about when rates were last updated
 - All balances consolidated into a single base currency
 
 ### Statistics and analysis
+
 - Period-comparison spending charts (ECharts)
 - Category breakdown and trend views
 
 ### Personalization
+
 - Light / dark / system theme
 - Customizable primary color, neutral palette, and corner radius
 - **tr / en / ru** language support (RTL-ready foundation)
 
 ### Security and data
+
 - **PIN lock** — exponential backoff on failed attempts; auto-lock when backgrounded
 - **Export/import** backups (JSON)
 - Quick start with sample data
@@ -61,18 +68,18 @@ fiat/crypto exchange rates.
 
 ## 🧱 Tech stack
 
-| Layer | Technology |
-|---|---|
-| App shell | **Tauri v2** (Rust) — Windows / macOS / Linux / iOS / Android |
-| UI | **Vue 3** + **Vuetify 4** (Material) |
-| State | **Pinia** |
-| Routing | **Vue Router** |
-| Localization | **vue-i18n** (tr/en/ru) |
-| Charts | **ECharts** (`vue-echarts`) |
-| Validation | **Zod** |
-| Dates | **date-fns** |
-| Database | **SQLite** — `tauri-plugin-sql` (bundled) |
-| Build | **Vite** + TypeScript (strict) |
+| Layer        | Technology                                                    |
+| ------------ | ------------------------------------------------------------- |
+| App shell    | **Tauri v2** (Rust) — Windows / macOS / Linux / iOS / Android |
+| UI           | **Vue 3** + **Vuetify 4** (Material)                          |
+| State        | **Pinia**                                                     |
+| Routing      | **Vue Router**                                                |
+| Localization | **vue-i18n** (tr/en/ru)                                       |
+| Charts       | **ECharts** (`vue-echarts`)                                   |
+| Validation   | **Zod**                                                       |
+| Dates        | **date-fns**                                                  |
+| Database     | **SQLite** — `tauri-plugin-sql` (bundled)                     |
+| Build        | **Vite** + TypeScript (strict)                                |
 
 ---
 
@@ -117,11 +124,13 @@ weltoly/
 ## 🚀 Getting started
 
 ### Requirements
+
 - **Node.js ≥ 20** (`.nvmrc` → `nvm use`), npm
 - **Rust** — toolchain pinned via `src-tauri/rust-toolchain.toml`, installed automatically by `rustup`
 - Desktop: platform WebView dependencies · Mobile: Android SDK+NDK / Xcode
 
 ### Commands
+
 ```bash
 npm install          # dependencies + git hooks
 npm run dev          # web preview only (Vite) — http://localhost:1420
@@ -142,13 +151,13 @@ npm run tauri ios init && npm run tauri ios dev
 
 CI enforces the following on every push/PR (see [.github/workflows/ci.yml](.github/workflows/ci.yml)):
 
-| Gate | Command |
-| ---- | ------- |
-| Types | `npm run typecheck` |
-| Lint | `npm run lint` (@antfu) |
-| Frontend test + coverage | `npm run test:coverage` (Vitest) |
-| Rust fmt/lint/test | `cargo fmt --check` · `cargo clippy -D warnings` · `cargo test` |
-| Supply chain | `npm audit` (prod) · `cargo audit` |
+| Gate                     | Command                                                         |
+| ------------------------ | --------------------------------------------------------------- |
+| Types                    | `npm run typecheck`                                             |
+| Lint                     | `npm run lint` (@antfu)                                         |
+| Frontend test + coverage | `npm run test:coverage` (Vitest)                                |
+| Rust fmt/lint/test       | `cargo fmt --check` · `cargo clippy -D warnings` · `cargo test` |
+| Supply chain             | `npm audit` (prod) · `cargo audit`                              |
 
 Dependencies are updated weekly via **Dependabot**; code is scanned with **CodeQL**.
 Diagnostic logs are written at runtime to a rotating file in the app log directory

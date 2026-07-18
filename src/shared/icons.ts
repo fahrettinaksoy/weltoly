@@ -21,7 +21,7 @@ export default [
     'mdi-egg',
     'mdi-egg-outline',
     'mdi-baguette',
-    'mdi-mushroom',
+    'mdi-mushroom'
   ],
   [
     'mdi-dump-truck',
@@ -42,7 +42,7 @@ export default [
     'mdi-road-variant',
     'mdi-gas-station',
     'mdi-gauge-full',
-    'mdi-coolant-temperature',
+    'mdi-coolant-temperature'
   ],
   [
     'mdi-airplane',
@@ -54,7 +54,7 @@ export default [
     'mdi-cloud',
     'mdi-sail-boat',
     'mdi-map-search',
-    'mdi-ferris-wheel',
+    'mdi-ferris-wheel'
   ],
   [
     'mdi-bike',
@@ -80,7 +80,7 @@ export default [
     'mdi-soccer',
     'mdi-diving-helmet',
     'mdi-diving-flippers',
-    'mdi-diving-snorkel',
+    'mdi-diving-snorkel'
   ],
   [
     'mdi-shape',
@@ -99,7 +99,7 @@ export default [
     'mdi-music',
     'mdi-theater',
     'mdi-movie-roll',
-    'mdi-flask-round-bottom-outline',
+    'mdi-flask-round-bottom-outline'
   ],
   [
     'mdi-palm-tree',
@@ -110,7 +110,7 @@ export default [
     'mdi-leaf',
     'mdi-clover',
     'mdi-flower-tulip-outline',
-    'mdi-flower',
+    'mdi-flower'
   ],
   [
     // animals
@@ -128,7 +128,7 @@ export default [
     'mdi-language-swift',
     'mdi-bat',
     'mdi-paw',
-    'mdi-gnome',
+    'mdi-gnome'
   ],
   [
     // people
@@ -144,7 +144,7 @@ export default [
     'mdi-emoticon-happy-outline',
     'mdi-drama-masks',
     'mdi-guy-fawkes-mask',
-    'mdi-gender-female',
+    'mdi-gender-female'
   ],
   [
     // medicine
@@ -159,7 +159,7 @@ export default [
     'mdi-hospital',
     'mdi-pill',
     'mdi-brain',
-    'mdi-folder-heart-outline',
+    'mdi-folder-heart-outline'
   ],
   [
     // home
@@ -185,7 +185,7 @@ export default [
     'mdi-wind-turbine',
     'mdi-spray',
     'mdi-air-filter',
-    'mdi-waves',
+    'mdi-waves'
   ],
   [
     // staf
@@ -225,7 +225,7 @@ export default [
     'mdi-format-paint',
     'mdi-magnify-close',
     'mdi-basket-fill',
-    'mdi-metronome',
+    'mdi-metronome'
   ],
   [
     'mdi-folder-star',
@@ -244,7 +244,7 @@ export default [
     'mdi-cash-100',
     'mdi-repeat',
     'mdi-bank',
-    'mdi-home-currency-usd',
+    'mdi-home-currency-usd'
   ],
   [
     'mdi-auto-fix',
@@ -265,7 +265,7 @@ export default [
     'mdi-minecraft',
     'mdi-web',
     'mdi-disqus',
-    'mdi-white-balance-auto',
+    'mdi-white-balance-auto'
   ],
   [
     // rotate
@@ -281,7 +281,7 @@ export default [
     'mdi-vector-difference-ab',
     'mdi-alpha-i-circle-outline',
     'mdi-alpha-m-circle-outline',
-    'mdi-all-inclusive',
+    'mdi-all-inclusive'
   ],
   [
     'mdi-clippy',
@@ -298,6 +298,6 @@ export default [
     'mdi-script',
     'mdi-dev-to',
     'mdi-code-not-equal-variant',
-    'mdi-code-braces',
-  ],
+    'mdi-code-braces'
+  ]
 ]

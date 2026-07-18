@@ -28,17 +28,18 @@ function resetFlow() {
   pad.value?.reset()
 }
 
-watch(() => props.modelValue, (open) => {
-  if (open)
-    resetFlow()
-})
+watch(
+  () => props.modelValue,
+  (open) => {
+    if (open) resetFlow()
+  }
+)
 
 // Adıma göre beklenen uzunluk: mevcut PIN'de kayıtlı uzunluk, yenilerde NEW_LEN.
 const activeLength = computed(() => (step.value === 'current' ? lock.pinLength : NEW_LEN))
 
 const title = computed(() => {
-  if (step.value === 'current')
-    return t('lock.enterCurrent')
+  if (step.value === 'current') return t('lock.enterCurrent')
   return step.value === 'enter' ? t('lock.enterNew') : t('lock.confirmNew')
 })
 
@@ -56,8 +57,7 @@ async function onComplete(pin: string) {
     if (await lock.matchesPin(pin)) {
       step.value = 'enter'
       pad.value?.reset()
-    }
-    else {
+    } else {
       flashError(() => {
         step.value = 'current'
       })
@@ -88,7 +88,11 @@ async function onComplete(pin: string) {
 </script>
 
 <template>
-  <v-dialog :model-value="modelValue" max-width="380" @update:model-value="emit('update:modelValue', $event)">
+  <v-dialog
+    :model-value="modelValue"
+    max-width="380"
+    @update:model-value="emit('update:modelValue', $event)"
+  >
     <v-card class="pa-4">
       <PinPad
         ref="pad"

@@ -13,12 +13,16 @@ const rows = computed(() => [
   { keys: ['g', 'c'], label: t('nav.categories') },
   { keys: ['g', 's'], label: t('nav.stat') },
   { keys: ['g', 'e'], label: t('nav.settings') },
-  { keys: ['shift', '?'], label: t('hotkeys.help') },
+  { keys: ['shift', '?'], label: t('hotkeys.help') }
 ])
 </script>
 
 <template>
-  <v-dialog :model-value="modelValue" max-width="420" @update:model-value="emit('update:modelValue', $event)">
+  <v-dialog
+    :model-value="modelValue"
+    max-width="420"
+    @update:model-value="emit('update:modelValue', $event)"
+  >
     <v-card>
       <v-card-title class="d-flex align-center">
         <v-icon icon="mdi-keyboard-outline" class="me-2" />
