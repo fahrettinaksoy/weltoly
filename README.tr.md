@@ -3,6 +3,7 @@
 [English](README.md) · **Türkçe**
 
 [![CI](https://github.com/fahrettinaksoy/weltoly/actions/workflows/ci.yml/badge.svg)](https://github.com/fahrettinaksoy/weltoly/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/fahrettinaksoy/weltoly/badge)](https://securityscorecards.dev/viewer/?uri=github.com/fahrettinaksoy/weltoly)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/fahrettinaksoy/weltoly?include_prereleases&sort=semver)](https://github.com/fahrettinaksoy/weltoly/releases)
 ![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20iOS%20%7C%20Android-blue)
