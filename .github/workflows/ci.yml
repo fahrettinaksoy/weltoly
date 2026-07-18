@@ -11,6 +11,13 @@ on:
     branches: [main]
   pull_request:
 
+# Eş zamanlılık: aynı dala/PR'a arka arkaya push gelince ÖNCEKİ koşuyu iptal et
+# (boşa CI dakikası ve yarış önlenir). İptal yalnız PR'larda — main push'ları
+# tamamlanmaya devam eder ki her main commit'i tam doğrulansın.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   quality:
     runs-on: ubuntu-latest
