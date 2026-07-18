@@ -414,7 +414,7 @@ const expenseRows: [number, string, string, number, string][] = [
  * iki bacak kendi biriminde yazılır. Kurlar canlı servisten geldiği için burada
  * yaklaşık piyasa değerleri kullanıldı.
  *
- * DİKKAT: transfer GELİR DEĞİLDİR (finapp kuralı, `flow` onu hariç tutar). Yani
+ * DİKKAT: transfer GELİR DEĞİLDİR (muhasebe kuralı, `flow` onu hariç tutar). Yani
  * fatura hesabının "Gelir" sayacı 0 kalmaya devam eder — doğrusu da bu; o hesaba
  * para kazanılarak değil aktarılarak giriyor. Değişen şey bakiye seyri: tek yönlü
  * düşüş yerine "doldur–harca–doldur" testeresi.

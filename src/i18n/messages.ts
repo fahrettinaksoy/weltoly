@@ -1,4 +1,4 @@
-// Faz 2 sözlükleri. Faz 4'te finapp sözlükleri tam taşınacak.
+// Uygulama çeviri sözlükleri (tr/en/ru).
 
 export type LocaleCode = 'tr' | 'en' | 'ru'
 

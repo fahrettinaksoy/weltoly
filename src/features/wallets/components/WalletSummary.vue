@@ -74,7 +74,7 @@ const lastTrnDate = computed(() => props.allTrns[0]?.trn.date ?? null)
 // --- Sayaçlar -----------------------------------------------------------
 /**
  * Dönem içi gelir/gider. Transfer ve düzeltme HARİÇ — bunlar gelir/gider değil
- * (finapp kuralı, shared/lib/getTotal.ts ile aynı). Cüzdanlar sayfasındaki
+ * (shared/lib/getTotal.ts ile aynı kural). Cüzdanlar sayfasındaki
  * sütunlarla aynı tanım, yoksa aynı veri iki farklı rakam verirdi.
  */
 function flowOf(trns: { trn: TrnItem }[]) {

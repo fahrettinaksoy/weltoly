@@ -63,7 +63,7 @@ const lastMonth = computed(() => {
 
 /**
  * Bir aralığın gelir/gider/adedi — temel para biriminde.
- * Transfer ve düzeltme HARİÇ (finapp kuralı): transfer para kazanmak değil,
+ * Transfer ve düzeltme HARİÇ (muhasebe kuralı): transfer para kazanmak değil,
  * düzeltme gerçek bir hareket değil. Uygulamanın her yerindeki tanımla aynı.
  */
 function flowIn(range: { from: number, to: number }) {

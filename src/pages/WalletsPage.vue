@@ -92,7 +92,7 @@ interface WalletRow {
 
 /**
  * Cüzdan başına gelir/gider toplamı (kendi para biriminde).
- * Transferler ve düzeltmeler HARİÇ — bunlar gelir/gider değil (finapp kuralı,
+ * Transferler ve düzeltmeler HARİÇ — bunlar gelir/gider değil (muhasebe kuralı,
  * shared/lib/getTotal.ts ile aynı). Dahil etseydik bir cüzdandan diğerine para
  * taşımak her ikisinde de sahte gelir/gider üretirdi.
  */
