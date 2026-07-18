@@ -1,50 +1,50 @@
-# Güvenlik Politikası
+# Security Policy
 
-## Desteklenen sürümler
+## Supported versions
 
-Weltoly henüz `0.x` geliştirme aşamasındadır; güvenlik düzeltmeleri yalnızca
-`main` dalına ve en son yayınlanan sürüme uygulanır.
+Weltoly is still in `0.x`/early development; security fixes are applied only to
+the `main` branch and the latest published release.
 
-| Sürüm | Destek |
-| ----- | ------ |
-| 0.1.x | ✅     |
-| < 0.1 | ❌     |
+| Version | Supported |
+| ------- | --------- |
+| 0.1.x   | ✅        |
+| < 0.1   | ❌        |
 
-## Açık bildirimi
+## Reporting a vulnerability
 
-Bir güvenlik açığı bulduysanız **herkese açık bir issue AÇMAYIN**. Bunun yerine:
+If you find a security vulnerability, **do not open a public issue**. Instead:
 
-- **backend@cyh.com.tr** adresine e-posta gönderin, veya
-- GitHub'ın özel **"Report a vulnerability"** akışını kullanın
+- email **backend@cyh.com.tr**, or
+- use GitHub's private **"Report a vulnerability"** flow
   (repo → Security → Advisories → Report a vulnerability).
 
-Lütfen şunları ekleyin:
+Please include:
 
-- Etkilenen bileşen (frontend / Tauri arka uç / SQLite katmanı / bir bağımlılık),
-- Yeniden üretme adımları veya bir PoC,
-- Etki değerlendirmeniz (veri sızıntısı, RCE, yerel dosya erişimi vb.).
+- the affected component (frontend / Tauri backend / SQLite layer / a dependency),
+- reproduction steps or a PoC,
+- your impact assessment (data leak, RCE, local file access, etc.).
 
-**Yanıt hedefi:** 72 saat içinde ilk yanıt, 30 gün içinde düzeltme/azaltma planı.
+**Response targets:** initial reply within 72 hours, a fix/mitigation plan within 30 days.
 
-## Kapsam ve tehdit modeli
+## Scope and threat model
 
-Weltoly **yerel-önce** ve **offline** bir masaüstü uygulamasıdır: sunucu, hesap
-veya uzak telemetri yoktur. Tüm veri kullanıcının cihazında SQLite'ta durur.
-Bu yüzden ilgilendiğimiz sınıflar özellikle:
+Weltoly is a **local-first**, **offline** desktop application: there is no server,
+account, or remote telemetry. All data lives on the user's device in SQLite.
+The classes we care about most are therefore:
 
-- **Tauri capability / CSP kaçışları** — `src-tauri/capabilities/default.json` ve
-  `tauri.conf.json`'daki `csp` bilinçli olarak dar tutulmuştur (yalnız kur API'leri
-  ve kullanıcı belge klasörleri). Bu sınırları aşan her şey ilgi alanımızdadır.
-- **Yerel veri bütünlüğü** — para yazan çok-adımlı işlemler tek bir SQLite
-  transaction'ında yapılır (`src-tauri/src/tx.rs`). Kısmi yazım/bozulma yolları.
-- **Bağımlılık açıkları** — CI'da `npm audit` (prod) ve `cargo audit` kapıları
-  vardır; bilinen ve azaltılamayan istisnalar `src-tauri/.cargo/audit.toml`'da
-  gerekçesiyle belgelenir.
+- **Tauri capability / CSP escapes** — `src-tauri/capabilities/default.json` and the
+  `csp` in `tauri.conf.json` are deliberately narrow (only the rate APIs and the
+  user's document folders). Anything that crosses those boundaries is in scope.
+- **Local data integrity** — money-affecting, multi-step writes run inside a single
+  SQLite transaction (`src-tauri/src/tx.rs`). Partial-write/corruption paths.
+- **Dependency vulnerabilities** — CI has `npm audit` (prod) and `cargo audit` gates;
+  known and unavoidable exceptions are documented with rationale in
+  `src-tauri/.cargo/audit.toml`.
 
-**Kapsam dışı (şimdilik):** cihazına fiziksel/root erişimi olan saldırgan. SQLite
-dosyası şu an at-rest **şifresizdir**. Şifreleme için güvenli temel atıldı
-(`src/features/auth/dbKey.ts` — PIN'den SQLCipher anahtarı türetme, test edilmiş)
-ama `tauri-plugin-sql` bağlantıda `PRAGMA key` enjeksiyonuna izin vermediği için
-henüz **açık değildir**; engel, plan ve migration riski
-[docs/DB-ENCRYPTION-PLAN.md](docs/DB-ENCRYPTION-PLAN.md)'de. Bugünkü at-rest
-koruma kaynağı işletim sistemi tam-disk şifrelemesidir (FileVault/BitLocker/LUKS).
+**Out of scope (for now):** an attacker with physical/root access to the device. The
+SQLite file is currently **unencrypted at rest**. A safe foundation for encryption
+exists (`src/features/auth/dbKey.ts` — deriving a SQLCipher key from the PIN, tested),
+but it is **not enabled yet** because `tauri-plugin-sql` does not allow injecting
+`PRAGMA key` on connect; the blocker, plan, and migration risk are in
+[docs/DB-ENCRYPTION-PLAN.md](docs/DB-ENCRYPTION-PLAN.md). Today's at-rest protection
+comes from OS full-disk encryption (FileVault/BitLocker/LUKS).

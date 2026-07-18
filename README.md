@@ -170,7 +170,7 @@ Diagnostic logs are written at runtime to a rotating file in the app log directo
 - [SECURITY.md](SECURITY.md) — security policy
 - [CHANGELOG.md](CHANGELOG.md) — release history
 - [docs/RELEASE.md](docs/RELEASE.md) — signing, notarization, and publishing
-- [docs/](docs/) — technical docs and code review reports
+- [docs/DB-ENCRYPTION-PLAN.md](docs/DB-ENCRYPTION-PLAN.md) — at-rest encryption plan
 
 ---
 

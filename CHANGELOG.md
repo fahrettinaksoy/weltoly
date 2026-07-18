@@ -1,48 +1,52 @@
 # Changelog
 
-Bu projedeki tüm önemli değişiklikler bu dosyada belgelenir.
+All notable changes to this project are documented in this file.
 
-Biçim [Keep a Changelog](https://keepachangelog.com/tr/1.1.0/) temellidir ve
-proje [Semantic Versioning](https://semver.org/lang/tr/)'i izler.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)
+and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Yayınlanmadı]
+## [Unreleased]
 
-### Eklendi
+### Added
 
-- **Rust CI kalite kapısı** — `cargo fmt --check`, `cargo clippy -D warnings` ve
-  `cargo test` artık her push/PR'da çalışıyor (önceden `tx.rs` transaction
-  testleri CI dışındaydı).
-- **Tedarik zinciri kapıları** — `dependabot.yml` (npm/cargo/actions) ve CI'da
-  `npm audit` (prod) + `cargo audit`.
-- README durum rozetleri (CI, lisans, sürüm, platform) ve `FUNDING.yml` şablonu.
-  (CodeQL kod tarama GitHub "Default setup" ile açıldı — ayrı workflow gerekmez.)
-- **Gözlemlenebilirlik** — global Vue `errorHandler` + `window` hata dinleyicileri,
-  `tauri-plugin-log` ile kalıcı dönen log dosyası, `@/shared/lib/logger` sarmalayıcısı
-  ve Ayarlar'da "Log klasörünü aç" tanılama düğmesi.
-- **Otomatik güncelleme** — `tauri-plugin-updater` + `tauri-plugin-process`,
-  imzalı GitHub Releases üzerinden; Ayarlar'da "Güncellemeleri denetle".
-- **Boot smoke testi** — gerçek `App.vue`, tüm eklenti yığınıyla hatasız açılıyor mu (Vitest).
-- Test kapsam ölçümü ve CI eşikleri (`@vitest/coverage-v8`, `test:coverage`).
-- Araç zinciri sabitleme: `rust-toolchain.toml`, `.nvmrc`.
-- Depo yönetişimi: `SECURITY.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`,
-  `CODEOWNERS`, PR/issue şablonları, `.editorconfig`.
-- **DB at-rest şifreleme temeli** — PIN'den SQLCipher ham anahtarı türeten saf,
-  test edilmiş mantık (`dbKey.ts`); şifreleme henüz açık değil (plugin engeli),
-  plan/risk `docs/DB-ENCRYPTION-PLAN.md`'de.
+- **Rust CI quality gate** — `cargo fmt --check`, `cargo clippy -D warnings`, and
+  `cargo test` now run on every push/PR (previously the `tx.rs` transaction tests
+  were outside CI).
+- **Supply-chain gates** — `dependabot.yml` (npm/cargo/actions) and `npm audit`
+  (prod) + `cargo audit` in CI.
+- README status badges (CI, license, release, platforms) and a `FUNDING.yml`
+  template. (CodeQL code scanning is enabled via GitHub "Default setup" — no
+  separate workflow needed.)
+- **Observability** — global Vue `errorHandler` + `window` error listeners, a
+  persistent rotating log file via `tauri-plugin-log`, the `@/shared/lib/logger`
+  wrapper, and an "Open log folder" diagnostics button in Settings.
+- **Auto-update** — `tauri-plugin-updater` + `tauri-plugin-process`, over signed
+  GitHub Releases; "Check for updates" in Settings.
+- **Boot smoke test** — verifies the real `App.vue` mounts cleanly with the full
+  plugin stack (Vitest).
+- Test coverage measurement and CI thresholds (`@vitest/coverage-v8`, `test:coverage`).
+- Toolchain pinning: `rust-toolchain.toml`, `.nvmrc`.
+- Repository governance: `SECURITY.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`,
+  `CODEOWNERS`, PR/issue templates, `.editorconfig`.
+- **DB at-rest encryption foundation** — pure, tested logic deriving a SQLCipher
+  raw key from the PIN (`dbKey.ts`); encryption is not enabled yet (plugin
+  limitation), with the plan/risk documented in `docs/DB-ENCRYPTION-PLAN.md`.
+- CI concurrency so superseded PR runs are cancelled; `.DS_Store` is gitignored.
 
-### Değişti
+### Changed
 
-- Tüm `console.error/warn` çağrıları kalıcı `logger`'a yönlendirildi.
+- All `console.error/warn` calls are routed to the persistent `logger`.
+- English is now the default `README.md`; Turkish moved to `README.tr.md`.
 
 ## [0.1.0] — 2026
 
-### Eklendi
+### Added
 
-- İlk iskelet: Tauri v2 + Vue 3 + Vuetify + Pinia + vue-i18n (tr/en/ru).
-- SQLite veri katmanı (`tauri-plugin-sql`, bundled) ve migration'lar.
-- Cüzdanlar, işlemler, kategoriler, etiketler, istatistik ve çoklu para birimi
-  (seçilebilir kur kaynağı + güncellik paneli).
-- PIN kilidi, açık/koyu/sistem tema, yedek dışa/içe aktarma.
+- Initial skeleton: Tauri v2 + Vue 3 + Vuetify + Pinia + vue-i18n (tr/en/ru).
+- SQLite data layer (`tauri-plugin-sql`, bundled) and migrations.
+- Wallets, transactions, categories, tags, statistics, and multi-currency
+  (selectable rate source + freshness panel).
+- PIN lock, light/dark/system theme, backup export/import.
 
-[Yayınlanmadı]: https://github.com/fahrettinaksoy/weltoly/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/fahrettinaksoy/weltoly/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/fahrettinaksoy/weltoly/releases/tag/v0.1.0
