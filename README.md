@@ -1,182 +1,185 @@
 # Weltoly
 
+**English** · [Türkçe](README.tr.md)
+
 [![CI](https://github.com/fahrettinaksoy/weltoly/actions/workflows/ci.yml/badge.svg)](https://github.com/fahrettinaksoy/weltoly/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/fahrettinaksoy/weltoly?include_prereleases&sort=semver)](https://github.com/fahrettinaksoy/weltoly/releases)
 ![Platforms](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20iOS%20%7C%20Android-blue)
 
-**Weltoly**, gizliliğe önem veren, **yerel-önce** çalışan açık kaynak bir kişisel
-finans uygulamasıdır. Cüzdanlarını, işlemlerini, kategorilerini ve çoklu para
-birimindeki bakiyelerini tek bir masaüstü/mobil uygulamada takip edersin.
+**Weltoly** is a privacy-first, **local-first** open-source personal finance app.
+Track your wallets, transactions, categories, and multi-currency balances in a
+single desktop/mobile application.
 
-Tüm verin **cihazında** SQLite veritabanında durur. Sunucu, hesap veya **uzak
-telemetri yoktur** — hiçbir finansal bilgin cihazdan dışarı çıkmaz. İnternet
-yalnızca istediğinde güncel döviz/kripto kurlarını çekmek için kullanılır.
-
----
-
-## ✨ Öne çıkan özellikler
-
-### Cüzdanlar
-- Sınırsız cüzdan; nakit, banka ve **kredi kartı** (limit + kullanılabilir bakiye) türleri
-- Cüzdana özel ikon ve renk, sürükle-bırak sıralama
-- Cüzdan başına bakiye grafiği, dönemsel özet ve etiket bazlı dağılım
-
-### İşlemler
-- **Gelir**, **gider**, **transfer** ve **bakiye düzeltme** türleri
-- Yerleşik **hesap makinesi** ile hızlı tutar girişi
-- Kategori, etiket, açıklama ve tarih; güçlü filtreleme
-- Tüm cüzdanları tek listede gösteren birleşik işlemler sayfası
-
-### Kategoriler ve etiketler
-- Gelir/gider kategorileri, ikon ve renk seçici
-- Alt kategori toplama (rollup) ile hiyerarşik raporlama
-- Serbest etiketlerle çapraz kesit analiz
-
-### Çoklu para birimi
-- **Seçilebilir kur kaynağı:** ER-API, Frankfurter, TCMB
-- **Kripto** fiyatları CoinGecko üzerinden
-- Kur **güncellik paneli** — en son ne zaman güncellendiği şeffaf
-- Tüm bakiyeler tek bir temel para biriminde birleştirilir
-
-### İstatistik ve analiz
-- Dönem karşılaştırmalı harcama grafikleri (ECharts)
-- Kategori kırılımı ve trend görünümleri
-
-### Kişiselleştirme
-- Açık / koyu / sistem teması
-- Özelleştirilebilir ana renk, nötr palet ve köşe yuvarlaklığı
-- **tr / en / ru** dil desteği (RTL-hazır altyapı)
-
-### Güvenlik ve veri
-- **PIN kilidi** — üstel gecikmeli (backoff) deneme koruması; arka plana alınınca otomatik kilit
-- Yedeği **dışa/içe aktarma** (JSON)
-- Örnek veri ile hızlı deneme
-- Tanılama logları ve uygulama içi **otomatik güncelleme** (imzalı)
+All your data stays **on your device** in a SQLite database. There is no server,
+no account, and **no remote telemetry** — none of your financial information ever
+leaves your device. The internet is used only when you choose to fetch up-to-date
+fiat/crypto exchange rates.
 
 ---
 
-## 🧱 Teknoloji yığını
+## ✨ Highlights
 
-| Katman | Teknoloji |
+### Wallets
+- Unlimited wallets; cash, bank, and **credit card** (limit + available balance) types
+- Per-wallet icon and color, drag-and-drop ordering
+- Per-wallet balance chart, period summary, and tag-based breakdown
+
+### Transactions
+- **Income**, **expense**, **transfer**, and **balance correction** types
+- Built-in **calculator** for fast amount entry
+- Category, tag, description, and date; powerful filtering
+- Unified transactions page showing every wallet in one list
+
+### Categories and tags
+- Income/expense categories with icon and color pickers
+- Sub-category rollup for hierarchical reporting
+- Free-form tags for cross-cutting analysis
+
+### Multi-currency
+- **Selectable rate source:** ER-API, Frankfurter, TCMB
+- **Crypto** prices via CoinGecko
+- Rate **freshness panel** — transparent about when rates were last updated
+- All balances consolidated into a single base currency
+
+### Statistics and analysis
+- Period-comparison spending charts (ECharts)
+- Category breakdown and trend views
+
+### Personalization
+- Light / dark / system theme
+- Customizable primary color, neutral palette, and corner radius
+- **tr / en / ru** language support (RTL-ready foundation)
+
+### Security and data
+- **PIN lock** — exponential backoff on failed attempts; auto-lock when backgrounded
+- **Export/import** backups (JSON)
+- Quick start with sample data
+- Diagnostic logs and in-app **auto-update** (signed)
+
+---
+
+## 🧱 Tech stack
+
+| Layer | Technology |
 |---|---|
-| Uygulama kabuğu | **Tauri v2** (Rust) — Windows / macOS / Linux / iOS / Android |
-| Arayüz | **Vue 3** + **Vuetify 4** (Material) |
-| Durum yönetimi | **Pinia** |
-| Yönlendirme | **Vue Router** |
-| Yerelleştirme | **vue-i18n** (tr/en/ru) |
-| Grafikler | **ECharts** (`vue-echarts`) |
-| Doğrulama | **Zod** |
-| Tarih | **date-fns** |
-| Veritabanı | **SQLite** — `tauri-plugin-sql` (derlemeye gömülü / bundled) |
-| Derleme | **Vite** + TypeScript (strict) |
+| App shell | **Tauri v2** (Rust) — Windows / macOS / Linux / iOS / Android |
+| UI | **Vue 3** + **Vuetify 4** (Material) |
+| State | **Pinia** |
+| Routing | **Vue Router** |
+| Localization | **vue-i18n** (tr/en/ru) |
+| Charts | **ECharts** (`vue-echarts`) |
+| Validation | **Zod** |
+| Dates | **date-fns** |
+| Database | **SQLite** — `tauri-plugin-sql` (bundled) |
+| Build | **Vite** + TypeScript (strict) |
 
 ---
 
-## 🏗️ Mimari
+## 🏗️ Architecture
 
-- **Yerel-önce, offline:** veri cihazında SQLite'ta durur; sunucu/hesap yoktur.
-- **Bütünlüklü yazımlar:** para etkileyen çok-adımlı işlemler, Rust tarafında tek bir
-  SQLite transaction'ında (`src-tauri/src/tx.rs → run_tx`) atomik olarak uygulanır —
-  yarım kalmış/tutarsız kayıt oluşmaz.
-- **Reaktif okuma:** tablo değişiklikleri izlenir ve yalnızca gerçekten değişen
-  satırlar yeniden hesaplanır (`services/db/watch` + `reconcile`).
-- **Dikey özellik dilimleri:** her özellik kendi store'u, tipleri, saf mantığı ve
-  testleriyle `src/features/*` altında yaşar.
-- **Gömülü SQLite:** sistem `libsqlite3` bağımlılığı yoktur (Android dahil her platformda çalışır).
-- **Sıkılaştırılmış güvenlik:** dar CSP, kapsamı sınırlı Tauri capability'leri
-  (yalnız kur API'leri ve kullanıcı belge klasörleri), uzak telemetri yok.
+- **Local-first, offline:** data lives on the device in SQLite; no server/account.
+- **Atomic writes:** money-affecting, multi-step operations are applied atomically
+  inside a single SQLite transaction on the Rust side (`src-tauri/src/tx.rs → run_tx`)
+  — no half-written/inconsistent records.
+- **Reactive reads:** table changes are watched and only genuinely changed rows are
+  recomputed (`services/db/watch` + `reconcile`).
+- **Vertical feature slices:** each feature lives under `src/features/*` with its own
+  store, types, pure logic, and tests.
+- **Bundled SQLite:** no system `libsqlite3` dependency (works everywhere, incl. Android).
+- **Hardened security:** narrow CSP, tightly scoped Tauri capabilities (only rate APIs
+  and user document folders), no remote telemetry.
 
 ---
 
-## 📁 Proje yapısı
+## 📁 Project structure
 
 ```text
 weltoly/
-├─ src/                      # Vue 3 arayüz
-│  ├─ features/              # dikey özellik dilimleri (wallets, trns, categories, …)
-│  ├─ pages/                 # rota sayfaları (Panel, Cüzdanlar, İstatistik, Ayarlar…)
-│  ├─ components/            # paylaşılan bileşenler
+├─ src/                      # Vue 3 frontend
+│  ├─ features/              # vertical feature slices (wallets, trns, categories, …)
+│  ├─ pages/                 # route pages (Dashboard, Wallets, Stats, Settings…)
+│  ├─ components/            # shared components
 │  ├─ services/              # db, rates, backup, updater
-│  ├─ shared/lib/            # saf yardımcılar (money, format, getTotal…)
-│  ├─ stores/                # global store'lar (ui, settings)
+│  ├─ shared/lib/            # pure helpers (money, format, getTotal…)
+│  ├─ stores/                # global stores (ui, settings)
 │  ├─ plugins/               # vuetify, i18n, echarts
-│  └─ i18n/                  # tr/en/ru sözlükleri
-├─ src-tauri/                # Rust arka uç (Tauri v2)
-│  ├─ src/                   # lib.rs, tx.rs (transaction komutu)
-│  ├─ migrations/            # SQLite şema migrasyonları
-│  └─ capabilities/          # izin kapsamları
-└─ docs/                     # yayın ve teknik belgeler
+│  └─ i18n/                  # tr/en/ru dictionaries
+├─ src-tauri/                # Rust backend (Tauri v2)
+│  ├─ src/                   # lib.rs, tx.rs (transaction command)
+│  ├─ migrations/            # SQLite schema migrations
+│  └─ capabilities/          # permission scopes
+└─ docs/                     # release and technical docs
 ```
 
 ---
 
-## 🚀 Kurulum ve çalıştırma
+## 🚀 Getting started
 
-### Gereksinimler
+### Requirements
 - **Node.js ≥ 20** (`.nvmrc` → `nvm use`), npm
-- **Rust** — araç zinciri `src-tauri/rust-toolchain.toml` ile sabittir, `rustup` otomatik kurar
-- Masaüstü: platform WebView bağımlılıkları · Mobil: Android SDK+NDK / Xcode
+- **Rust** — toolchain pinned via `src-tauri/rust-toolchain.toml`, installed automatically by `rustup`
+- Desktop: platform WebView dependencies · Mobile: Android SDK+NDK / Xcode
 
-### Komutlar
+### Commands
 ```bash
-npm install          # bağımlılıklar + git hook'ları
-npm run dev          # yalnız web önizleme (Vite) — http://localhost:1420
-npm run tauri:dev    # masaüstü uygulaması (native pencere)
+npm install          # dependencies + git hooks
+npm run dev          # web preview only (Vite) — http://localhost:1420
+npm run tauri:dev    # desktop app (native window)
 npm run build        # web build (typecheck + vite build)
-npm run tauri:build  # masaüstü paket üret
-npm run typecheck    # vue-tsc tip kontrolü
-npm test             # birim testleri (Vitest)
+npm run tauri:build  # produce desktop bundle
+npm run typecheck    # vue-tsc type check
+npm test             # unit tests (Vitest)
 
-# Mobil (SDK kurulumundan sonra):
+# Mobile (after SDK setup):
 npm run tauri android init && npm run tauri android dev
 npm run tauri ios init && npm run tauri ios dev
 ```
 
 ---
 
-## ✅ Kalite kapıları
+## ✅ Quality gates
 
-Her push/PR'da CI şunları zorunlu kılar (bkz. [.github/workflows/ci.yml](.github/workflows/ci.yml)):
+CI enforces the following on every push/PR (see [.github/workflows/ci.yml](.github/workflows/ci.yml)):
 
-| Kapı | Komut |
-| ---- | ----- |
-| Tip | `npm run typecheck` |
+| Gate | Command |
+| ---- | ------- |
+| Types | `npm run typecheck` |
 | Lint | `npm run lint` (@antfu) |
-| Frontend test + kapsam | `npm run test:coverage` (Vitest) |
-| Rust biçim/lint/test | `cargo fmt --check` · `cargo clippy -D warnings` · `cargo test` |
-| Tedarik zinciri | `npm audit` (prod) · `cargo audit` |
+| Frontend test + coverage | `npm run test:coverage` (Vitest) |
+| Rust fmt/lint/test | `cargo fmt --check` · `cargo clippy -D warnings` · `cargo test` |
+| Supply chain | `npm audit` (prod) · `cargo audit` |
 
-Bağımlılıklar **Dependabot** ile haftalık güncellenir; kod taraması **CodeQL** ile
-yapılır. Tanılama logları çalışma anında app log dizinindeki dönen dosyaya yazılır
-(Ayarlar → Veri → **Log klasörünü aç**).
-
----
-
-## 🔒 Güvenlik ve gizlilik
-
-- Veri cihazda kalır; **hiçbir uzak sunucuya gönderilmez.**
-- Güvenlik açığı bildirimi ve tehdit modeli: [SECURITY.md](SECURITY.md)
-- At-rest şifreleme yol haritası ve mevcut azaltmalar: [docs/DB-ENCRYPTION-PLAN.md](docs/DB-ENCRYPTION-PLAN.md)
+Dependencies are updated weekly via **Dependabot**; code is scanned with **CodeQL**.
+Diagnostic logs are written at runtime to a rotating file in the app log directory
+(Settings → Data → **Open log folder**).
 
 ---
 
-## 📚 Belgeler
+## 🔒 Security and privacy
 
-- [CONTRIBUTING.md](CONTRIBUTING.md) — katkı akışı ve mimari notlar
-- [SECURITY.md](SECURITY.md) — güvenlik politikası
-- [CHANGELOG.md](CHANGELOG.md) — sürüm geçmişi
-- [docs/RELEASE.md](docs/RELEASE.md) — imzalama, notarization ve yayınlama
-- [docs/](docs/) — teknik belgeler ve kod inceleme raporları
+- Data stays on your device; **it is never sent to any remote server.**
+- Vulnerability reporting and threat model: [SECURITY.md](SECURITY.md)
+- At-rest encryption roadmap and current mitigations: [docs/DB-ENCRYPTION-PLAN.md](docs/DB-ENCRYPTION-PLAN.md)
 
 ---
 
-## 🤝 Katkı
+## 📚 Documentation
 
-Katkılar memnuniyetle karşılanır. Başlamadan önce [CONTRIBUTING.md](CONTRIBUTING.md)
-ve [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) belgelerine göz at. Kullanıcıya görünen
-metin eklerken **tr/en/ru** üçünü de güncellemeyi unutma.
+- [CONTRIBUTING.md](CONTRIBUTING.md) — contribution flow and architecture notes
+- [SECURITY.md](SECURITY.md) — security policy
+- [CHANGELOG.md](CHANGELOG.md) — release history
+- [docs/RELEASE.md](docs/RELEASE.md) — signing, notarization, and publishing
+- [docs/](docs/) — technical docs and code review reports
 
-## 📄 Lisans
+---
+
+## 🤝 Contributing
+
+Contributions are welcome. Before you start, read [CONTRIBUTING.md](CONTRIBUTING.md)
+and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). When adding user-facing text, remember
+to update all three of **tr/en/ru**.
+
+## 📄 License
 
 [MIT](LICENSE) © stackvo
