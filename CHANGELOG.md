@@ -14,6 +14,8 @@ proje [Semantic Versioning](https://semver.org/lang/tr/)'i izler.
   testleri CI dışındaydı).
 - **Tedarik zinciri kapıları** — `dependabot.yml` (npm/cargo/actions) ve CI'da
   `npm audit` (prod) + `cargo audit`.
+- README durum rozetleri (CI, lisans, sürüm, platform) ve `FUNDING.yml` şablonu.
+  (CodeQL kod tarama GitHub "Default setup" ile açıldı — ayrı workflow gerekmez.)
 - **Gözlemlenebilirlik** — global Vue `errorHandler` + `window` hata dinleyicileri,
   `tauri-plugin-log` ile kalıcı dönen log dosyası, `@/shared/lib/logger` sarmalayıcısı
   ve Ayarlar'da "Log klasörünü aç" tanılama düğmesi.
