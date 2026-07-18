@@ -1,58 +1,58 @@
-# Katkı Rehberi
+# Contributing
 
-Teşekkürler! Weltoly'ye katkı sağlamadan önce lütfen bu kısa rehberi okuyun.
+Thanks for your interest! Please read this short guide before contributing to Weltoly.
 
-## Geliştirme ortamı
+## Development environment
 
 - **Node.js ≥ 20** (`.nvmrc` → `nvm use`), npm
-- **Rust** araç zinciri `src-tauri/rust-toolchain.toml` ile SABİTTİR — `rustup`
-  doğru sürümü otomatik kurar. Elle bir şey yapmanıza gerek yok.
-- Masaüstü WebView bağımlılıkları (platforma göre — bkz. [README](README.md)).
+- **Rust** toolchain is pinned via `src-tauri/rust-toolchain.toml` — `rustup`
+  installs the right version automatically. Nothing to do manually.
+- Desktop WebView dependencies per platform (see the [README](README.md)).
 
 ```bash
-npm install          # bağımlılıklar + git hook'ları (simple-git-hooks)
-npm run dev          # yalnız web (Vite)
-npm run tauri:dev    # native masaüstü uygulaması
+npm install          # dependencies + git hooks (simple-git-hooks)
+npm run dev          # web only (Vite)
+npm run tauri:dev    # native desktop app
 ```
 
-## Kalite kapıları (CI'da zorunlu)
+## Quality gates (enforced in CI)
 
-Bir PR birleştirilmeden önce CI şunların HEPSİNİ yeşil ister. Aynılarını yerelde
-push'tan önce çalıştırın:
+A PR must have ALL of these green before it can be merged. Run the same locally
+before pushing:
 
-| Komut | Ne doğrular |
-| ----- | ----------- |
-| `npm run typecheck` | `vue-tsc` — tip güvenliği |
-| `npm run lint` | ESLint (@antfu) — kod stili |
-| `npm test` | Vitest — frontend birim testleri |
-| `cargo fmt --check` | Rust biçimi (src-tauri/) |
+| Command | What it checks |
+| ------- | -------------- |
+| `npm run typecheck` | `vue-tsc` — type safety |
+| `npm run lint` | ESLint (@antfu) — code style |
+| `npm test` | Vitest — frontend unit tests |
+| `cargo fmt --check` | Rust formatting (src-tauri/) |
 | `cargo clippy --all-targets -- -D warnings` | Rust lint |
-| `cargo test` | Rust testleri (tx.rs transaction bütünlüğü) |
+| `cargo test` | Rust tests (tx.rs transaction integrity) |
 
-Ayrıca `npm audit` (prod) ve `cargo audit` tedarik zinciri kapıları çalışır.
+The `npm audit` (prod) and `cargo audit` supply-chain gates also run.
 
-> **pre-commit hook** `lint-staged` ile değişen dosyalarda `eslint --fix` çalıştırır.
-> Rust tarafını elle kontrol edin (`cargo fmt && cargo clippy`).
+> The **pre-commit hook** runs `eslint --fix` on changed files via `lint-staged`.
+> Check the Rust side manually (`cargo fmt && cargo clippy`).
 
-## Commit ve PR
+## Commits and PRs
 
-- Küçük, odaklı commit'ler. Commit mesajı **[Conventional Commits](https://www.conventionalcommits.org/)**
-  formatında: `feat(rates): ...`, `fix(db): ...`, `chore(ci): ...`.
-- Dal adı: `feat/...`, `fix/...`, `chore/...`.
-- PR açıklamasında **ne** ve **neden**'i yazın; davranış değişiyorsa nasıl
-  doğruladığınızı belirtin (bu depoda "ölçmeden iddia etme" kültürü var —
-  `docs/CODE-REVIEW-*.md`).
-- Kullanıcıya görünen metin eklerken **tr/en/ru** üçünü de `src/i18n/messages.ts`'e
-  ekleyin.
+- Small, focused commits. Commit messages follow
+  **[Conventional Commits](https://www.conventionalcommits.org/)**:
+  `feat(rates): ...`, `fix(db): ...`, `chore(ci): ...`.
+- Branch names: `feat/...`, `fix/...`, `chore/...`.
+- In the PR description, explain **what** and **why**; if behavior changes, say how
+  you verified it (this repo has a "don't claim without measuring" culture — see
+  `docs/`).
+- When adding user-facing text, add all three of **tr/en/ru** in `src/i18n/messages.ts`.
 
-## Mimari notlar
+## Architecture notes
 
-- `src/features/*` — dikey özellik dilimleri (store + bileşen + saf mantık + test).
-- `src/services/db` — SQLite erişimi; çok-adımlı yazımlar Rust `run_tx` komutundan
-  geçer (`src-tauri/src/tx.rs`), asla JS'ten ayrı `execute`'larla değil.
-- Log için `console.*` DEĞİL `@/shared/lib/logger` kullanın — kalıcı log dosyasına
-  yazar (tek istisna: logger modülünün kendisi).
+- `src/features/*` — vertical feature slices (store + components + pure logic + tests).
+- `src/services/db` — SQLite access; multi-step writes go through the Rust `run_tx`
+  command (`src-tauri/src/tx.rs`), never through separate JS `execute` calls.
+- Use `@/shared/lib/logger` instead of `console.*` for logging — it writes to the
+  persistent log file (the only exception is the logger module itself).
 
-## Davranış
+## Conduct
 
-Bu proje [Katkıda Bulunan Sözleşmesi](CODE_OF_CONDUCT.md) kapsamındadır.
+This project is governed by the [Contributor Covenant](CODE_OF_CONDUCT.md).

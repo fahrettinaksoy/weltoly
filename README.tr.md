@@ -169,7 +169,7 @@ yapılır. Tanılama logları çalışma anında app log dizinindeki dönen dosy
 - [SECURITY.md](SECURITY.md) — güvenlik politikası
 - [CHANGELOG.md](CHANGELOG.md) — sürüm geçmişi
 - [docs/RELEASE.md](docs/RELEASE.md) — imzalama, notarization ve yayınlama
-- [docs/](docs/) — teknik belgeler ve kod inceleme raporları
+- [docs/DB-ENCRYPTION-PLAN.md](docs/DB-ENCRYPTION-PLAN.md) — at-rest şifreleme planı
 
 ---
 
